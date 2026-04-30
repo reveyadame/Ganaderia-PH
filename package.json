@@ -1,0 +1,22 @@
+{
+  "name": "ganaderia-ph",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "build": "pnpm --filter \"./packages/*\" build && pnpm --filter \"./apps/*\" build",
+    "lint": "pnpm --recursive lint",
+    "db:generate": "pnpm --filter @ganaderia/database generate",
+    "db:migrate": "pnpm --filter @ganaderia/database migrate:dev",
+    "db:migrate:prod": "pnpm --filter @ganaderia/database migrate:deploy",
+    "db:seed": "pnpm --filter @ganaderia/database seed",
+    "db:studio": "pnpm --filter @ganaderia/database studio"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}

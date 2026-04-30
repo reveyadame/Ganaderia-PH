@@ -1,0 +1,29 @@
+{
+  "name": "@ganaderia/database",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "generate": "prisma generate",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "seed": "ts-node prisma/seed.ts",
+    "studio": "prisma studio",
+    "format": "prisma format"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.14.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.14.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5",
+    "@types/node": "^20.14.0"
+  },
+  "exports": {
+    ".": {
+      "require": "./generated/index.js",
+      "import": "./generated/index.js",
+      "types": "./generated/index.d.ts"
+    }
+  }
+}

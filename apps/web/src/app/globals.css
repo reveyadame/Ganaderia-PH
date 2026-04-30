@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 4%;
+    --surface: 0 0% 97%;
+    --surface-raised: 0 0% 100%;
+    --border: 0 0% 90%;
+    --border-strong: 0 0% 83%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 32%;
+  }
+
+  .dark {
+    --background: 0 0% 4%;
+    --foreground: 0 0% 93%;
+    --surface: 0 0% 8.5%;
+    --surface-raised: 0 0% 11%;
+    --border: 0 0% 16.5%;
+    --border-strong: 0 0% 22%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 63%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Scrollbar personalizado */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-border-strong;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-in {
+    animation: fadeIn 0.15s ease-out;
+  }
+}

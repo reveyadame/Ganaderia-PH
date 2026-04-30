@@ -1,0 +1,593 @@
+
+Object.defineProperty(exports, "__esModule", { value: true });
+
+const {
+  PrismaClientKnownRequestError,
+  PrismaClientUnknownRequestError,
+  PrismaClientRustPanicError,
+  PrismaClientInitializationError,
+  PrismaClientValidationError,
+  NotFoundError,
+  getPrismaClient,
+  sqltag,
+  empty,
+  join,
+  raw,
+  skip,
+  Decimal,
+  Debug,
+  objectEnumValues,
+  makeStrictEnum,
+  Extensions,
+  warnOnce,
+  defineDmmfProperty,
+  Public,
+  getRuntime
+} = require('./runtime/library.js')
+
+
+const Prisma = {}
+
+exports.Prisma = Prisma
+exports.$Enums = {}
+
+/**
+ * Prisma Client JS version: 5.22.0
+ * Query Engine version: 605197351a3c8bdd595af2d2a9bc3025bca48ea2
+ */
+Prisma.prismaVersion = {
+  client: "5.22.0",
+  engine: "605197351a3c8bdd595af2d2a9bc3025bca48ea2"
+}
+
+Prisma.PrismaClientKnownRequestError = PrismaClientKnownRequestError;
+Prisma.PrismaClientUnknownRequestError = PrismaClientUnknownRequestError
+Prisma.PrismaClientRustPanicError = PrismaClientRustPanicError
+Prisma.PrismaClientInitializationError = PrismaClientInitializationError
+Prisma.PrismaClientValidationError = PrismaClientValidationError
+Prisma.NotFoundError = NotFoundError
+Prisma.Decimal = Decimal
+
+/**
+ * Re-export of sql-template-tag
+ */
+Prisma.sql = sqltag
+Prisma.empty = empty
+Prisma.join = join
+Prisma.raw = raw
+Prisma.validator = Public.validator
+
+/**
+* Extensions
+*/
+Prisma.getExtensionContext = Extensions.getExtensionContext
+Prisma.defineExtension = Extensions.defineExtension
+
+/**
+ * Shorthand utilities for JSON filtering
+ */
+Prisma.DbNull = objectEnumValues.instances.DbNull
+Prisma.JsonNull = objectEnumValues.instances.JsonNull
+Prisma.AnyNull = objectEnumValues.instances.AnyNull
+
+Prisma.NullTypes = {
+  DbNull: objectEnumValues.classes.DbNull,
+  JsonNull: objectEnumValues.classes.JsonNull,
+  AnyNull: objectEnumValues.classes.AnyNull
+}
+
+
+
+
+  const path = require('path')
+
+/**
+ * Enums
+ */
+exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
+  ReadUncommitted: 'ReadUncommitted',
+  ReadCommitted: 'ReadCommitted',
+  RepeatableRead: 'RepeatableRead',
+  Serializable: 'Serializable'
+});
+
+exports.Prisma.OrganizacionScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.FarmaciaScalarFieldEnum = {
+  id: 'id',
+  organizacionId: 'organizacionId',
+  nombre: 'nombre',
+  descripcion: 'descripcion',
+  activa: 'activa',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.GrupoCorralesScalarFieldEnum = {
+  id: 'id',
+  organizacionId: 'organizacionId',
+  farmaciaId: 'farmaciaId',
+  nombre: 'nombre',
+  descripcion: 'descripcion',
+  activo: 'activo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CorralScalarFieldEnum = {
+  id: 'id',
+  grupoCorralesId: 'grupoCorralesId',
+  codigo: 'codigo',
+  nombre: 'nombre',
+  capacidad: 'capacidad',
+  activo: 'activo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LoteScalarFieldEnum = {
+  id: 'id',
+  corralId: 'corralId',
+  codigo: 'codigo',
+  procedencia: 'procedencia',
+  fechaEntrada: 'fechaEntrada',
+  numAnimalesEsperados: 'numAnimalesEsperados',
+  createdById: 'createdById',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AnimalScalarFieldEnum = {
+  id: 'id',
+  organizacionId: 'organizacionId',
+  corralId: 'corralId',
+  loteId: 'loteId',
+  areteSiniiga: 'areteSiniiga',
+  sexo: 'sexo',
+  pesoEntrada: 'pesoEntrada',
+  fechaEntrada: 'fechaEntrada',
+  estado: 'estado',
+  fechaEgreso: 'fechaEgreso',
+  causaEgreso: 'causaEgreso',
+  precioVenta: 'precioVenta',
+  notas: 'notas',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AreteBlancoScalarFieldEnum = {
+  id: 'id',
+  organizacionId: 'organizacionId',
+  codigo: 'codigo',
+  estado: 'estado',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AsignacionAreteBlancoScalarFieldEnum = {
+  id: 'id',
+  areteBlancoId: 'areteBlancoId',
+  animalId: 'animalId',
+  asignadoPorId: 'asignadoPorId',
+  fechaAsignacion: 'fechaAsignacion',
+  liberadoPorId: 'liberadoPorId',
+  fechaLiberacion: 'fechaLiberacion'
+};
+
+exports.Prisma.MedicamentoScalarFieldEnum = {
+  id: 'id',
+  farmaciaId: 'farmaciaId',
+  nombre: 'nombre',
+  nombreGenerico: 'nombreGenerico',
+  presentacion: 'presentacion',
+  volumenPresentacion: 'volumenPresentacion',
+  unidadMedida: 'unidadMedida',
+  stockMinimo: 'stockMinimo',
+  activo: 'activo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UnidadMedicamentoScalarFieldEnum = {
+  id: 'id',
+  medicamentoId: 'medicamentoId',
+  farmaciaId: 'farmaciaId',
+  costoUnitario: 'costoUnitario',
+  costoPorMedida: 'costoPorMedida',
+  estado: 'estado',
+  fechaEntrada: 'fechaEntrada',
+  fechaEstadoCambio: 'fechaEstadoCambio',
+  ingresadoPorId: 'ingresadoPorId',
+  notasProveedor: 'notasProveedor',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.SalidaTemporalScalarFieldEnum = {
+  id: 'id',
+  unidadMedicamentoId: 'unidadMedicamentoId',
+  medicoId: 'medicoId',
+  autorizadoPorId: 'autorizadoPorId',
+  fechaSalida: 'fechaSalida',
+  fechaRegreso: 'fechaRegreso',
+  estadoRegreso: 'estadoRegreso',
+  notas: 'notas',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.BajaMedicamentoScalarFieldEnum = {
+  id: 'id',
+  unidadMedicamentoId: 'unidadMedicamentoId',
+  tipo: 'tipo',
+  justificacion: 'justificacion',
+  registradoPorId: 'registradoPorId',
+  fecha: 'fecha',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.TratamientoTemplateScalarFieldEnum = {
+  id: 'id',
+  organizacionId: 'organizacionId',
+  nombre: 'nombre',
+  descripcion: 'descripcion',
+  activo: 'activo',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TratamientoTemplateItemScalarFieldEnum = {
+  id: 'id',
+  templateId: 'templateId',
+  medicamentoId: 'medicamentoId',
+  dosis: 'dosis',
+  unidadDosis: 'unidadDosis',
+  orden: 'orden'
+};
+
+exports.Prisma.AplicacionTratamientoScalarFieldEnum = {
+  id: 'id',
+  animalId: 'animalId',
+  aplicadoPorId: 'aplicadoPorId',
+  fechaAplicacion: 'fechaAplicacion',
+  templateId: 'templateId',
+  templateSnapshot: 'templateSnapshot',
+  notas: 'notas',
+  costoTotalCalculado: 'costoTotalCalculado',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AplicacionTratamientoItemScalarFieldEnum = {
+  id: 'id',
+  aplicacionId: 'aplicacionId',
+  medicamentoId: 'medicamentoId',
+  dosisAplicada: 'dosisAplicada',
+  unidadDosis: 'unidadDosis',
+  costoPorMedidaMomento: 'costoPorMedidaMomento',
+  costoItemCalculado: 'costoItemCalculado'
+};
+
+exports.Prisma.EstadoComederoConfigScalarFieldEnum = {
+  id: 'id',
+  organizacionId: 'organizacionId',
+  nombre: 'nombre',
+  orden: 'orden',
+  color: 'color',
+  activo: 'activo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LecturaComedorScalarFieldEnum = {
+  id: 'id',
+  corralId: 'corralId',
+  estadoConfigId: 'estadoConfigId',
+  registradoPorId: 'registradoPorId',
+  fechaLectura: 'fechaLectura',
+  notas: 'notas',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.RacionDefinicionScalarFieldEnum = {
+  id: 'id',
+  corralId: 'corralId',
+  definidaPorId: 'definidaPorId',
+  cantidadKgManana: 'cantidadKgManana',
+  cantidadKgTarde: 'cantidadKgTarde',
+  descripcion: 'descripcion',
+  fechaInicio: 'fechaInicio',
+  fechaFin: 'fechaFin',
+  activa: 'activa',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SurtidoRacionScalarFieldEnum = {
+  id: 'id',
+  corralId: 'corralId',
+  racionDefinicionId: 'racionDefinicionId',
+  surtidoPorId: 'surtidoPorId',
+  turno: 'turno',
+  fechaSurtido: 'fechaSurtido',
+  cantidadDefinida: 'cantidadDefinida',
+  cantidadSurtida: 'cantidadSurtida',
+  diferencia: 'diferencia',
+  notas: 'notas',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.UsuarioScalarFieldEnum = {
+  id: 'id',
+  organizacionId: 'organizacionId',
+  nombre: 'nombre',
+  apellido: 'apellido',
+  email: 'email',
+  passwordHash: 'passwordHash',
+  tipo: 'tipo',
+  activo: 'activo',
+  ultimoAcceso: 'ultimoAcceso',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UsuarioActividadScalarFieldEnum = {
+  id: 'id',
+  usuarioId: 'usuarioId',
+  actividad: 'actividad'
+};
+
+exports.Prisma.UsuarioGrupoCorralesScalarFieldEnum = {
+  id: 'id',
+  usuarioId: 'usuarioId',
+  grupoCorralesId: 'grupoCorralesId'
+};
+
+exports.Prisma.AuditLogScalarFieldEnum = {
+  id: 'id',
+  usuarioId: 'usuarioId',
+  entidad: 'entidad',
+  entidadId: 'entidadId',
+  accion: 'accion',
+  datosAnteriores: 'datosAnteriores',
+  datosNuevos: 'datosNuevos',
+  ipAddress: 'ipAddress',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.SortOrder = {
+  asc: 'asc',
+  desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+exports.SexoAnimal = exports.$Enums.SexoAnimal = {
+  MACHO: 'MACHO',
+  HEMBRA: 'HEMBRA'
+};
+
+exports.EstadoAnimal = exports.$Enums.EstadoAnimal = {
+  ACTIVO: 'ACTIVO',
+  EGRESADO: 'EGRESADO',
+  MUERTO: 'MUERTO',
+  BAJA: 'BAJA'
+};
+
+exports.CausaEgresoAnimal = exports.$Enums.CausaEgresoAnimal = {
+  VENTA: 'VENTA',
+  MUERTE: 'MUERTE',
+  TRASLADO: 'TRASLADO',
+  OTRO: 'OTRO'
+};
+
+exports.EstadoAreteBlanco = exports.$Enums.EstadoAreteBlanco = {
+  DISPONIBLE: 'DISPONIBLE',
+  ASIGNADO: 'ASIGNADO'
+};
+
+exports.PresentacionMedicamento = exports.$Enums.PresentacionMedicamento = {
+  FRASCO: 'FRASCO',
+  AMPOLLETA: 'AMPOLLETA',
+  TABLETA: 'TABLETA',
+  SOBRE: 'SOBRE',
+  TUBO: 'TUBO',
+  JERINGA: 'JERINGA',
+  OTRO: 'OTRO'
+};
+
+exports.UnidadMedida = exports.$Enums.UnidadMedida = {
+  ML: 'ML',
+  L: 'L',
+  GR: 'GR',
+  KG: 'KG',
+  TABLETA: 'TABLETA',
+  UNIDAD: 'UNIDAD'
+};
+
+exports.EstadoUnidadMedicamento = exports.$Enums.EstadoUnidadMedicamento = {
+  PRE_INGRESO: 'PRE_INGRESO',
+  DISPONIBLE: 'DISPONIBLE',
+  SALIDA_TEMPORAL: 'SALIDA_TEMPORAL',
+  CONSUMIDO: 'CONSUMIDO',
+  BAJA: 'BAJA'
+};
+
+exports.EstadoRegreso = exports.$Enums.EstadoRegreso = {
+  REGRESO_CON_CONTENIDO: 'REGRESO_CON_CONTENIDO',
+  REGRESO_VACIO: 'REGRESO_VACIO'
+};
+
+exports.TipoBajaMedicamento = exports.$Enums.TipoBajaMedicamento = {
+  CONSUMO_CAMPO: 'CONSUMO_CAMPO',
+  CADUCIDAD: 'CADUCIDAD',
+  PERDIDA: 'PERDIDA',
+  ROBO: 'ROBO',
+  DANO: 'DANO',
+  AJUSTE: 'AJUSTE'
+};
+
+exports.TurnoRacion = exports.$Enums.TurnoRacion = {
+  MANANA: 'MANANA',
+  TARDE: 'TARDE'
+};
+
+exports.TipoUsuario = exports.$Enums.TipoUsuario = {
+  SUPERUSUARIO: 'SUPERUSUARIO',
+  ADMIN: 'ADMIN',
+  DIRECTOR: 'DIRECTOR',
+  OPERADOR: 'OPERADOR'
+};
+
+exports.ActividadUsuario = exports.$Enums.ActividadUsuario = {
+  REGISTRO: 'REGISTRO',
+  TRATAMIENTOS: 'TRATAMIENTOS',
+  COMEDEROS: 'COMEDEROS',
+  RACIONES: 'RACIONES',
+  FARMACIA: 'FARMACIA',
+  REPORTES: 'REPORTES'
+};
+
+exports.AccionAudit = exports.$Enums.AccionAudit = {
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+  DELETE: 'DELETE'
+};
+
+exports.Prisma.ModelName = {
+  Organizacion: 'Organizacion',
+  Farmacia: 'Farmacia',
+  GrupoCorrales: 'GrupoCorrales',
+  Corral: 'Corral',
+  Lote: 'Lote',
+  Animal: 'Animal',
+  AreteBlanco: 'AreteBlanco',
+  AsignacionAreteBlanco: 'AsignacionAreteBlanco',
+  Medicamento: 'Medicamento',
+  UnidadMedicamento: 'UnidadMedicamento',
+  SalidaTemporal: 'SalidaTemporal',
+  BajaMedicamento: 'BajaMedicamento',
+  TratamientoTemplate: 'TratamientoTemplate',
+  TratamientoTemplateItem: 'TratamientoTemplateItem',
+  AplicacionTratamiento: 'AplicacionTratamiento',
+  AplicacionTratamientoItem: 'AplicacionTratamientoItem',
+  EstadoComederoConfig: 'EstadoComederoConfig',
+  LecturaComedor: 'LecturaComedor',
+  RacionDefinicion: 'RacionDefinicion',
+  SurtidoRacion: 'SurtidoRacion',
+  Usuario: 'Usuario',
+  UsuarioActividad: 'UsuarioActividad',
+  UsuarioGrupoCorrales: 'UsuarioGrupoCorrales',
+  AuditLog: 'AuditLog'
+};
+/**
+ * Create the Client
+ */
+const config = {
+  "generator": {
+    "name": "client",
+    "provider": {
+      "fromEnvVar": null,
+      "value": "prisma-client-js"
+    },
+    "output": {
+      "value": "C:\\PROYECTOS\\Ganaderia PH\\packages\\database\\generated",
+      "fromEnvVar": null
+    },
+    "config": {
+      "engineType": "library"
+    },
+    "binaryTargets": [
+      {
+        "fromEnvVar": null,
+        "value": "windows",
+        "native": true
+      }
+    ],
+    "previewFeatures": [],
+    "sourceFilePath": "C:\\PROYECTOS\\Ganaderia PH\\packages\\database\\prisma\\schema.prisma",
+    "isCustomOutput": true
+  },
+  "relativeEnvPaths": {
+    "rootEnvPath": null
+  },
+  "relativePath": "../prisma",
+  "clientVersion": "5.22.0",
+  "engineVersion": "605197351a3c8bdd595af2d2a9bc3025bca48ea2",
+  "datasourceNames": [
+    "db"
+  ],
+  "activeProvider": "postgresql",
+  "postinstall": false,
+  "inlineDatasources": {
+    "db": {
+      "url": {
+        "fromEnvVar": "DATABASE_URL",
+        "value": null
+      }
+    }
+  },
+  "inlineSchema": "// packages/database/prisma/schema.prisma\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\n// ─────────────────────────────────────────────\n// ENUMS\n// ─────────────────────────────────────────────\n\nenum TipoUsuario {\n  SUPERUSUARIO\n  ADMIN\n  DIRECTOR\n  OPERADOR\n}\n\nenum ActividadUsuario {\n  REGISTRO\n  TRATAMIENTOS\n  COMEDEROS\n  RACIONES\n  FARMACIA\n  REPORTES\n}\n\nenum SexoAnimal {\n  MACHO\n  HEMBRA\n}\n\nenum EstadoAnimal {\n  ACTIVO\n  EGRESADO\n  MUERTO\n  BAJA\n}\n\nenum PresentacionMedicamento {\n  FRASCO\n  AMPOLLETA\n  TABLETA\n  SOBRE\n  TUBO\n  JERINGA\n  OTRO\n}\n\nenum UnidadMedida {\n  ML\n  L\n  GR\n  KG\n  TABLETA\n  UNIDAD\n}\n\nenum EstadoUnidadMedicamento {\n  PRE_INGRESO\n  DISPONIBLE\n  SALIDA_TEMPORAL\n  CONSUMIDO\n  BAJA\n}\n\nenum EstadoRegreso {\n  REGRESO_CON_CONTENIDO\n  REGRESO_VACIO\n}\n\nenum TipoBajaMedicamento {\n  CONSUMO_CAMPO\n  CADUCIDAD\n  PERDIDA\n  ROBO\n  DANO\n  AJUSTE\n}\n\nenum EstadoAreteBlanco {\n  DISPONIBLE\n  ASIGNADO\n}\n\nenum TurnoRacion {\n  MANANA\n  TARDE\n}\n\nenum CausaEgresoAnimal {\n  VENTA\n  MUERTE\n  TRASLADO\n  OTRO\n}\n\nenum AccionAudit {\n  CREATE\n  UPDATE\n  DELETE\n}\n\n// ─────────────────────────────────────────────\n// ORGANIZACIÓN\n// ─────────────────────────────────────────────\n\nmodel Organizacion {\n  id        String   @id @default(cuid())\n  nombre    String\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  farmacias       Farmacia[]\n  gruposCorrales  GrupoCorrales[]\n  animales        Animal[]\n  aretessBlancos  AreteBlanco[]\n  usuarios        Usuario[]\n  templates       TratamientoTemplate[]\n  estadosComedero EstadoComederoConfig[]\n}\n\n// ─────────────────────────────────────────────\n// FARMACIA\n// ─────────────────────────────────────────────\n\nmodel Farmacia {\n  id             String   @id @default(cuid())\n  organizacionId String\n  nombre         String\n  descripcion    String?\n  activa         Boolean  @default(true)\n  createdAt      DateTime @default(now())\n  updatedAt      DateTime @updatedAt\n\n  organizacion   Organizacion        @relation(fields: [organizacionId], references: [id])\n  gruposCorrales GrupoCorrales[]\n  medicamentos   Medicamento[]\n  unidades       UnidadMedicamento[]\n}\n\n// ─────────────────────────────────────────────\n// ESTRUCTURA DE CORRALES\n// ─────────────────────────────────────────────\n\nmodel GrupoCorrales {\n  id             String   @id @default(cuid())\n  organizacionId String\n  farmaciaId     String\n  nombre         String\n  descripcion    String?\n  activo         Boolean  @default(true)\n  createdAt      DateTime @default(now())\n  updatedAt      DateTime @updatedAt\n\n  organizacion      Organizacion           @relation(fields: [organizacionId], references: [id])\n  farmacia          Farmacia               @relation(fields: [farmaciaId], references: [id])\n  corrales          Corral[]\n  usuariosAsignados UsuarioGrupoCorrales[]\n}\n\nmodel Corral {\n  id              String   @id @default(cuid())\n  grupoCorralesId String\n  codigo          String\n  nombre          String\n  capacidad       Int?\n  activo          Boolean  @default(true)\n  createdAt       DateTime @default(now())\n  updatedAt       DateTime @updatedAt\n\n  grupoCorrales   GrupoCorrales      @relation(fields: [grupoCorralesId], references: [id])\n  animales        Animal[]\n  lotes           Lote[]\n  lecturasComedor LecturaComedor[]\n  raciones        RacionDefinicion[]\n  surtidos        SurtidoRacion[]\n\n  @@unique([grupoCorralesId, codigo])\n  @@index([codigo])\n}\n\n// ─────────────────────────────────────────────\n// ANIMALES\n// ─────────────────────────────────────────────\n\nmodel Lote {\n  id                   String   @id @default(cuid())\n  corralId             String\n  codigo               String\n  procedencia          String?\n  fechaEntrada         DateTime @default(now())\n  numAnimalesEsperados Int?\n  createdById          String\n  createdAt            DateTime @default(now())\n\n  corral    Corral   @relation(fields: [corralId], references: [id])\n  creadoPor Usuario  @relation(\"LoteCreador\", fields: [createdById], references: [id])\n  animales  Animal[]\n}\n\nmodel Animal {\n  id             String             @id @default(cuid())\n  organizacionId String\n  corralId       String\n  loteId         String?\n  areteSiniiga   String?\n  sexo           SexoAnimal\n  pesoEntrada    Decimal            @db.Decimal(8, 2)\n  fechaEntrada   DateTime\n  estado         EstadoAnimal       @default(ACTIVO)\n  fechaEgreso    DateTime?\n  causaEgreso    CausaEgresoAnimal?\n  precioVenta    Decimal?           @db.Decimal(10, 2)\n  notas          String?\n  createdById    String\n  createdAt      DateTime           @default(now())\n  updatedAt      DateTime           @updatedAt\n\n  organizacion      Organizacion            @relation(fields: [organizacionId], references: [id])\n  corral            Corral                  @relation(fields: [corralId], references: [id])\n  lote              Lote?                   @relation(fields: [loteId], references: [id])\n  creadoPor         Usuario                 @relation(\"AnimalCreador\", fields: [createdById], references: [id])\n  asignacionesArete AsignacionAreteBlanco[]\n  aplicaciones      AplicacionTratamiento[]\n\n  @@unique([organizacionId, areteSiniiga])\n  @@index([areteSiniiga])\n  @@index([corralId, estado])\n}\n\nmodel AreteBlanco {\n  id             String            @id @default(cuid())\n  organizacionId String\n  codigo         String\n  estado         EstadoAreteBlanco @default(DISPONIBLE)\n  createdAt      DateTime          @default(now())\n\n  organizacion Organizacion            @relation(fields: [organizacionId], references: [id])\n  asignaciones AsignacionAreteBlanco[]\n\n  @@unique([organizacionId, codigo])\n  @@index([codigo])\n}\n\nmodel AsignacionAreteBlanco {\n  id              String    @id @default(cuid())\n  areteBlancoId   String\n  animalId        String\n  asignadoPorId   String\n  fechaAsignacion DateTime  @default(now())\n  liberadoPorId   String?\n  fechaLiberacion DateTime?\n\n  areteBlanco AreteBlanco @relation(fields: [areteBlancoId], references: [id])\n  animal      Animal      @relation(fields: [animalId], references: [id])\n  asignadoPor Usuario     @relation(\"AsignacionCreador\", fields: [asignadoPorId], references: [id])\n  liberadoPor Usuario?    @relation(\"AsignacionLiberador\", fields: [liberadoPorId], references: [id])\n\n  @@index([areteBlancoId, fechaLiberacion])\n  @@index([animalId, fechaLiberacion])\n}\n\n// ─────────────────────────────────────────────\n// MEDICAMENTOS E INVENTARIO\n// ─────────────────────────────────────────────\n\nmodel Medicamento {\n  id                  String                  @id @default(cuid())\n  farmaciaId          String\n  nombre              String\n  nombreGenerico      String?\n  presentacion        PresentacionMedicamento\n  volumenPresentacion Decimal                 @db.Decimal(10, 3)\n  unidadMedida        UnidadMedida\n  stockMinimo         Int                     @default(0)\n  activo              Boolean                 @default(true)\n  createdAt           DateTime                @default(now())\n  updatedAt           DateTime                @updatedAt\n\n  farmacia        Farmacia                    @relation(fields: [farmaciaId], references: [id])\n  unidades        UnidadMedicamento[]\n  templateItems   TratamientoTemplateItem[]\n  aplicacionItems AplicacionTratamientoItem[]\n\n  @@index([farmaciaId, activo])\n}\n\nmodel UnidadMedicamento {\n  id                String                  @id @default(cuid())\n  medicamentoId     String\n  farmaciaId        String\n  costoUnitario     Decimal                 @db.Decimal(10, 2)\n  costoPorMedida    Decimal                 @db.Decimal(10, 4)\n  estado            EstadoUnidadMedicamento @default(DISPONIBLE)\n  fechaEntrada      DateTime                @default(now())\n  fechaEstadoCambio DateTime                @default(now())\n  ingresadoPorId    String\n  notasProveedor    String?\n  createdAt         DateTime                @default(now())\n\n  medicamento       Medicamento      @relation(fields: [medicamentoId], references: [id])\n  farmacia          Farmacia         @relation(fields: [farmaciaId], references: [id])\n  ingresadoPor      Usuario          @relation(\"UnidadIngresador\", fields: [ingresadoPorId], references: [id])\n  salidasTemporales SalidaTemporal[]\n  baja              BajaMedicamento?\n\n  @@index([medicamentoId, farmaciaId, estado, fechaEntrada])\n}\n\nmodel SalidaTemporal {\n  id                  String         @id @default(cuid())\n  unidadMedicamentoId String\n  medicoId            String\n  autorizadoPorId     String\n  fechaSalida         DateTime       @default(now())\n  fechaRegreso        DateTime?\n  estadoRegreso       EstadoRegreso?\n  notas               String?\n  createdAt           DateTime       @default(now())\n\n  unidadMedicamento UnidadMedicamento @relation(fields: [unidadMedicamentoId], references: [id])\n  medico            Usuario           @relation(\"SalidaMedico\", fields: [medicoId], references: [id])\n  autorizadoPor     Usuario           @relation(\"SalidaAutorizador\", fields: [autorizadoPorId], references: [id])\n\n  @@index([medicoId, fechaRegreso])\n  @@index([unidadMedicamentoId])\n}\n\nmodel BajaMedicamento {\n  id                  String              @id @default(cuid())\n  unidadMedicamentoId String              @unique\n  tipo                TipoBajaMedicamento\n  justificacion       String?\n  registradoPorId     String\n  fecha               DateTime            @default(now())\n  createdAt           DateTime            @default(now())\n\n  unidadMedicamento UnidadMedicamento @relation(fields: [unidadMedicamentoId], references: [id])\n  registradoPor     Usuario           @relation(\"BajaRegistrador\", fields: [registradoPorId], references: [id])\n}\n\n// ─────────────────────────────────────────────\n// TRATAMIENTOS\n// ─────────────────────────────────────────────\n\nmodel TratamientoTemplate {\n  id             String   @id @default(cuid())\n  organizacionId String\n  nombre         String\n  descripcion    String?\n  activo         Boolean  @default(true)\n  createdById    String\n  createdAt      DateTime @default(now())\n  updatedAt      DateTime @updatedAt\n\n  organizacion Organizacion              @relation(fields: [organizacionId], references: [id])\n  creadoPor    Usuario                   @relation(\"TemplateCreador\", fields: [createdById], references: [id])\n  items        TratamientoTemplateItem[]\n  aplicaciones AplicacionTratamiento[]\n}\n\nmodel TratamientoTemplateItem {\n  id            String       @id @default(cuid())\n  templateId    String\n  medicamentoId String\n  dosis         Decimal      @db.Decimal(10, 3)\n  unidadDosis   UnidadMedida\n  orden         Int          @default(0)\n\n  template    TratamientoTemplate @relation(fields: [templateId], references: [id])\n  medicamento Medicamento         @relation(fields: [medicamentoId], references: [id])\n}\n\nmodel AplicacionTratamiento {\n  id                  String   @id @default(cuid())\n  animalId            String\n  aplicadoPorId       String\n  fechaAplicacion     DateTime @default(now())\n  templateId          String?\n  templateSnapshot    Json?\n  notas               String?\n  costoTotalCalculado Decimal  @db.Decimal(10, 2)\n  createdAt           DateTime @default(now())\n\n  animal      Animal                      @relation(fields: [animalId], references: [id])\n  aplicadoPor Usuario                     @relation(\"AplicacionOperador\", fields: [aplicadoPorId], references: [id])\n  template    TratamientoTemplate?        @relation(fields: [templateId], references: [id])\n  items       AplicacionTratamientoItem[]\n\n  @@index([animalId, fechaAplicacion])\n}\n\nmodel AplicacionTratamientoItem {\n  id                    String       @id @default(cuid())\n  aplicacionId          String\n  medicamentoId         String\n  dosisAplicada         Decimal      @db.Decimal(10, 3)\n  unidadDosis           UnidadMedida\n  costoPorMedidaMomento Decimal      @db.Decimal(10, 4)\n  costoItemCalculado    Decimal      @db.Decimal(10, 2)\n\n  aplicacion  AplicacionTratamiento @relation(fields: [aplicacionId], references: [id])\n  medicamento Medicamento           @relation(fields: [medicamentoId], references: [id])\n}\n\n// ─────────────────────────────────────────────\n// COMEDEROS Y RACIONES\n// ─────────────────────────────────────────────\n\n// Catálogo configurable de estados del comedero por organización.\n// Ejemplos: \"Con comida\", \"Bien\", \"Lamido\", \"Muy lamido\". El admin define los suyos.\nmodel EstadoComederoConfig {\n  id             String   @id @default(cuid())\n  organizacionId String\n  nombre         String\n  orden          Int      @default(0)\n  color          String? // hex para visualización (ej: \"#22c55e\")\n  activo         Boolean  @default(true)\n  createdAt      DateTime @default(now())\n  updatedAt      DateTime @updatedAt\n\n  organizacion Organizacion     @relation(fields: [organizacionId], references: [id])\n  lecturas     LecturaComedor[]\n\n  @@unique([organizacionId, nombre])\n  @@index([organizacionId, activo, orden])\n}\n\n// Lectura cualitativa del estado del comedero. Independiente del surtido.\nmodel LecturaComedor {\n  id              String   @id @default(cuid())\n  corralId        String\n  estadoConfigId  String\n  registradoPorId String\n  fechaLectura    DateTime @default(now())\n  notas           String?\n  createdAt       DateTime @default(now())\n\n  corral        Corral               @relation(fields: [corralId], references: [id])\n  estadoConfig  EstadoComederoConfig @relation(fields: [estadoConfigId], references: [id])\n  registradoPor Usuario              @relation(\"LecturaRegistrador\", fields: [registradoPorId], references: [id])\n\n  @@index([corralId, fechaLectura])\n  @@index([estadoConfigId])\n}\n\n// Ración diaria por corral, dividida en turno mañana y turno tarde (kg).\n// Definida manualmente por administración con base en el criterio del admin.\nmodel RacionDefinicion {\n  id               String    @id @default(cuid())\n  corralId         String\n  definidaPorId    String\n  cantidadKgManana Decimal   @db.Decimal(10, 2)\n  cantidadKgTarde  Decimal   @db.Decimal(10, 2)\n  descripcion      String?\n  fechaInicio      DateTime  @default(now())\n  fechaFin         DateTime?\n  activa           Boolean   @default(true)\n  createdAt        DateTime  @default(now())\n  updatedAt        DateTime  @updatedAt\n\n  corral      Corral          @relation(fields: [corralId], references: [id])\n  definidaPor Usuario         @relation(\"RacionDefinidor\", fields: [definidaPorId], references: [id])\n  surtidos    SurtidoRacion[]\n\n  @@index([corralId, activa])\n}\n\n// Registro del surtido real por turno. Un corral puede tener 1 o 2 surtidos por día.\nmodel SurtidoRacion {\n  id                 String      @id @default(cuid())\n  corralId           String\n  racionDefinicionId String?\n  surtidoPorId       String\n  turno              TurnoRacion\n  fechaSurtido       DateTime    @default(now())\n  cantidadDefinida   Decimal?    @db.Decimal(10, 2)\n  cantidadSurtida    Decimal     @db.Decimal(10, 2)\n  diferencia         Decimal?    @db.Decimal(10, 2)\n  notas              String?\n  createdAt          DateTime    @default(now())\n\n  corral           Corral            @relation(fields: [corralId], references: [id])\n  racionDefinicion RacionDefinicion? @relation(fields: [racionDefinicionId], references: [id])\n  surtidoPor       Usuario           @relation(\"SurtidoOperador\", fields: [surtidoPorId], references: [id])\n\n  @@index([corralId, fechaSurtido])\n  @@index([corralId, turno, fechaSurtido])\n}\n\n// ─────────────────────────────────────────────\n// USUARIOS Y PERMISOS\n// ─────────────────────────────────────────────\n\nmodel Usuario {\n  id             String      @id @default(cuid())\n  organizacionId String\n  nombre         String\n  apellido       String\n  email          String      @unique\n  passwordHash   String\n  tipo           TipoUsuario\n  activo         Boolean     @default(true)\n  ultimoAcceso   DateTime?\n  createdAt      DateTime    @default(now())\n  updatedAt      DateTime    @updatedAt\n\n  organizacion Organizacion @relation(fields: [organizacionId], references: [id])\n\n  actividades    UsuarioActividad[]\n  gruposCorrales UsuarioGrupoCorrales[]\n\n  lotesCreados          Lote[]                  @relation(\"LoteCreador\")\n  animalesCreados       Animal[]                @relation(\"AnimalCreador\")\n  asignacionesCreadas   AsignacionAreteBlanco[] @relation(\"AsignacionCreador\")\n  asignacionesLiberadas AsignacionAreteBlanco[] @relation(\"AsignacionLiberador\")\n  unidadesIngresadas    UnidadMedicamento[]     @relation(\"UnidadIngresador\")\n  salidasComoMedico     SalidaTemporal[]        @relation(\"SalidaMedico\")\n  salidasAutorizadas    SalidaTemporal[]        @relation(\"SalidaAutorizador\")\n  bajasRegistradas      BajaMedicamento[]       @relation(\"BajaRegistrador\")\n  templatesCreados      TratamientoTemplate[]   @relation(\"TemplateCreador\")\n  aplicaciones          AplicacionTratamiento[] @relation(\"AplicacionOperador\")\n  lecturasComedor       LecturaComedor[]        @relation(\"LecturaRegistrador\")\n  racionesDefinidas     RacionDefinicion[]      @relation(\"RacionDefinidor\")\n  surtidos              SurtidoRacion[]         @relation(\"SurtidoOperador\")\n\n  @@index([email])\n  @@index([organizacionId, tipo, activo])\n}\n\nmodel UsuarioActividad {\n  id        String           @id @default(cuid())\n  usuarioId String\n  actividad ActividadUsuario\n\n  usuario Usuario @relation(fields: [usuarioId], references: [id])\n\n  @@unique([usuarioId, actividad])\n}\n\nmodel UsuarioGrupoCorrales {\n  id              String @id @default(cuid())\n  usuarioId       String\n  grupoCorralesId String\n\n  usuario       Usuario       @relation(fields: [usuarioId], references: [id])\n  grupoCorrales GrupoCorrales @relation(fields: [grupoCorralesId], references: [id])\n\n  @@unique([usuarioId, grupoCorralesId])\n}\n\n// ─────────────────────────────────────────────\n// AUDITORÍA\n// ─────────────────────────────────────────────\n\nmodel AuditLog {\n  id              String      @id @default(cuid())\n  usuarioId       String?\n  entidad         String\n  entidadId       String\n  accion          AccionAudit\n  datosAnteriores Json?\n  datosNuevos     Json?\n  ipAddress       String?\n  createdAt       DateTime    @default(now())\n\n  @@index([entidad, entidadId])\n  @@index([usuarioId, createdAt])\n}\n",
+  "inlineSchemaHash": "a64f0bf2d5086cc89cde2e3be12d327f9363a154e030c0f1eef78df61847d318",
+  "copyEngine": true
+}
+
+const fs = require('fs')
+
+config.dirname = __dirname
+if (!fs.existsSync(path.join(__dirname, 'schema.prisma'))) {
+  const alternativePaths = [
+    "generated",
+    "",
+  ]
+  
+  const alternativePath = alternativePaths.find((altPath) => {
+    return fs.existsSync(path.join(process.cwd(), altPath, 'schema.prisma'))
+  }) ?? alternativePaths[0]
+
+  config.dirname = path.join(process.cwd(), alternativePath)
+  config.isBundled = true
+}
+
+config.runtimeDataModel = JSON.parse("{\"models\":{\"Organizacion\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"nombre\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"DateTime\",\"isGenerated\":false,\"isUpdatedAt\":true},{\"name\":\"farmacias\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Farmacia\",\"relationName\":\"FarmaciaToOrganizacion\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"gruposCorrales\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"GrupoCorrales\",\"relationName\":\"GrupoCorralesToOrganizacion\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"animales\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Animal\",\"relationName\":\"AnimalToOrganizacion\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"aretessBlancos\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"AreteBlanco\",\"relationName\":\"AreteBlancoToOrganizacion\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"usuarios\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Usuario\",\"relationName\":\"OrganizacionToUsuario\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"templates\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"TratamientoTemplate\",\"relationName\":\"OrganizacionToTratamientoTemplate\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"estadosComedero\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"EstadoComederoConfig\",\"relationName\":\"EstadoComederoConfigToOrganizacion\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[],\"uniqueIndexes\":[],\"isGenerated\":false},\"Farmacia\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"organizacionId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"nombre\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"descripcion\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"activa\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"Boolean\",\"default\":true,\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"DateTime\",\"isGenerated\":false,\"isUpdatedAt\":true},{\"name\":\"organizacion\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Organizacion\",\"relationName\":\"FarmaciaToOrganizacion\",\"relationFromFields\":[\"organizacionId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"gruposCorrales\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"GrupoCorrales\",\"relationName\":\"FarmaciaToGrupoCorrales\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"medicamentos\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Medicamento\",\"relationName\":\"FarmaciaToMedicamento\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"unidades\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"UnidadMedicamento\",\"relationName\":\"FarmaciaToUnidadMedicamento\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[],\"uniqueIndexes\":[],\"isGenerated\":false},\"GrupoCorrales\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"organizacionId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"farmaciaId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"nombre\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"descripcion\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"activo\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"Boolean\",\"default\":true,\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"DateTime\",\"isGenerated\":false,\"isUpdatedAt\":true},{\"name\":\"organizacion\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Organizacion\",\"relationName\":\"GrupoCorralesToOrganizacion\",\"relationFromFields\":[\"organizacionId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"farmacia\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Farmacia\",\"relationName\":\"FarmaciaToGrupoCorrales\",\"relationFromFields\":[\"farmaciaId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"corrales\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Corral\",\"relationName\":\"CorralToGrupoCorrales\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"usuariosAsignados\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"UsuarioGrupoCorrales\",\"relationName\":\"GrupoCorralesToUsuarioGrupoCorrales\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[],\"uniqueIndexes\":[],\"isGenerated\":false},\"Corral\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"grupoCorralesId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"codigo\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"nombre\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"capacidad\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Int\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"activo\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"Boolean\",\"default\":true,\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"DateTime\",\"isGenerated\":false,\"isUpdatedAt\":true},{\"name\":\"grupoCorrales\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"GrupoCorrales\",\"relationName\":\"CorralToGrupoCorrales\",\"relationFromFields\":[\"grupoCorralesId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"animales\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Animal\",\"relationName\":\"AnimalToCorral\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"lotes\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Lote\",\"relationName\":\"CorralToLote\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"lecturasComedor\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"LecturaComedor\",\"relationName\":\"CorralToLecturaComedor\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"raciones\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"RacionDefinicion\",\"relationName\":\"CorralToRacionDefinicion\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"surtidos\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"SurtidoRacion\",\"relationName\":\"CorralToSurtidoRacion\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[[\"grupoCorralesId\",\"codigo\"]],\"uniqueIndexes\":[{\"name\":null,\"fields\":[\"grupoCorralesId\",\"codigo\"]}],\"isGenerated\":false},\"Lote\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"corralId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"codigo\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"procedencia\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"fechaEntrada\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"numAnimalesEsperados\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Int\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdById\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"corral\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Corral\",\"relationName\":\"CorralToLote\",\"relationFromFields\":[\"corralId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"creadoPor\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Usuario\",\"relationName\":\"LoteCreador\",\"relationFromFields\":[\"createdById\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"animales\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Animal\",\"relationName\":\"AnimalToLote\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[],\"uniqueIndexes\":[],\"isGenerated\":false},\"Animal\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"organizacionId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"corralId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"loteId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"areteSiniiga\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"sexo\",\"kind\":\"enum\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"SexoAnimal\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"pesoEntrada\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Decimal\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"fechaEntrada\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"DateTime\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"estado\",\"kind\":\"enum\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"EstadoAnimal\",\"default\":\"ACTIVO\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"fechaEgreso\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"DateTime\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"causaEgreso\",\"kind\":\"enum\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"CausaEgresoAnimal\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"precioVenta\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Decimal\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"notas\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdById\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"DateTime\",\"isGenerated\":false,\"isUpdatedAt\":true},{\"name\":\"organizacion\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Organizacion\",\"relationName\":\"AnimalToOrganizacion\",\"relationFromFields\":[\"organizacionId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"corral\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Corral\",\"relationName\":\"AnimalToCorral\",\"relationFromFields\":[\"corralId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"lote\",\"kind\":\"object\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Lote\",\"relationName\":\"AnimalToLote\",\"relationFromFields\":[\"loteId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"creadoPor\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Usuario\",\"relationName\":\"AnimalCreador\",\"relationFromFields\":[\"createdById\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"asignacionesArete\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"AsignacionAreteBlanco\",\"relationName\":\"AnimalToAsignacionAreteBlanco\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"aplicaciones\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"AplicacionTratamiento\",\"relationName\":\"AnimalToAplicacionTratamiento\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[[\"organizacionId\",\"areteSiniiga\"]],\"uniqueIndexes\":[{\"name\":null,\"fields\":[\"organizacionId\",\"areteSiniiga\"]}],\"isGenerated\":false},\"AreteBlanco\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"organizacionId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"codigo\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"estado\",\"kind\":\"enum\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"EstadoAreteBlanco\",\"default\":\"DISPONIBLE\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"organizacion\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Organizacion\",\"relationName\":\"AreteBlancoToOrganizacion\",\"relationFromFields\":[\"organizacionId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"asignaciones\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"AsignacionAreteBlanco\",\"relationName\":\"AreteBlancoToAsignacionAreteBlanco\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[[\"organizacionId\",\"codigo\"]],\"uniqueIndexes\":[{\"name\":null,\"fields\":[\"organizacionId\",\"codigo\"]}],\"isGenerated\":false},\"AsignacionAreteBlanco\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"areteBlancoId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"animalId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"asignadoPorId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"fechaAsignacion\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"liberadoPorId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"fechaLiberacion\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"DateTime\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"areteBlanco\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"AreteBlanco\",\"relationName\":\"AreteBlancoToAsignacionAreteBlanco\",\"relationFromFields\":[\"areteBlancoId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"animal\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Animal\",\"relationName\":\"AnimalToAsignacionAreteBlanco\",\"relationFromFields\":[\"animalId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"asignadoPor\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Usuario\",\"relationName\":\"AsignacionCreador\",\"relationFromFields\":[\"asignadoPorId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"liberadoPor\",\"kind\":\"object\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Usuario\",\"relationName\":\"AsignacionLiberador\",\"relationFromFields\":[\"liberadoPorId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[],\"uniqueIndexes\":[],\"isGenerated\":false},\"Medicamento\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"farmaciaId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"nombre\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"nombreGenerico\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"presentacion\",\"kind\":\"enum\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"PresentacionMedicamento\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"volumenPresentacion\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Decimal\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"unidadMedida\",\"kind\":\"enum\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"UnidadMedida\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"stockMinimo\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"Int\",\"default\":0,\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"activo\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"Boolean\",\"default\":true,\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"DateTime\",\"isGenerated\":false,\"isUpdatedAt\":true},{\"name\":\"farmacia\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Farmacia\",\"relationName\":\"FarmaciaToMedicamento\",\"relationFromFields\":[\"farmaciaId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"unidades\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"UnidadMedicamento\",\"relationName\":\"MedicamentoToUnidadMedicamento\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"templateItems\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"TratamientoTemplateItem\",\"relationName\":\"MedicamentoToTratamientoTemplateItem\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"aplicacionItems\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"AplicacionTratamientoItem\",\"relationName\":\"AplicacionTratamientoItemToMedicamento\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[],\"uniqueIndexes\":[],\"isGenerated\":false},\"UnidadMedicamento\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"medicamentoId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"farmaciaId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"costoUnitario\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Decimal\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"costoPorMedida\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Decimal\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"estado\",\"kind\":\"enum\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"EstadoUnidadMedicamento\",\"default\":\"DISPONIBLE\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"fechaEntrada\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"fechaEstadoCambio\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"ingresadoPorId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"notasProveedor\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"medicamento\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Medicamento\",\"relationName\":\"MedicamentoToUnidadMedicamento\",\"relationFromFields\":[\"medicamentoId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"farmacia\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Farmacia\",\"relationName\":\"FarmaciaToUnidadMedicamento\",\"relationFromFields\":[\"farmaciaId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"ingresadoPor\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Usuario\",\"relationName\":\"UnidadIngresador\",\"relationFromFields\":[\"ingresadoPorId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"salidasTemporales\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"SalidaTemporal\",\"relationName\":\"SalidaTemporalToUnidadMedicamento\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"baja\",\"kind\":\"object\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"BajaMedicamento\",\"relationName\":\"BajaMedicamentoToUnidadMedicamento\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[],\"uniqueIndexes\":[],\"isGenerated\":false},\"SalidaTemporal\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"unidadMedicamentoId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"medicoId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"autorizadoPorId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"fechaSalida\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"fechaRegreso\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"DateTime\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"estadoRegreso\",\"kind\":\"enum\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"EstadoRegreso\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"notas\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"unidadMedicamento\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"UnidadMedicamento\",\"relationName\":\"SalidaTemporalToUnidadMedicamento\",\"relationFromFields\":[\"unidadMedicamentoId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"medico\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Usuario\",\"relationName\":\"SalidaMedico\",\"relationFromFields\":[\"medicoId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"autorizadoPor\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Usuario\",\"relationName\":\"SalidaAutorizador\",\"relationFromFields\":[\"autorizadoPorId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[],\"uniqueIndexes\":[],\"isGenerated\":false},\"BajaMedicamento\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"unidadMedicamentoId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":true,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"tipo\",\"kind\":\"enum\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"TipoBajaMedicamento\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"justificacion\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"registradoPorId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"fecha\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"unidadMedicamento\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"UnidadMedicamento\",\"relationName\":\"BajaMedicamentoToUnidadMedicamento\",\"relationFromFields\":[\"unidadMedicamentoId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"registradoPor\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Usuario\",\"relationName\":\"BajaRegistrador\",\"relationFromFields\":[\"registradoPorId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[],\"uniqueIndexes\":[],\"isGenerated\":false},\"TratamientoTemplate\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"organizacionId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"nombre\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"descripcion\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"activo\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"Boolean\",\"default\":true,\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdById\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"DateTime\",\"isGenerated\":false,\"isUpdatedAt\":true},{\"name\":\"organizacion\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Organizacion\",\"relationName\":\"OrganizacionToTratamientoTemplate\",\"relationFromFields\":[\"organizacionId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"creadoPor\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Usuario\",\"relationName\":\"TemplateCreador\",\"relationFromFields\":[\"createdById\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"items\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"TratamientoTemplateItem\",\"relationName\":\"TratamientoTemplateToTratamientoTemplateItem\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"aplicaciones\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"AplicacionTratamiento\",\"relationName\":\"AplicacionTratamientoToTratamientoTemplate\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[],\"uniqueIndexes\":[],\"isGenerated\":false},\"TratamientoTemplateItem\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"templateId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"medicamentoId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"dosis\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Decimal\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"unidadDosis\",\"kind\":\"enum\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"UnidadMedida\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"orden\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"Int\",\"default\":0,\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"template\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"TratamientoTemplate\",\"relationName\":\"TratamientoTemplateToTratamientoTemplateItem\",\"relationFromFields\":[\"templateId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"medicamento\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Medicamento\",\"relationName\":\"MedicamentoToTratamientoTemplateItem\",\"relationFromFields\":[\"medicamentoId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[],\"uniqueIndexes\":[],\"isGenerated\":false},\"AplicacionTratamiento\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"animalId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"aplicadoPorId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"fechaAplicacion\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"templateId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"templateSnapshot\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Json\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"notas\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"costoTotalCalculado\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Decimal\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"animal\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Animal\",\"relationName\":\"AnimalToAplicacionTratamiento\",\"relationFromFields\":[\"animalId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"aplicadoPor\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Usuario\",\"relationName\":\"AplicacionOperador\",\"relationFromFields\":[\"aplicadoPorId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"template\",\"kind\":\"object\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"TratamientoTemplate\",\"relationName\":\"AplicacionTratamientoToTratamientoTemplate\",\"relationFromFields\":[\"templateId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"items\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"AplicacionTratamientoItem\",\"relationName\":\"AplicacionTratamientoToAplicacionTratamientoItem\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[],\"uniqueIndexes\":[],\"isGenerated\":false},\"AplicacionTratamientoItem\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"aplicacionId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"medicamentoId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"dosisAplicada\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Decimal\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"unidadDosis\",\"kind\":\"enum\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"UnidadMedida\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"costoPorMedidaMomento\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Decimal\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"costoItemCalculado\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Decimal\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"aplicacion\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"AplicacionTratamiento\",\"relationName\":\"AplicacionTratamientoToAplicacionTratamientoItem\",\"relationFromFields\":[\"aplicacionId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"medicamento\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Medicamento\",\"relationName\":\"AplicacionTratamientoItemToMedicamento\",\"relationFromFields\":[\"medicamentoId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[],\"uniqueIndexes\":[],\"isGenerated\":false},\"EstadoComederoConfig\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"organizacionId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"nombre\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"orden\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"Int\",\"default\":0,\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"color\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"activo\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"Boolean\",\"default\":true,\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"DateTime\",\"isGenerated\":false,\"isUpdatedAt\":true},{\"name\":\"organizacion\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Organizacion\",\"relationName\":\"EstadoComederoConfigToOrganizacion\",\"relationFromFields\":[\"organizacionId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"lecturas\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"LecturaComedor\",\"relationName\":\"EstadoComederoConfigToLecturaComedor\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[[\"organizacionId\",\"nombre\"]],\"uniqueIndexes\":[{\"name\":null,\"fields\":[\"organizacionId\",\"nombre\"]}],\"isGenerated\":false},\"LecturaComedor\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"corralId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"estadoConfigId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"registradoPorId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"fechaLectura\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"notas\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"corral\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Corral\",\"relationName\":\"CorralToLecturaComedor\",\"relationFromFields\":[\"corralId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"estadoConfig\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"EstadoComederoConfig\",\"relationName\":\"EstadoComederoConfigToLecturaComedor\",\"relationFromFields\":[\"estadoConfigId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"registradoPor\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Usuario\",\"relationName\":\"LecturaRegistrador\",\"relationFromFields\":[\"registradoPorId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[],\"uniqueIndexes\":[],\"isGenerated\":false},\"RacionDefinicion\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"corralId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"definidaPorId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"cantidadKgManana\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Decimal\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"cantidadKgTarde\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Decimal\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"descripcion\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"fechaInicio\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"fechaFin\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"DateTime\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"activa\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"Boolean\",\"default\":true,\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"DateTime\",\"isGenerated\":false,\"isUpdatedAt\":true},{\"name\":\"corral\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Corral\",\"relationName\":\"CorralToRacionDefinicion\",\"relationFromFields\":[\"corralId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"definidaPor\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Usuario\",\"relationName\":\"RacionDefinidor\",\"relationFromFields\":[\"definidaPorId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"surtidos\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"SurtidoRacion\",\"relationName\":\"RacionDefinicionToSurtidoRacion\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[],\"uniqueIndexes\":[],\"isGenerated\":false},\"SurtidoRacion\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"corralId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"racionDefinicionId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"surtidoPorId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"turno\",\"kind\":\"enum\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"TurnoRacion\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"fechaSurtido\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"cantidadDefinida\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Decimal\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"cantidadSurtida\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Decimal\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"diferencia\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Decimal\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"notas\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"corral\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Corral\",\"relationName\":\"CorralToSurtidoRacion\",\"relationFromFields\":[\"corralId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"racionDefinicion\",\"kind\":\"object\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"RacionDefinicion\",\"relationName\":\"RacionDefinicionToSurtidoRacion\",\"relationFromFields\":[\"racionDefinicionId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"surtidoPor\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Usuario\",\"relationName\":\"SurtidoOperador\",\"relationFromFields\":[\"surtidoPorId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[],\"uniqueIndexes\":[],\"isGenerated\":false},\"Usuario\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"organizacionId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"nombre\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"apellido\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"email\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":true,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"passwordHash\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"tipo\",\"kind\":\"enum\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"TipoUsuario\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"activo\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"Boolean\",\"default\":true,\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"ultimoAcceso\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"DateTime\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"DateTime\",\"isGenerated\":false,\"isUpdatedAt\":true},{\"name\":\"organizacion\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Organizacion\",\"relationName\":\"OrganizacionToUsuario\",\"relationFromFields\":[\"organizacionId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"actividades\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"UsuarioActividad\",\"relationName\":\"UsuarioToUsuarioActividad\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"gruposCorrales\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"UsuarioGrupoCorrales\",\"relationName\":\"UsuarioToUsuarioGrupoCorrales\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"lotesCreados\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Lote\",\"relationName\":\"LoteCreador\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"animalesCreados\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Animal\",\"relationName\":\"AnimalCreador\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"asignacionesCreadas\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"AsignacionAreteBlanco\",\"relationName\":\"AsignacionCreador\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"asignacionesLiberadas\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"AsignacionAreteBlanco\",\"relationName\":\"AsignacionLiberador\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"unidadesIngresadas\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"UnidadMedicamento\",\"relationName\":\"UnidadIngresador\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"salidasComoMedico\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"SalidaTemporal\",\"relationName\":\"SalidaMedico\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"salidasAutorizadas\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"SalidaTemporal\",\"relationName\":\"SalidaAutorizador\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"bajasRegistradas\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"BajaMedicamento\",\"relationName\":\"BajaRegistrador\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"templatesCreados\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"TratamientoTemplate\",\"relationName\":\"TemplateCreador\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"aplicaciones\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"AplicacionTratamiento\",\"relationName\":\"AplicacionOperador\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"lecturasComedor\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"LecturaComedor\",\"relationName\":\"LecturaRegistrador\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"racionesDefinidas\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"RacionDefinicion\",\"relationName\":\"RacionDefinidor\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"surtidos\",\"kind\":\"object\",\"isList\":true,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"SurtidoRacion\",\"relationName\":\"SurtidoOperador\",\"relationFromFields\":[],\"relationToFields\":[],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[],\"uniqueIndexes\":[],\"isGenerated\":false},\"UsuarioActividad\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"usuarioId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"actividad\",\"kind\":\"enum\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"ActividadUsuario\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"usuario\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Usuario\",\"relationName\":\"UsuarioToUsuarioActividad\",\"relationFromFields\":[\"usuarioId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[[\"usuarioId\",\"actividad\"]],\"uniqueIndexes\":[{\"name\":null,\"fields\":[\"usuarioId\",\"actividad\"]}],\"isGenerated\":false},\"UsuarioGrupoCorrales\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"usuarioId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"grupoCorralesId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":true,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"usuario\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Usuario\",\"relationName\":\"UsuarioToUsuarioGrupoCorrales\",\"relationFromFields\":[\"usuarioId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"grupoCorrales\",\"kind\":\"object\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"GrupoCorrales\",\"relationName\":\"GrupoCorralesToUsuarioGrupoCorrales\",\"relationFromFields\":[\"grupoCorralesId\"],\"relationToFields\":[\"id\"],\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[[\"usuarioId\",\"grupoCorralesId\"]],\"uniqueIndexes\":[{\"name\":null,\"fields\":[\"usuarioId\",\"grupoCorralesId\"]}],\"isGenerated\":false},\"AuditLog\":{\"dbName\":null,\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":true,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"String\",\"default\":{\"name\":\"cuid\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"usuarioId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"entidad\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"entidadId\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"accion\",\"kind\":\"enum\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"AccionAudit\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"datosAnteriores\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Json\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"datosNuevos\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"Json\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"ipAddress\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":false,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":false,\"type\":\"String\",\"isGenerated\":false,\"isUpdatedAt\":false},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"isList\":false,\"isRequired\":true,\"isUnique\":false,\"isId\":false,\"isReadOnly\":false,\"hasDefaultValue\":true,\"type\":\"DateTime\",\"default\":{\"name\":\"now\",\"args\":[]},\"isGenerated\":false,\"isUpdatedAt\":false}],\"primaryKey\":null,\"uniqueFields\":[],\"uniqueIndexes\":[],\"isGenerated\":false}},\"enums\":{\"TipoUsuario\":{\"values\":[{\"name\":\"SUPERUSUARIO\",\"dbName\":null},{\"name\":\"ADMIN\",\"dbName\":null},{\"name\":\"DIRECTOR\",\"dbName\":null},{\"name\":\"OPERADOR\",\"dbName\":null}],\"dbName\":null},\"ActividadUsuario\":{\"values\":[{\"name\":\"REGISTRO\",\"dbName\":null},{\"name\":\"TRATAMIENTOS\",\"dbName\":null},{\"name\":\"COMEDEROS\",\"dbName\":null},{\"name\":\"RACIONES\",\"dbName\":null},{\"name\":\"FARMACIA\",\"dbName\":null},{\"name\":\"REPORTES\",\"dbName\":null}],\"dbName\":null},\"SexoAnimal\":{\"values\":[{\"name\":\"MACHO\",\"dbName\":null},{\"name\":\"HEMBRA\",\"dbName\":null}],\"dbName\":null},\"EstadoAnimal\":{\"values\":[{\"name\":\"ACTIVO\",\"dbName\":null},{\"name\":\"EGRESADO\",\"dbName\":null},{\"name\":\"MUERTO\",\"dbName\":null},{\"name\":\"BAJA\",\"dbName\":null}],\"dbName\":null},\"PresentacionMedicamento\":{\"values\":[{\"name\":\"FRASCO\",\"dbName\":null},{\"name\":\"AMPOLLETA\",\"dbName\":null},{\"name\":\"TABLETA\",\"dbName\":null},{\"name\":\"SOBRE\",\"dbName\":null},{\"name\":\"TUBO\",\"dbName\":null},{\"name\":\"JERINGA\",\"dbName\":null},{\"name\":\"OTRO\",\"dbName\":null}],\"dbName\":null},\"UnidadMedida\":{\"values\":[{\"name\":\"ML\",\"dbName\":null},{\"name\":\"L\",\"dbName\":null},{\"name\":\"GR\",\"dbName\":null},{\"name\":\"KG\",\"dbName\":null},{\"name\":\"TABLETA\",\"dbName\":null},{\"name\":\"UNIDAD\",\"dbName\":null}],\"dbName\":null},\"EstadoUnidadMedicamento\":{\"values\":[{\"name\":\"PRE_INGRESO\",\"dbName\":null},{\"name\":\"DISPONIBLE\",\"dbName\":null},{\"name\":\"SALIDA_TEMPORAL\",\"dbName\":null},{\"name\":\"CONSUMIDO\",\"dbName\":null},{\"name\":\"BAJA\",\"dbName\":null}],\"dbName\":null},\"EstadoRegreso\":{\"values\":[{\"name\":\"REGRESO_CON_CONTENIDO\",\"dbName\":null},{\"name\":\"REGRESO_VACIO\",\"dbName\":null}],\"dbName\":null},\"TipoBajaMedicamento\":{\"values\":[{\"name\":\"CONSUMO_CAMPO\",\"dbName\":null},{\"name\":\"CADUCIDAD\",\"dbName\":null},{\"name\":\"PERDIDA\",\"dbName\":null},{\"name\":\"ROBO\",\"dbName\":null},{\"name\":\"DANO\",\"dbName\":null},{\"name\":\"AJUSTE\",\"dbName\":null}],\"dbName\":null},\"EstadoAreteBlanco\":{\"values\":[{\"name\":\"DISPONIBLE\",\"dbName\":null},{\"name\":\"ASIGNADO\",\"dbName\":null}],\"dbName\":null},\"TurnoRacion\":{\"values\":[{\"name\":\"MANANA\",\"dbName\":null},{\"name\":\"TARDE\",\"dbName\":null}],\"dbName\":null},\"CausaEgresoAnimal\":{\"values\":[{\"name\":\"VENTA\",\"dbName\":null},{\"name\":\"MUERTE\",\"dbName\":null},{\"name\":\"TRASLADO\",\"dbName\":null},{\"name\":\"OTRO\",\"dbName\":null}],\"dbName\":null},\"AccionAudit\":{\"values\":[{\"name\":\"CREATE\",\"dbName\":null},{\"name\":\"UPDATE\",\"dbName\":null},{\"name\":\"DELETE\",\"dbName\":null}],\"dbName\":null}},\"types\":{}}")
+defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
+config.engineWasm = undefined
+
+
+const { warnEnvConflicts } = require('./runtime/library.js')
+
+warnEnvConflicts({
+    rootEnvPath: config.relativeEnvPaths.rootEnvPath && path.resolve(config.dirname, config.relativeEnvPaths.rootEnvPath),
+    schemaEnvPath: config.relativeEnvPaths.schemaEnvPath && path.resolve(config.dirname, config.relativeEnvPaths.schemaEnvPath)
+})
+
+const PrismaClient = getPrismaClient(config)
+exports.PrismaClient = PrismaClient
+Object.assign(exports, Prisma)
+
+// file annotations for bundling tools to include these files
+path.join(__dirname, "query_engine-windows.dll.node");
+path.join(process.cwd(), "generated/query_engine-windows.dll.node")
+// file annotations for bundling tools to include these files
+path.join(__dirname, "schema.prisma");
+path.join(process.cwd(), "generated/schema.prisma")

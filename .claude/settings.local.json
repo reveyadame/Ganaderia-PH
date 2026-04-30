@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx claude-code-templates@latest --skill creative-design/frontend-design)",
+      "Bash(npx claude-code-templates@latest --skill development/senior-fullstack)",
+      "Bash(npm --version)",
+      "Bash(pnpm --version)",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(pnpm --filter @ganaderia/web add html5-qrcode)",
+      "Bash(pnpm db:generate)",
+      "Bash(pnpm --filter api exec tsc --noEmit)",
+      "Bash(pnpm --filter web exec tsc --noEmit)",
+      "Bash(pnpm --filter api tsc --noEmit)"
+    ]
+  }
+}
