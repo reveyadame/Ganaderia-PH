@@ -511,7 +511,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\PROYECTOS\\Ganaderia PH\\packages\\database\\generated",
+      "value": "/Users/reveyadame/Desktop/Ganaderia-PH/packages/database/generated",
       "fromEnvVar": null
     },
     "config": {
@@ -520,16 +520,17 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "windows",
+        "value": "darwin",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\PROYECTOS\\Ganaderia PH\\packages\\database\\prisma\\schema.prisma",
+    "sourceFilePath": "/Users/reveyadame/Desktop/Ganaderia-PH/packages/database/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null
+    "rootEnvPath": null,
+    "schemaEnvPath": "../.env"
   },
   "relativePath": "../prisma",
   "clientVersion": "5.22.0",
@@ -538,7 +539,6 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -586,8 +586,8 @@ exports.PrismaClient = PrismaClient
 Object.assign(exports, Prisma)
 
 // file annotations for bundling tools to include these files
-path.join(__dirname, "query_engine-windows.dll.node");
-path.join(process.cwd(), "generated/query_engine-windows.dll.node")
+path.join(__dirname, "libquery_engine-darwin.dylib.node");
+path.join(process.cwd(), "generated/libquery_engine-darwin.dylib.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
 path.join(process.cwd(), "generated/schema.prisma")

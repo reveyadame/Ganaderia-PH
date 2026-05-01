@@ -11,7 +11,27 @@
       "Bash(pnpm db:generate)",
       "Bash(pnpm --filter api exec tsc --noEmit)",
       "Bash(pnpm --filter web exec tsc --noEmit)",
-      "Bash(pnpm --filter api tsc --noEmit)"
+      "Bash(pnpm --filter api tsc --noEmit)",
+      "Bash(docker compose *)",
+      "Bash(curl -s -X POST http://localhost:3001/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@ganaderia.ph\",\"password\":\"Admin1234!\"}')",
+      "Bash(curl -s http://localhost:3001/api/auth/login)",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(pnpm dev *)",
+      "Bash(curl -v -X POST http://localhost:3001/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@ganaderia.ph\",\"password\":\"Admin1234!\"}')",
+      "Bash(curl -s -X POST http://[::1]:3001/api/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@ganaderia.ph\",\"password\":\"Admin1234!\"}')",
+      "Bash(curl -s --noproxy '*' \"http://127.0.0.1:3001/api/auth/login\" -H \"Content-Type: application/json\" --data '{\"email\":\"admin@ganaderia.ph\",\"password\":\"Admin1234!\"}')",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(xargs cat *)",
+      "Bash(pnpm db:migrate)",
+      "Bash(pnpm db:seed)",
+      "Bash(nohup pnpm *)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(node dist/apps/api/src/main.js)",
+      "Bash(pnpm --filter @ganaderia/shared build)",
+      "Bash(curl -s -X POST http://localhost:3001/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@ganaderia.ph\",\"password\":\"Admin1234!\"}')",
+      "Bash(echo \"API PID: $!\")",
+      "Bash(npx nest *)",
+      "Bash(npx claude-code-templates@latest --skill creative-design/ui-ux-pro-max)"
     ]
   }
 }

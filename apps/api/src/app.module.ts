@@ -26,7 +26,7 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor'
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: ['../../.env', '.env'] }),
     PrismaModule,
     AuthModule,
     FarmaciasModule,
