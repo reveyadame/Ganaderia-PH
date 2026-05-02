@@ -189,3 +189,55 @@ El prop `showCamera` (default: `true`) permite desactivar la cámara en contexto
 **Decisión:** `ScanService.resolve()` aplica `codigo.trim().toUpperCase()` antes de cualquier búsqueda.
 
 **Razón:** Los códigos de arete SINIIGA y los códigos de corral son siempre mayúsculas. Los escáneres de cámara y Bluetooth pueden devolver el código en mayúsculas o minúsculas dependiendo del dispositivo. La normalización garantiza consistencia independientemente del hardware.
+
+---
+
+## DEC-014 — Light mode como default (no dark mode)
+**Fecha:** 2026-05-01
+**Estado:** Aprobado e implementado
+
+**Decisión:** El sistema usa light mode como tema por defecto. El `<html>` no tiene clase `dark` al montar. El sistema de tokens HSL soporta dark mode con la clase `.dark` pero no se activa automáticamente.
+
+**Alternativas consideradas:**
+- Dark mode first (original): mejor legibilidad bajo sol directo en campo.
+
+**Razón:** El cliente opera principalmente en oficina y campo con buena iluminación. Light mode se adapta mejor a la mayoría de empresas, genera mayor confianza institucional y es compatible con más contextos de impresión y reportes.
+
+---
+
+## DEC-015 — Sidebar colapsable con persistencia en localStorage
+**Fecha:** 2026-05-01
+**Estado:** Aprobado e implementado
+
+**Decisión:** El sidebar tiene dos estados: expandido (248px, iconos + labels) y colapsado (64px, solo iconos con tooltip nativo via `title`). El estado se persiste en `localStorage` bajo la clave `sidebar-collapsed`. En mobile, el sidebar es siempre un drawer de 248px controlado por un estado `mobileOpen` local.
+
+**Razón:** Usuarios de oficina en desktop necesitan más espacio para tablas y datos; el sidebar colapsado libera ~248px horizontales. El estado persiste para no obligar al usuario a colapsar en cada sesión.
+
+---
+
+## DEC-016 — Plus Jakarta Sans como tipografía principal
+**Fecha:** 2026-05-01
+**Estado:** Aprobado e implementado
+
+**Decisión:** Se reemplazó Inter por Plus Jakarta Sans (400/500/600/700) como fuente principal del sistema. JetBrains Mono permanece para código y aretes.
+
+**Alternativas consideradas:**
+- Inter: demasiado genérico para un producto de software agropecuario moderno.
+- Geist: adecuada pero asociada visualmente a Vercel/Next.js.
+
+**Razón:** Plus Jakarta Sans tiene personalidad geométrica moderna con excelente legibilidad en tamaños pequeños (11–14px) usados en tablas y sidebar. Se diferencia visualmente sin sacrificar profesionalismo. Disponible vía Google Fonts CDN con display: swap.
+
+---
+
+## DEC-017 — Interceptor 401 en API client con redirect automático
+**Fecha:** 2026-05-01
+**Estado:** Aprobado e implementado
+
+**Decisión:** El API client (`lib/api/client.ts`) detecta respuestas HTTP 401 y ejecuta:
+```typescript
+localStorage.removeItem('access_token')
+localStorage.removeItem('ganaderia-auth')
+window.location.replace('/login')
+```
+
+**Razón:** Los JWT tienen TTL. Sin este interceptor, un token expirado dejaba al usuario en el dashboard con todas las queries fallando silenciosamente. El interceptor garantiza que cualquier 401 (token expirado, inválido, o sesión revocada) desencadena un logout limpio y redirección inmediata, sin depender de que el usuario recargue manualmente.

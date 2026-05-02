@@ -5,8 +5,8 @@ Documento de planificación por etapas. Cada etapa tiene entregables concretos, 
 ---
 
 ## Estado actual
-**Fase:** Etapa 7 completada → Iniciando Etapa 8 (Dashboard y Reportes)
-**Última actualización:** 2026-04-30
+**Fase:** Etapa 8 completada → Iniciando Etapa 9 (Testing y Calidad)
+**Última actualización:** 2026-05-01
 
 ---
 
@@ -17,7 +17,7 @@ Documento de planificación por etapas. Cada etapa tiene entregables concretos, 
 - [x] Riesgos técnicos identificados (concurrencia de stock, arete reutilizable, offline)
 - [x] Reglas de negocio documentadas (30+ reglas en `business-rules.md`)
 - [x] Modelo de datos definido (24 modelos Prisma)
-- [x] Decisiones técnicas registradas (10 decisiones en `decisions-log.md`)
+- [x] Decisiones técnicas registradas (`decisions-log.md`)
 - [x] Arquitectura del sistema definida
 - [x] Stack tecnológico confirmado
 
@@ -30,11 +30,10 @@ Documento de planificación por etapas. Cada etapa tiene entregables concretos, 
 - [x] `packages/database` — Prisma schema completo (24 modelos), seed con superusuario y datos base
 - [x] `packages/shared` — Enums, tipos de sesión, tipos de API y Scanner compartidos
 - [x] `apps/api` — NestJS base con auth JWT, 3 guards (JwtAuth/Roles/Actividad), PrismaService global, AuditInterceptor, ExceptionFilter, Swagger en `/api/docs`
-- [x] `apps/web` — Next.js 14 App Router, login funcional, sidebar con permisos, TanStack Query, Zustand, Tailwind dark mode
+- [x] `apps/web` — Next.js 14 App Router, login funcional, sidebar con permisos, TanStack Query, Zustand, Tailwind
 - [x] `docker-compose.yml` — Postgres 16 + Redis 7 para desarrollo
 - [x] `docker-compose.prod.yml` — Stack completo de producción con Nginx
 - [x] `.env.example` documentado
-- [x] Decorador `@Public()` para rutas sin autenticación
 
 ### Criterios cumplidos
 - `pnpm dev` levanta frontend y backend sin errores
@@ -55,7 +54,7 @@ Documento de planificación por etapas. Cada etapa tiene entregables concretos, 
 - [x] `PUT /usuarios/:id/actividades` — asignación transaccional de actividades
 - [x] `PUT /usuarios/:id/grupos-corrales` — asignación transaccional de grupos
 
-#### Frontend — componentes UI base construidos
+#### Frontend — componentes UI base
 - [x] `Button`, `Input`, `Select`, `Badge`, `Dialog`, `ConfirmDialog`
 - [x] `EmptyState`, `PageHeader`, `Skeleton`, `TableSkeleton`, `Toast`
 
@@ -75,137 +74,133 @@ Documento de planificación por etapas. Cada etapa tiene entregables concretos, 
 ### Entregables
 
 #### Backend
-- [x] CRUD Animal — alta, consulta paginada con filtros (grupo, corral, sexo, estado, búsqueda por arete), egreso con causa
-- [x] `PATCH /animales/:id/egreso` — registra causa (VENTA, MUERTE, TRASLADO, OTRO), precio de venta, fecha
+- [x] CRUD Animal — alta, consulta paginada con filtros, egreso con causa
+- [x] `PATCH /animales/:id/egreso` — causa (VENTA, MUERTE, TRASLADO, OTRO), precio de venta, fecha
 - [x] `PATCH /animales/:id/liberar-arete` — solo ADMIN/SUPERUSUARIO
-- [x] CRUD AreteBlanco — alta individual y en lote (`POST /aretes/lote`), `GET /aretes/disponibles`
+- [x] CRUD AreteBlanco — alta individual y en lote, `GET /aretes/disponibles`
 - [x] CRUD Lote — agrupación de llegadas por fecha/procedencia
-- [x] `POST /scan/resolve` — resolución universal: SINIIGA → arete blanco activo → código de corral. Normaliza uppercase, retorna costo acumulado y count de tratamientos
+- [x] `POST /scan/resolve` — resolución universal con normalización uppercase
 
 #### Frontend — componentes de escaneo
-- [x] `BarcodeInput` — captura input de escáner Bluetooth/USB + entrada manual con Enter + botón de cámara integrado
-- [x] `CameraScanner` — overlay pantalla completa con `html5-qrcode` (import dinámico, SSR-safe), cámara trasera (`facingMode: environment`), animación de línea de escaneo, manejo de permisos denegados, vibración háptica al detectar código
-- [x] `ScanResultAnimalCard` — tarjeta reutilizable de resultado de escaneo con aretes, ubicación y costo acumulado
+- [x] `BarcodeInput` — Bluetooth/USB + manual + cámara integrada
+- [x] `CameraScanner` — overlay pantalla completa, SSR-safe, vibración háptica
+- [x] `ScanResultAnimalCard` — tarjeta de resultado reutilizable
 
 #### Frontend — páginas
-- [x] `/animales` — listado con filtros (grupo, corral, sexo, estado), paginación servidor, egreso inline
-- [x] `/animales/nuevo` — registro en 3 pasos: aretes (escaneo cámara/Bluetooth/manual) → datos → ubicación/lote
-- [x] `/animales/[id]` — ficha completa con aretes, datos, costo acumulado destacado, historial de tratamientos
-- [x] `/admin/aretes` — pool de aretes blancos con stats, alta individual/lote, tabla con animal asignado actual
+- [x] `/animales` — listado con filtros y paginación servidor
+- [x] `/animales/nuevo` — registro en 3 pasos
+- [x] `/animales/[id]` — ficha completa con costo acumulado e historial
+- [x] `/admin/aretes` — pool de aretes blancos
 
 ### Criterios cumplidos
-- Operador registra un animal con escaneo desde cámara del teléfono o lector Bluetooth
+- Operador registra animal con escaneo desde cámara o lector Bluetooth
 - La ficha muestra arete blanco actual, SINIIGA, costo acumulado e historial de tratamientos
 - Admin libera arete blanco desde la ficha del animal egresado
-- `/scan/resolve` normaliza el código a mayúsculas y busca en SINIIGA → arete blanco activo → corral
 
 ---
 
 ## Etapa 5 — Módulo de Farmacia e Inventario ✅ COMPLETADO
-**Dependencia:** Etapa 3
-**Estado:** ✅ COMPLETADO
 
 ### Entregables
 
 #### Backend
-- [x] CRUD Medicamento — `MedicamentosModule`: catálogo por farmacia con nombre, presentación, volumen, unidad, stock mínimo; soft delete; validación de duplicado por nombre en misma farmacia
-- [x] Alta de `UnidadMedicamento` — `POST /inventario/alta`: calcula `costoPorMedida = costoUnitario / volumenPresentacion`; si hay DISPONIBLES del mismo medicamento → entra como PRE_INGRESO (FIFO) — BR-FA-002
-- [x] Promoción automática PRE_INGRESO → DISPONIBLE — `promoverPreIngreso()` se ejecuta al cambiar unidad a CONSUMIDO o BAJA; promueve la unidad PRE_INGRESO más antigua — BR-FA-003
-- [x] `POST /inventario/salidas` — crea `SalidaTemporal`, cambia unidad a SALIDA_TEMPORAL; valida que médico existe y que unidad esté DISPONIBLE
-- [x] `PATCH /inventario/salidas/:id/regreso` — regreso vacío (→ CONSUMIDO) o con contenido (→ DISPONIBLE); dispara promoción si aplica
-- [x] `POST /inventario/bajas` — crea `BajaMedicamento`; justificación obligatoria para AJUSTE, PERDIDA, ROBO, DANO — BR-FA-008
-- [x] `GET /inventario/stock` — resumen de stock por medicamento con conteo de DISPONIBLE/SALIDA_TEMPORAL/PRE_INGRESO y flag `alerta` si `stockOperativo <= stockMinimo`
-- [x] `GET /inventario/unidades` — listado paginado con filtros por medicamento y estado
+- [x] CRUD Medicamento — catálogo por farmacia, soft delete
+- [x] Alta `UnidadMedicamento` — FIFO: PRE_INGRESO si hay DISPONIBLES del mismo medicamento
+- [x] Promoción automática PRE_INGRESO → DISPONIBLE al consumir todas las anteriores
+- [x] `POST /inventario/salidas` — SALIDA_TEMPORAL con validación de médico
+- [x] `PATCH /inventario/salidas/:id/regreso` — regreso vacío (CONSUMIDO) o con contenido (DISPONIBLE)
+- [x] `POST /inventario/bajas` — justificación obligatoria para AJUSTE, PERDIDA, ROBO, DANO
+- [x] `GET /inventario/stock` — resumen con flag `alerta` si `stockOperativo <= stockMinimo`
+- [x] `GET /inventario/unidades` — listado paginado con filtros
 
 #### Frontend
-- [x] `/farmacia` — overview: selector de farmacia, KPI cards (medicamentos, disponibles, en campo, alertas), accesos rápidos, tabla de stock por medicamento
-- [x] `/farmacia/medicamentos` — CRUD completo: tabla con stock inline, modal de alta/edición, confirmación de soft delete
-- [x] `/farmacia/inventario` — listado de unidades con filtro por medicamento/estado, modal de alta con cálculo de costo/medida en tiempo real, modal de baja con justificación condicional
-- [x] `/farmacia/salidas` — listado de salidas con filtro abierta/cerrada, modal de nueva salida (selección de medicamento → unidad disponible → médico), modal de regreso con selector visual vacío/con contenido
+- [x] `/farmacia` — overview con KPI cards y accesos rápidos
+- [x] `/farmacia/medicamentos` — CRUD completo
+- [x] `/farmacia/inventario` — listado de unidades, modal de alta con cálculo costo/medida en tiempo real, modal de baja
+- [x] `/farmacia/salidas` — salidas temporales y regresos
 
 ### Criterios cumplidos
-- Alta de unidad con stock existente → entra como PRE_INGRESO (verificado en aviso UI)
-- Al consumir todas las unidades anteriores → PRE_INGRESO promovido automáticamente a DISPONIBLE
-- Justificación requerida para AJUSTE, PERDIDA, ROBO, DANO — validado en backend y frontend
-- Las alertas de stock mínimo aparecen en el overview de farmacia
+- Alta con stock existente → entra como PRE_INGRESO (aviso en UI)
+- Al consumir todas las anteriores → PRE_INGRESO promovido automáticamente
+- Justificación requerida para AJUSTE, PERDIDA, ROBO, DANO
 
 ---
 
 ## Etapa 6 — Módulo de Tratamientos ✅ COMPLETADO
-**Dependencia:** Etapas 4 y 5
-**Estado:** ✅ COMPLETADO
 
 ### Entregables
 
 #### Backend
-- [x] CRUD `TratamientoTemplate` (kits con items: medicamento + dosis + unidad + orden) — `POST/GET/PUT/DELETE /tratamiento-templates`
-- [x] Registro de `AplicacionTratamiento` — por kit (snapshot JSON inmutable) o individual, costo FIFO de unidad más antigua (DISPONIBLE/SALIDA_TEMPORAL) de la farmacia del GrupoCorrales del animal
-- [x] `POST /tratamientos/preview-costo` — costo estimado antes de confirmar (retorna `sinStock: true` si no hay unidad disponible)
+- [x] CRUD `TratamientoTemplate` (kits con items: medicamento + dosis + unidad + orden)
+- [x] Registro de `AplicacionTratamiento` — por kit (snapshot JSON inmutable) o individual, costo FIFO
+- [x] `POST /tratamientos/preview-costo` — costo estimado antes de confirmar (`sinStock: true` si no hay unidad)
 - [x] `GET /tratamientos?animalId=` — historial de tratamientos de un animal
 
 #### Frontend
-- [x] `/admin/tratamientos/kits` — CRUD de kits: listado de cards, modal crear/editar con selector farmacia→medicamento→dosis, soft delete
-- [x] `/tratamientos` — pantalla de aplicación mobile-first en 4 pasos: scan → selección (kit o individual) → preview costo → éxito
-- [x] Sidebar actualizado: "Kits de tratamiento" en ADMINISTRACIÓN
+- [x] `/admin/tratamientos/kits` — CRUD de kits (cards + modal con selector farmacia→medicamento→dosis)
+- [x] `/tratamientos` — aplicación mobile-first en 4 pasos: scan → selección → preview costo → éxito
 
 ### Criterios cumplidos
 - Operador escanea arete, selecciona kit y confirma en ≤3 taps
-- El costo calculado usa precio FIFO de la farmacia asignada al corral del animal
-- Cambios futuros al kit no afectan tratamientos históricos (snapshot inmutable en `templateSnapshot` JSON)
+- Costo calculado usa precio FIFO de la farmacia asignada al corral del animal
+- Snapshot inmutable en `templateSnapshot` JSON
 
 ---
 
 ## Etapa 7 — Módulo de Comederos y Raciones ✅ COMPLETADO
-**Dependencia:** Etapa 4
-**Estado:** ✅ COMPLETADO
 
 ### Entregables
 
 #### Backend
-- [x] CRUD `EstadoComederoConfig` — catálogo por organización (nombre, orden, color hex). Soft delete si tiene lecturas (BR-CO-003)
-- [x] Registro de `LecturaComedor` — cualitativa: corral + estadoConfigId + notas. Valida estado activo y organización
-- [x] CRUD `RacionDefinicion` — `POST /raciones/definir` cierra la activa anterior automáticamente (BR-RA-001)
-- [x] Registro de `SurtidoRacion` — `POST /raciones/surtir`: turno MANANA|TARDE, resuelve ración activa, copia cantidadDefinida, calcula diferencia (BR-RA-004, BR-RA-005)
-- [x] `GET /comederos/estado-actual?grupoCorralesId=` — última lectura + ración activa de cada corral del grupo
-- [x] `/scan/resolve` extendido — retorna `racionActiva` (cantidadKgManana + cantidadKgTarde) y `ultimaLectura` al escanear corral
+- [x] CRUD `EstadoComederoConfig` — catálogo por organización con color hex, orden. Soft delete si tiene lecturas
+- [x] Registro de `LecturaComedor` — corral + estadoConfigId + notas
+- [x] CRUD `RacionDefinicion` — `POST /raciones/definir` cierra la activa anterior automáticamente
+- [x] Registro de `SurtidoRacion` — turno MANANA|TARDE, ración activa, copia cantidadDefinida, calcula diferencia
+- [x] `GET /comederos/estado-actual?grupoCorralesId=` — última lectura + ración activa de cada corral
+- [x] `/scan/resolve` extendido — retorna `racionActiva` y `ultimaLectura` al escanear corral
 
 #### Frontend
-- [x] `/admin/comederos/estados` — CRUD: color picker con paleta + hex custom, orden configurable
-- [x] `/comederos` — scan de corral → botones grandes coloreados por estado → confirmación (≤2 taps); dashboard grilla coloreada por GrupoCorrales abajo
-- [x] `/raciones` — landing con dos opciones: Surtir y Definir
-- [x] `/raciones/definir` — admin selecciona grupo/corral, total kg con slider 50/50 editable, barra visual, alerta de ración activa existente
-- [x] `/raciones/surtir` — operador escanea corral → turno sugerido por hora (<14:00 MANANA, ≥14:00 TARDE), cantidad preset, diferencia calculada
+- [x] `/admin/comederos/estados` — CRUD con color picker (paleta + hex custom) y orden configurable
+- [x] `/comederos` — scan de corral → botones grandes coloreados → confirmación (≤2 taps); grilla del grupo
+- [x] `/raciones` — landing con opciones Surtir / Definir
+- [x] `/raciones/definir` — selector grupo/corral, total kg con slider 50/50 editable, barra visual
+- [x] `/raciones/surtir` — scan de corral → turno sugerido por hora → cantidad preset → diferencia calculada
 
 ### Criterios cumplidos
-- Admin configura estados con colores y el operador los ve como botones de colores al escanear
-- Lectura y surtido son independientes (diferentes rutas, diferentes actividades de acceso)
-- Admin define 50/50 por defecto, ajustable; barra visual muestra distribución
+- Admin configura estados con colores; operador los ve como botones de colores
 - Operador escanea → ve turno sugerido + cantidad → diferencia calculada en tiempo real
-- Dashboard grilla muestra todos los corrales de un grupo coloreados según última lectura
+- Dashboard grilla muestra todos los corrales del grupo coloreados por última lectura
 
 ---
 
-## Etapa 8 — Dashboard y Reportes
-**Dependencia:** Etapas 4–7
+## Etapa 8 — Dashboard, Reportes y UI/UX ✅ COMPLETADO
 
 ### Entregables
 
 #### Backend
-- [ ] Endpoint de KPIs (caché Redis TTL 5 min): animales activos, costo promedio, stock crítico, tratamientos recientes
-- [ ] Reporte: costo acumulado por animal (paginado, filtrable)
-- [ ] Reporte: stock actual de farmacia
-- [ ] Reporte: historial de tratamientos por período/animal/corral
-- [ ] Reporte: consumo de comedero por corral y período
-- [ ] Reporte: diferencias de surtido de ración
+- [x] Endpoint de KPIs con caché (animalesActivos, costoPromedioAnimal, costoTotalAcumulado, stockCrítico, tratamientosHoy, tratamientosÚltimos7días)
+- [x] `GET /dashboard/tratamientos-por-dia?dias=30` — datos de gráfica de área
+- [x] `GET /dashboard/resumen-grupos` — resumen por GrupoCorrales con conteo de corrales y animales activos
+- [x] Reportes: costo por animal, historial de tratamientos por período/animal/corral
+- [x] `GET /reportes/stock-critico` — medicamentos bajo stock mínimo
 
 #### Frontend
-- [ ] Dashboard KPI cards + gráficas (Recharts)
-- [ ] Tabla de costo por animal (drill-down a ficha)
-- [ ] Alertas de stock mínimo destacadas
+- [x] Dashboard con 6 KPI cards (iconos con colores semánticos), alerta de stock crítico, gráfica de área 30 días, resumen por grupos, quick links
+- [x] Tablas de reportes: costo por animal (drill-down a ficha), historial tratamientos
 
-### Criterios de aceptación
+#### UI/UX — Rediseño completo
+- [x] Sistema de tokens HSL semánticos (light mode default, dark mode disponible)
+- [x] Tipografía: Plus Jakarta Sans como fuente principal
+- [x] Color accent índigo para estados activos (sidebar, KPI chips)
+- [x] Sidebar colapsable (248px ↔ 64px) con persistencia en localStorage
+- [x] Responsive: mobile drawer + topbar con hamburger, grids adaptativos
+- [x] Interceptor 401 en API client → limpia sesión y redirige a login automáticamente
+
+### Criterios cumplidos
 - Director ve dashboard consolidado de todos los grupos de corrales
-- Puede profundizar desde KPI → grupo → corral → animal individual
+- KPI cards visibles con iconos diferenciados por color semántico
+- Sidebar colapsa a iconos en desktop; drawer en mobile
+- Aplicación completamente usable en móvil
 
 ---
 

@@ -28,6 +28,12 @@ async function request<T>(
   })
 
   if (!response.ok) {
+    if (response.status === 401 && typeof window !== 'undefined') {
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('ganaderia-auth')
+      window.location.replace('/login')
+      return undefined as T
+    }
     const error = await response.json().catch(() => ({ message: 'Error de red' }))
     throw new ApiError(response.status, error.message ?? 'Error desconocido')
   }

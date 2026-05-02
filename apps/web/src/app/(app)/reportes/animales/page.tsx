@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -15,6 +15,8 @@ import { Button } from '@/components/ui/button'
 import { Skeleton, TableSkeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Badge } from '@/components/ui/badge'
+import { useAuthStore } from '@/stores/auth.store'
+import { ActividadUsuario, TipoUsuario } from '@ganaderia/shared'
 
 function formatMXN(val: number) {
   return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(val)
@@ -22,6 +24,13 @@ function formatMXN(val: number) {
 
 export default function ReporteAnimalesPage() {
   const router = useRouter()
+  const { usuario } = useAuthStore()
+  const hasAccess = usuario?.tipo === TipoUsuario.SUPERUSUARIO
+    || (usuario?.actividades.includes(ActividadUsuario.REPORTES) ?? false)
+
+  useEffect(() => {
+    if (usuario && !hasAccess) router.replace('/dashboard')
+  }, [usuario, hasAccess, router])
   const [grupoCorralesId, setGrupoCorralesId] = useState('')
   const [corralId, setCorralId] = useState('')
   const [busqueda, setBusqueda] = useState('')

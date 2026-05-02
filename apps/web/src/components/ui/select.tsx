@@ -20,9 +20,9 @@ export function Select({ label, error, hint, options, placeholder, className, id
   return (
     <div className="space-y-1.5">
       {label && (
-        <label htmlFor={selectId} className="block text-sm font-medium text-foreground">
+        <label htmlFor={selectId} className="block text-[13px] font-medium text-foreground">
           {label}
-          {props.required && <span className="text-red-500 ml-1">*</span>}
+          {props.required && <span className="text-danger ml-0.5">*</span>}
         </label>
       )}
       <div className="relative">
@@ -30,11 +30,14 @@ export function Select({ label, error, hint, options, placeholder, className, id
           id={selectId}
           {...props}
           className={cn(
-            'w-full h-9 pl-3 pr-8 rounded-md border bg-background text-sm text-foreground appearance-none',
-            'focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent',
-            'disabled:opacity-50 disabled:cursor-not-allowed',
-            'transition-all',
-            error ? 'border-red-500' : 'border-border',
+            'w-full h-9 pl-3 pr-9 rounded-md border bg-surface text-sm text-foreground appearance-none cursor-pointer',
+            'shadow-xs',
+            'transition-[border,box-shadow] duration-150 ease-out',
+            'focus:outline-none focus:border-brand/40 focus:shadow-focus',
+            'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-muted',
+            error
+              ? 'border-danger focus:border-danger'
+              : 'border-border hover:border-border-strong',
             className,
           )}
         >
@@ -45,7 +48,7 @@ export function Select({ label, error, hint, options, placeholder, className, id
         </select>
         <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
       </div>
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-danger">{error}</p>}
       {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
     </div>
   )

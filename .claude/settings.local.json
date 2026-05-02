@@ -31,7 +31,13 @@
       "Bash(curl -s -X POST http://localhost:3001/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@ganaderia.ph\",\"password\":\"Admin1234!\"}')",
       "Bash(echo \"API PID: $!\")",
       "Bash(npx nest *)",
-      "Bash(npx claude-code-templates@latest --skill creative-design/ui-ux-pro-max)"
+      "Bash(npx claude-code-templates@latest --skill creative-design/ui-ux-pro-max)",
+      "Bash(python3 /Users/reveyadame/Desktop/Ganaderia-PH/.claude/skills/ui-ux-pro-max/scripts/search.py \"professional ERP dashboard cattle livestock management neutral light clean enterprise\" --design-system -p \"Ganaderia PH\")",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/login)",
+      "Bash(curl -s http://localhost:3000/login)",
+      "Bash(curl -s -o /dev/null -w \"Login: %{http_code}\\\\nDashboard: %{http_code}\\\\n\" http://localhost:3000/login -w \"\" http://localhost:3000/dashboard)",
+      "Bash(pnpm --filter web build)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")"
     ]
   }
 }

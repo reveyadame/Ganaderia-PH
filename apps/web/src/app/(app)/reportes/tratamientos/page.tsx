@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight, Syringe } from 'lucide-react'
@@ -11,6 +11,8 @@ import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { TableSkeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/ui/empty-state'
+import { useAuthStore } from '@/stores/auth.store'
+import { ActividadUsuario, TipoUsuario } from '@ganaderia/shared'
 
 function formatMXN(val: number) {
   return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 2 }).format(val)
@@ -24,6 +26,13 @@ const RANGOS = [
 
 export default function ReporteTratamientosPage() {
   const router = useRouter()
+  const { usuario } = useAuthStore()
+  const hasAccess = usuario?.tipo === TipoUsuario.SUPERUSUARIO
+    || (usuario?.actividades.includes(ActividadUsuario.REPORTES) ?? false)
+
+  useEffect(() => {
+    if (usuario && !hasAccess) router.replace('/dashboard')
+  }, [usuario, hasAccess, router])
   const [grupoCorralesId, setGrupoCorralesId] = useState('')
   const [dias, setDias] = useState('30')
   const [page, setPage] = useState(1)

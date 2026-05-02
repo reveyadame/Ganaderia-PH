@@ -2,40 +2,60 @@ import { cn } from '@/lib/utils'
 import { Loader2 } from 'lucide-react'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'destructive' | 'ghost'
+  variant?: 'primary' | 'secondary' | 'outline' | 'destructive' | 'ghost'
   size?: 'sm' | 'md' | 'lg' | 'icon'
   loading?: boolean
 }
 
 const variants = {
-  primary: 'bg-brand hover:bg-brand-hover text-white',
-  secondary: 'border border-border bg-surface hover:bg-muted text-foreground',
-  destructive: 'bg-red-600 hover:bg-red-700 text-white',
-  ghost: 'hover:bg-muted text-muted-foreground hover:text-foreground',
+  primary:
+    'bg-brand text-brand-foreground hover:bg-brand-hover shadow-sm ' +
+    'border border-brand/0 hover:border-brand/0',
+  secondary:
+    'bg-surface text-foreground border border-border hover:bg-muted hover:border-border-strong shadow-xs',
+  outline:
+    'bg-transparent text-foreground border border-border hover:bg-muted',
+  destructive:
+    'bg-danger text-white hover:bg-danger/90 shadow-xs',
+  ghost:
+    'text-muted-foreground hover:text-foreground hover:bg-muted',
 }
 
 const sizes = {
-  sm: 'h-7 px-3 text-xs rounded-md gap-1.5',
-  md: 'h-9 px-4 text-sm rounded-md gap-2',
+  sm: 'h-8 px-3 text-xs rounded-md gap-1.5',
+  md: 'h-9 px-3.5 text-sm rounded-md gap-2',
   lg: 'h-10 px-5 text-sm rounded-lg gap-2',
-  icon: 'h-8 w-8 rounded-md',
+  icon: 'h-9 w-9 rounded-md',
 }
 
-export function Button({ variant = 'primary', size = 'md', loading, className, children, disabled, ...props }: ButtonProps) {
+export function Button({
+  variant = 'primary',
+  size = 'md',
+  loading,
+  className,
+  children,
+  disabled,
+  ...props
+}: ButtonProps) {
   return (
     <button
       {...props}
       disabled={disabled || loading}
       className={cn(
-        'inline-flex items-center justify-center font-medium transition-colors',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1',
-        'disabled:opacity-50 disabled:cursor-not-allowed',
+        'inline-flex items-center justify-center font-medium select-none cursor-pointer',
+        'transition-[background,border,color,box-shadow,transform] duration-150 ease-out',
+        'active:scale-[0.98]',
+        'focus-visible:outline-none focus-visible:shadow-focus',
+        'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
+        'whitespace-nowrap',
         variants[variant],
         sizes[size],
         className,
       )}
     >
-      {loading && <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />}
+      {loading && (
+        <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin shrink-0" />
+      )}
       {children}
     </button>
   )

@@ -2,120 +2,121 @@
 
 Guía de referencia visual y de componentes. Todo el frontend debe seguir estas especificaciones para garantizar consistencia total.
 
-**Referencia estética:** Linear, Vercel Dashboard, Stripe, Clerk.
-**Filosofía:** SaaS empresarial moderno. Limpio, denso en información sin ser abrumador, preparado para uso en campo (móvil) y en oficina (desktop).
-**Estado:** Tokens definidos. Componentes UI base implementados. Componentes de escaneo implementados.
+**Referencia estética:** Linear, Vercel Dashboard, Stripe.
+**Filosofía:** SaaS empresarial moderno. Light mode como default. Limpio, denso en información sin ser abrumador, totalmente responsivo para uso en campo (móvil) y en oficina (desktop).
+**Estado:** Sistema de tokens HSL implementado. Componentes UI base completos. Sidebar colapsable y responsivo. Tipografía Plus Jakarta Sans.
 
 ---
 
 ## Tokens de Diseño
 
-### Paleta de colores
+### Paleta de colores (HSL variables)
 
 ```css
 :root {
-  /* Base — dark mode first (primario en campo) */
-  --background:        #0a0a0a;
-  --background-subtle: #111111;
-  --surface:           #161616;
-  --surface-raised:    #1c1c1c;
-  --border:            #2a2a2a;
-  --border-strong:     #383838;
+  /* Superficies */
+  --background:        0 0% 99%;
+  --foreground:        222 13% 11%;
+  --surface:           0 0% 100%;
+  --surface-raised:    0 0% 100%;
+  --surface-sunken:    220 14% 97%;
 
-  /* Texto */
-  --text-primary:      #ededed;
-  --text-secondary:    #a1a1a1;
-  --text-tertiary:     #6b6b6b;
-  --text-disabled:     #444444;
+  /* Bordes */
+  --border:            220 13% 91%;
+  --border-strong:     220 12% 84%;
 
-  /* Brand */
-  --brand:             #16a34a;   /* verde — agro, salud, positivo */
-  --brand-hover:       #15803d;
-  --brand-subtle:      #052e16;
-  --brand-foreground:  #ffffff;
+  /* Muted (hover, UI sutil) */
+  --muted:             220 14% 96%;
+  --muted-foreground:  220 9% 38%;
+
+  /* Brand — charcoal neutro (agnóstico a industria) */
+  --brand:             222 20% 14%;
+  --brand-hover:       222 18% 22%;
+  --brand-subtle:      220 14% 96%;
+  --brand-foreground:  0 0% 100%;
+
+  /* Accent — índigo para estados activos y highlights */
+  --accent:            237 79% 58%;
+  --accent-subtle:     237 86% 95%;
+  --accent-foreground: 237 79% 42%;
 
   /* Semánticos */
-  --success:           #22c55e;
-  --success-subtle:    #052e16;
-  --warning:           #f59e0b;
-  --warning-subtle:    #1c1400;
-  --danger:            #ef4444;
-  --danger-subtle:     #1f0000;
-  --info:              #3b82f6;
-  --info-subtle:       #0c1a3a;
+  --success:           142 71% 36%;
+  --success-subtle:    142 76% 96%;
+  --success-foreground:142 71% 28%;
 
-  /* Estados de inventario */
-  --estado-disponible:      #22c55e;
-  --estado-pre-ingreso:     #f59e0b;
-  --estado-salida-temporal: #3b82f6;
-  --estado-consumido:       #6b6b6b;
-  --estado-baja:            #ef4444;
+  --warning:           32 95% 44%;
+  --warning-subtle:    48 96% 95%;
+  --warning-foreground:26 84% 32%;
+
+  --danger:            0 72% 51%;
+  --danger-subtle:     0 86% 97%;
+  --danger-foreground: 0 70% 40%;
+
+  --info:              217 91% 50%;
+  --info-subtle:       214 100% 97%;
+  --info-foreground:   224 76% 38%;
 }
 
-/* Light mode (oficina/desktop) */
-[data-theme="light"] {
-  --background:        #ffffff;
-  --background-subtle: #fafafa;
-  --surface:           #f5f5f5;
-  --surface-raised:    #ffffff;
-  --border:            #e5e5e5;
-  --border-strong:     #d4d4d4;
+.dark {
+  --background:        222 20% 7%;
+  --foreground:        220 14% 96%;
+  --surface:           222 18% 10%;
+  --surface-raised:    222 16% 13%;
+  --surface-sunken:    222 22% 5%;
 
-  --text-primary:      #0a0a0a;
-  --text-secondary:    #525252;
-  --text-tertiary:     #a3a3a3;
+  --border:            220 14% 18%;
+  --border-strong:     220 12% 26%;
 
-  --brand-subtle:      #f0fdf4;
+  --muted:             220 14% 14%;
+  --muted-foreground:  220 9% 64%;
+
+  --brand:             0 0% 98%;
+  --brand-subtle:      220 14% 14%;
+  --brand-foreground:  222 20% 10%;
+
+  --accent:            237 79% 70%;
+  --accent-subtle:     237 50% 18%;
+  --accent-foreground: 237 79% 84%;
+
+  /* (semánticos con mayor luminosidad en dark) */
 }
 ```
+
+Todos los tokens están configurados en `tailwind.config.ts` como colores semánticos con prefijos:
+`brand`, `surface`, `border`, `muted`, `accent`, `success`, `warning`, `danger`, `info`.
 
 ### Tipografía
 
-```css
-/* Display / Headlines */
-font-family: 'Geist', 'Inter', system-ui, sans-serif;
+```
+Fuente principal:  Plus Jakarta Sans (400/500/600/700)
+Fuente mono:       JetBrains Mono (códigos de arete, IDs)
 
-/* Monospace (códigos de arete, IDs) */
-font-family: 'Geist Mono', 'JetBrains Mono', monospace;
-
-/* Escala tipográfica */
---text-xs:   0.75rem;   /* 12px — labels, badges */
---text-sm:   0.875rem;  /* 14px — body secundario, tabla */
---text-base: 1rem;      /* 16px — body principal */
---text-lg:   1.125rem;  /* 18px — subtítulos */
---text-xl:   1.25rem;   /* 20px — títulos de sección */
---text-2xl:  1.5rem;    /* 24px — títulos de página */
---text-3xl:  1.875rem;  /* 30px — KPIs grandes */
+Variable CSS: --font-geist-sans (mantiene compatibilidad con clases Tailwind)
 ```
 
-### Espaciado
-
-```css
-/* Sistema de 4px */
---space-1:  0.25rem;   /* 4px */
---space-2:  0.5rem;    /* 8px */
---space-3:  0.75rem;   /* 12px */
---space-4:  1rem;      /* 16px */
---space-5:  1.25rem;   /* 20px */
---space-6:  1.5rem;    /* 24px */
---space-8:  2rem;      /* 32px */
---space-10: 2.5rem;    /* 40px */
---space-12: 3rem;      /* 48px */
---space-16: 4rem;      /* 64px */
+**Escala tipográfica usada en la app:**
+```
+text-[10.5px]  — labels de sección en sidebar, badges
+text-[11px]    — metadata, timestamps, ayuda
+text-[12px]    — texto secundario, subtexto
+text-[13px]    — body principal, nav items, descripciones
+text-[14px]    — encabezados de tarjeta
+text-[26px]    — valores KPI (tabular-nums, font-bold)
 ```
 
 ### Radios y sombras
 
-```css
---radius-sm:  4px;
---radius-md:  8px;
---radius-lg:  12px;
---radius-xl:  16px;
---radius-full: 9999px;
+```
+Radios:   sm=6px, md=8px, lg=10px, xl=14px, 2xl=20px
+Sombras:  xs, sm, md, lg, xl, focus (0 0 0 3px accent/12%)
+```
 
---shadow-sm:  0 1px 2px rgba(0,0,0,0.3);
---shadow-md:  0 4px 6px rgba(0,0,0,0.4);
---shadow-lg:  0 10px 15px rgba(0,0,0,0.5);
+### Animaciones
+
+```
+fade-in, slide-up, slide-down, scale-in  — 150–240ms cubic-bezier(0.16,1,0.3,1)
+shimmer                                  — skeleton loading 2s linear infinite
 ```
 
 ---
@@ -125,308 +126,198 @@ font-family: 'Geist Mono', 'JetBrains Mono', monospace;
 ### Shell de la aplicación
 
 ```
-┌──────────────────────────────────────────────┐
-│ Sidebar (240px fijo desktop / drawer mobile) │
-│ ┌──────────────────────────────────────────┐ │
-│ │ Logo + nombre organización               │ │
-│ ├──────────────────────────────────────────┤ │
-│ │ Nav items (agrupados por contexto)       │ │
-│ │                                          │ │
-│ │ OPERACIÓN                                │ │
-│ │  • Dashboard                             │ │
-│ │  • Animales                              │ │
-│ │  • Tratamientos                          │ │
-│ │  • Comederos                             │ │
-│ │  • Raciones                              │ │
-│ │                                          │ │
-│ │ FARMACIA                                 │ │
-│ │  • Medicamentos                          │ │
-│ │  • Inventario                            │ │
-│ │  • Salidas                               │ │
-│ │                                          │ │
-│ │ ADMINISTRACIÓN                           │ │
-│ │  • Corrales                              │ │
-│ │  • Usuarios                              │ │
-│ │  • Configuración                         │ │
-│ ├──────────────────────────────────────────┤ │
-│ │ Alertas de stock (badge rojo si hay)     │ │
-│ │ Avatar + nombre usuario                  │ │
-│ └──────────────────────────────────────────┘ │
-│                                              │
-│ Main content area                            │
-│ ┌──────────────────────────────────────────┐ │
-│ │ Page header: título + acciones primarias │ │
-│ ├──────────────────────────────────────────┤ │
-│ │                                          │ │
-│ │ Contenido de la página                   │ │
-│ │                                          │ │
-│ └──────────────────────────────────────────┘ │
-└──────────────────────────────────────────────┘
+Desktop (sidebar expandido, 248px):
+┌────────────────────────────────────────────────────────┐
+│ Sidebar 248px │ Main content (flex-1, bg-surface-sunken)│
+│ ┌───────────┐ │ ┌──────────────────────────────────────┐│
+│ │ [G] Logo  │ │ │ PageHeader: título + filtros + badge  ││
+│ │     [⊣]   │ │ ├──────────────────────────────────────┤│
+│ ├───────────┤ │ │                                      ││
+│ │ OPERACIÓN │ │ │ Contenido de la página               ││
+│ │ ● Dashboard│ │ │ (max-w-7xl, px-6 lg:px-10, py-8)    ││
+│ │  Animales  │ │ │                                      ││
+│ │  ...       │ │ └──────────────────────────────────────┘│
+│ ├───────────┤ │                                          │
+│ │ [JD] Juan │ │                                          │
+│ │     [⎋]   │ │                                          │
+│ └───────────┘ │                                          │
+└────────────────────────────────────────────────────────┘
+
+Desktop (sidebar colapsado, 64px):
+┌──────────────────────────────────────────────────────────┐
+│  64px  │ Main content (flex-1)                           │
+│ [G]    │                                                 │
+│ [⊢]    │                                                 │
+│ ─────  │                                                 │
+│ [●]    │  (solo iconos, con tooltip al hover)            │
+│ [🐾]   │                                                 │
+│ ...    │                                                 │
+└──────────────────────────────────────────────────────────┘
+
+Mobile (< 768px):
+┌────────────────────────────────┐
+│ [☰] Ganadería PH               │  ← topbar sticky
+├────────────────────────────────┤
+│ Contenido de la página         │
+│ (px-4, py-6, max-w-7xl)        │
+└────────────────────────────────┘
+  ↓ al presionar [☰]
+┌──────────────┬─────────────────┐
+│ Sidebar      │ Overlay oscuro  │
+│ (drawer 248px│ (click cierra)  │
+│  slide-in)   │                 │
+└──────────────┴─────────────────┘
 ```
 
-### Sidebar — solo muestra las secciones a las que el usuario tiene acceso.
+### Sidebar — comportamiento
+
+| Estado | Ancho | Contenido |
+|--------|-------|-----------|
+| Expandido (default) | 248px | Logo + nombre + botón colapsar + grupos de nav con labels + user card completo |
+| Colapsado | 64px | Logo + botón expandir + solo iconos (con `title` para tooltip nativo) + initials + logout |
+| Mobile drawer | 248px | Igual a expandido + botón X para cerrar |
+
+El estado `collapsed` se persiste en `localStorage` bajo la clave `sidebar-collapsed`.
+
+**Active state:** `bg-accent-subtle text-accent-foreground` + barra izquierda `bg-accent`. Los iconos activos usan `text-accent`.
 
 ---
 
-## Componentes Core
+## Componentes UI Base
 
-### Scanner Widget
-El componente más crítico del sistema. Usado en registro, tratamientos, comederos y raciones.
+Todos en `apps/web/src/components/ui/`.
 
-**Comportamiento:**
-- Ocupa el ancho completo en móvil
-- Área de cámara con overlay de targeting (crosshair animado)
-- Input manual alternativo para código (para cuando la cámara falla)
-- Estado visual: `idle | scanning | found | error`
-- Al encontrar: vibración háptica (si disponible) + sonido + flash verde
-- Al fallar: flash rojo + mensaje de error
-
-**Variantes:**
-- `ScannerAnimal` — resuelve a ficha del animal con preview rápido
-- `ScannerCorral` — resuelve a datos del corral con ración activa
-
-### Ficha de Animal (Card)
+### Badge
+```typescript
+variant: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'muted' | 'outline'
+dot?: boolean   // indicador de punto de color
 ```
-┌─────────────────────────────────────────────┐
-│ 🟡 #ES001234567890  🔵 Blanco: A-042        │
-│ MACHO  •  Entrada: 15 mar 2026  •  ACTIVO   │
-│                                             │
-│ Peso entrada: 245 kg                        │
-│ Corral: 12  |  Corrales Matriz              │
-│                                             │
-│ Costo acumulado: $1,240.50                  │
-│ Tratamientos: 3                             │
-└─────────────────────────────────────────────┘
+Casos de uso por variante:
+- `success` → Activo, en orden, stock OK
+- `warning` → Stock bajo mínimo, pendiente
+- `danger` → Error, baja, muerto
+- `info` → Conteos, datos neutros (ej: "3 corrales")
+- `muted` → Tags secundarios
+- `outline` → Sin relleno
+
+### Button
+```typescript
+variant: 'default' | 'outline' | 'ghost' | 'danger'
+size: 'sm' | 'md' | 'lg'
+loading?: boolean  // spinner + disabled automático
 ```
 
-### Tabla de datos
-- Usa TanStack Table
-- Columnas ordenables, filtrables
-- Paginación del lado servidor
-- Skeleton loading (nunca spinner bloqueante)
-- Acción primaria: hover revela botón de acción rápida
-- Selección múltiple con checkbox cuando aplica
+### KPI Card (Dashboard)
+Cada KPI tiene un chip de icono con color semántico:
 
-### Badges de estado
+| KPI | Color chip | Icono |
+|-----|-----------|-------|
+| Animales activos | `info` (azul) | PawPrint |
+| Costo / animal | `success` (verde) | DollarSign |
+| Costo total | `success` (verde) | DollarSign |
+| Stock crítico | `warning` (ámbar) / `default` si OK | Package |
+| Tratamientos hoy | `accent` (índigo) | Syringe |
+| Últimos 7 días | `accent` (índigo) | Syringe |
 
-```
-EstadoAnimal:
-  ACTIVO          → verde sólido
-  EGRESADO        → gris
-  MUERTO          → rojo tenue
-  BAJA            → naranja tenue
-
-EstadoUnidadMedicamento:
-  PRE_INGRESO     → amarillo
-  DISPONIBLE      → verde
-  SALIDA_TEMPORAL → azul
-  CONSUMIDO       → gris
-  BAJA            → rojo
-
-TipoUsuario:
-  SUPERUSUARIO    → púrpura
-  ADMIN           → azul
-  DIRECTOR        → verde tenue
-  OPERADOR        → gris
+Colores de chip definidos en `kpiIconStyles`:
+```typescript
+const kpiIconStyles: Record<KpiColor, string> = {
+  blue:    'bg-info-subtle text-info-foreground border-info/20',
+  green:   'bg-success-subtle text-success-foreground border-success/20',
+  amber:   'bg-warning-subtle text-warning-foreground border-warning/20',
+  purple:  'bg-accent-subtle text-accent-foreground border-accent/20',
+  default: 'bg-muted text-foreground/60 border-border',
+}
 ```
 
-### Formularios
-- Labels siempre arriba del input (no flotantes)
-- Mensajes de error en línea, en rojo, con ícono
-- Botón primario: brand (verde) con estado loading
-- Botón secundario: outline
-- Botón destructivo: rojo
-- Todos los selects y dropdowns usan el componente de shadcn/ui con búsqueda integrada cuando hay >6 opciones
+### PageHeader
+```typescript
+title: string
+description?: string
+action?: ReactNode    // botón o select en la esquina derecha
+meta?: ReactNode      // badge debajo del título
+```
 
-### KPI Cards (Dashboard)
-```
-┌─────────────────────────────┐
-│  Animales Activos           │
-│                             │
-│  1,247          ↑ 23 hoy    │
-│                             │
-│  ████████████░░  87%        │
-│  de capacidad               │
-└─────────────────────────────┘
-```
+### Skeleton / TableSkeleton
+Usa animación `shimmer` (gradiente 200% corriendo). Nunca spinner bloqueante en listas.
+
+### Toast
+Sistema global con `toast('success' | 'error', message)`. Se monta en `<ToastProvider />` en el root layout.
 
 ---
 
-## Patrones de UX por Contexto
+## Componentes de Escaneo (`components/scanner/`)
 
-### UX de Campo (operadores en corrales)
+### BarcodeInput
+Input unificado para escaneo. Modos:
+1. **Teclado** — escáneres Bluetooth/USB que simulan teclado (Enter dispara `onScan`)
+2. **Cámara** — botón abre `CameraScanner` en overlay
 
-Principios:
-- **Taps mínimos:** registro de tratamiento = escanear + confirmar (2 interacciones máximo)
-- **Texto grande:** mínimo 16px en elementos interactivos, preferible 18-20px
-- **Botones grandes:** mínimo 48px de altura para facilitar el toque con guantes
-- **Feedback inmediato:** cada acción responde visualmente en <100ms
-- **Sin modales complejos:** acciones de campo usan pantalla completa o bottom sheet, no modales centrados
-- **Modo oscuro por defecto:** mejor legibilidad bajo sol directo
+### CameraScanner
+Overlay pantalla completa. Import dinámico de `html5-qrcode` dentro de `useEffect` (SSR-safe). Cámara trasera, animación `scanLine`, vibración háptica (`navigator.vibrate(80)`), manejo de permisos denegados.
 
-### UX de Oficina (admins, directores)
-
-Principios:
-- **Densidad de información:** tablas compactas, múltiples secciones en pantalla
-- **Acciones contextuales:** menús de contexto en filas de tabla
-- **Filtros persistentes:** el estado de filtros se guarda en URL params
-- **Shortcuts de teclado:** para operaciones frecuentes (ej: Cmd+K para búsqueda global)
-
-### Estados de carga
-
-```
-Lista/Tabla     → Skeleton rows (nunca spinner)
-Formulario      → Botón con spinner + disabled
-Datos en card   → Skeleton de forma similar a la card
-Scanner         → Overlay animado, no bloquea la cámara
-```
-
-### Errores
-
-```
-Error de red    → Toast no intrusivo + botón "Reintentar"
-Error 404       → Página dedicada con contexto útil
-Error 403       → Mensaje claro de "Sin permiso" (no 404)
-Error 500       → Página de error con ID de referencia
-Validación      → Inline, campo a campo, en tiempo real
-```
-
----
-
-## Componente de Escaneo — Flujo de Tratamiento
-
-Este es el flujo más crítico del sistema. Debe ser impecable.
-
-```
-Pantalla "Aplicar Tratamiento"
-
-1. Estado inicial
-   ┌──────────────────────────────┐
-   │  [Área de cámara activa]     │
-   │         [ + ]                │
-   │  O escribe el código:        │
-   │  [________________] [Buscar] │
-   └──────────────────────────────┘
-
-2. Animal encontrado (flash verde)
-   ┌──────────────────────────────┐
-   │ ✓ Animal identificado        │
-   │ #ES001234  •  Blanco: A-042  │
-   │ MACHO  •  Corral 12          │
-   │ Costo actual: $840.00        │
-   ├──────────────────────────────┤
-   │ Tipo de tratamiento:         │
-   │ ○ Kit predefinido            │
-   │ ○ Medicamento individual     │
-   ├──────────────────────────────┤
-   │ [Kit Inicial ▾]              │
-   │   • Penicilina 10ml          │
-   │   • Ambroxol 20ml            │
-   │   • Analgesico 5ml           │
-   │ Costo estimado: $85.50       │
-   ├──────────────────────────────┤
-   │ [  Cancelar  ] [ ✓ Aplicar ] │
-   └──────────────────────────────┘
-
-3. Confirmación (500ms de feedback)
-   ┌──────────────────────────────┐
-   │  ✓ Tratamiento registrado    │
-   │  #ES001234  •  Kit Inicial   │
-   │  Costo: $85.50               │
-   │                              │
-   │  [Nuevo escaneo]             │
-   └──────────────────────────────┘
-```
-
----
-
-## Animaciones y Micro-interacciones
-
-- **Transiciones de página:** fade + slide sutil (150ms)
-- **Apertura de modales/sheets:** slide desde abajo en móvil (200ms)
-- **Feedback de escáner:** border pulse verde/rojo según resultado
-- **Loading de datos:** skeleton fade-in sincronizado
-- **Success de formulario:** checkmark animado + confetti sutil solo en acciones importantes (alta de animal)
-- **Hover en tabla:** fila se eleva ligeramente con sombra
-
-Todas las animaciones respetan `prefers-reduced-motion`.
+### ScanResultAnimalCard
+Tarjeta de resultado: arete SINIIGA (badge), arete blanco activo, sexo, ubicación (corral + grupo), peso entrada, fecha entrada, costo acumulado.
 
 ---
 
 ## Responsive Breakpoints
 
 ```
-mobile:   < 768px   → Single column, nav en bottom sheet
-tablet:   768-1024px → Sidebar colapsable, 2 columnas
-desktop:  > 1024px  → Sidebar fijo, layout completo
+mobile:   < 768px    → sidebar como drawer, topbar con hamburger, grid 1 col
+tablet:   768-1024px → sidebar visible, grids 2 cols
+desktop:  > 1024px   → sidebar fijo o colapsado, grids 3 cols, px-10
 ```
 
-### Pantallas de campo (mobile-first crítico)
-- Registro de animal
-- Aplicar tratamiento
-- Lectura de comedero
-- Surtido de ración
-
-Estas pantallas se diseñan **primero para móvil** y luego se adaptan para desktop.
-
-### Pantallas de oficina (desktop-first)
-- Dashboard
-- Gestión de farmacia
-- Gestión de usuarios y corrales
-- Reportes
+Grids del dashboard:
+```
+KPI cards:     grid-cols-1 sm:grid-cols-2 lg:grid-cols-3
+Resumen grupos: grid-cols-1 sm:grid-cols-2 lg:grid-cols-3
+Quick links:   grid-cols-1 sm:grid-cols-3
+```
 
 ---
 
-## Componentes de Escaneo Implementados
+## Patrones de UX
 
-### BarcodeInput (`components/scanner/barcode-input.tsx`)
-Componente principal de captura de códigos. Se usa en todos los módulos de campo.
-
-**Props:**
-```typescript
-onScan: (codigo: string) => void   // callback al capturar un código
-loading?: boolean                  // estado de carga (deshabilita input)
-label?: string                     // etiqueta sobre el input
-resetAfterScan?: boolean           // limpia el input después de escanear
-showCamera?: boolean               // muestra botón de cámara (default: true)
+### Estados de carga
+```
+Lista / Tabla  → TableSkeleton (nunca spinner bloqueante)
+KPI card       → Skeleton h-8 w-28
+Formulario     → Button loading + disabled
+Scanner        → Overlay animado, no bloquea cámara
 ```
 
-**Modos de captura:**
-1. **Teclado** — escáneres Bluetooth/USB que simulan teclado. El operador apunta el lector al arete; el código llega como input rápido seguido de Enter.
-2. **Cámara** — botón `Camera` abre `CameraScanner` en overlay pantalla completa.
+### Errores
+```
+Red / 5xx      → Toast 'error' no intrusivo
+401            → clearAuth() + redirect /login automático (API client interceptor)
+404            → Página dedicada con contexto
+403            → Mensaje "Sin permiso" (nunca 404)
+Validación     → Inline, campo a campo
+```
 
-### CameraScanner (`components/scanner/camera-scanner.tsx`)
-Overlay de pantalla completa para escaneo por cámara.
-
-- Import dinámico de `html5-qrcode` dentro de `useEffect` (SSR-safe)
-- Usa cámara trasera (`facingMode: 'environment'`)
-- `qrbox: { width: 300, height: 100 }` — rectángulo estrecho ideal para barcodes 1D (Code 128)
-- Animación CSS `scanLine` sobre el encuadre visual
-- Vibración háptica (`navigator.vibrate(80)`) al detectar código exitosamente
-- Manejo explícito de error de permiso denegado con mensaje claro
-- Cleanup en unmount: `scanner.stop()`
-
-### ScanResultAnimalCard (`components/scanner/scan-result-animal.tsx`)
-Tarjeta de resultado reutilizable cuando un escaneo resuelve a un animal.
-
-Muestra: arete SINIIGA (badge ámbar), arete blanco activo, badge de sexo, ubicación (corral + grupo), peso de entrada, fecha de entrada, costo acumulado.
+### Formularios
+- Labels siempre arriba del input (nunca flotantes)
+- Mensajes de error en línea con ícono
+- Botón primario: loading automático en async operations
+- Confirm dialog para acciones destructivas
 
 ---
 
 ## Librería de Iconos
 
-Usando **Lucide React** exclusivamente. Íconos consistentes por módulo:
+Lucide React exclusivamente. Tamaño estándar: `h-4 w-4` (16px). En nav: `h-[15px] w-[15px]`. En chips KPI: `h-5 w-5`.
 
 ```
 Animales:       PawPrint, Tag, Scale, Calendar
-Farmacia:       Package, FlaskConical, ArrowUpFromLine, ArrowDownToLine
-Tratamientos:   Syringe, ClipboardList, History, CheckCircle
+Farmacia:       Package, FlaskConical, ArrowUpFromLine
+Tratamientos:   Syringe, ClipboardList, History
 Comederos:      UtensilsCrossed, BarChart3
 Raciones:       Scale, Truck
-Usuarios:       Users, UserCog, ShieldCheck
-Corrales:       MapPin, Building2, ChevronRight
+Usuarios:       Users, UserCog
+Corrales:       MapPin, Building2
 Escáner:        ScanLine, Camera, X
-Alertas:        AlertTriangle, Bell
-Dashboard:      LayoutDashboard, TrendingUp, DollarSign
-Aretes:         Tag (amarillo = SINIIGA, neutro = blanco)
+Dashboard:      LayoutDashboard, TrendingUp, DollarSign, AlertTriangle
+Nav:            PanelLeftClose, PanelLeftOpen, Menu, LogOut
 ```
