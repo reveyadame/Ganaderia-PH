@@ -13,7 +13,7 @@ export class AretesController {
   constructor(private readonly service: AretesService) {}
 
   @Get()
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   @ApiOperation({ summary: 'Listar pool de aretes blancos' })
   @ApiQuery({ name: 'estado', enum: ['DISPONIBLE', 'ASIGNADO'], required: false })
   findAll(
@@ -30,21 +30,21 @@ export class AretesController {
   }
 
   @Post()
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   @ApiOperation({ summary: 'Agregar un arete al pool' })
   create(@Body() dto: CreateAreteBlancoDto, @CurrentUser() user: UsuarioSesion) {
     return this.service.create(dto, user.organizacionId)
   }
 
   @Post('lote')
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   @ApiOperation({ summary: 'Agregar múltiples aretes al pool (lote)' })
   createLote(@Body() dto: CreateAretesBlancosLoteDto, @CurrentUser() user: UsuarioSesion) {
     return this.service.createLote(dto, user.organizacionId)
   }
 
   @Delete(':id')
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   @ApiOperation({ summary: 'Eliminar arete disponible del pool' })
   remove(@Param('id') id: string, @CurrentUser() user: UsuarioSesion) {
     return this.service.remove(id, user.organizacionId)

@@ -67,6 +67,7 @@ export interface ScanResultCorral {
     }
     racionActiva: {
       id: string
+      nombre: string
       cantidadKgManana: number
       cantidadKgTarde: number
       descripcion: string | null

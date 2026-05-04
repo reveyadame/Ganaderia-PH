@@ -4,7 +4,7 @@
 
 Sistema de gestión operativa para engorda de ganado. Arquitectura web full-stack con separación clara entre frontend (Next.js), backend (NestJS) y base de datos (PostgreSQL). Monorepo pnpm workspaces con paquete compartido de tipos. Deploy en VPS Linux con Docker.
 
-**Estado:** Etapas 1–8 completadas. Todos los módulos operativos implementados.
+**Estado:** Etapas 1–8 completadas. En curso Etapa 9: módulos transversales (Notificaciones internas, Catálogo de Raciones), separación de espacios desktop/mobile y consolidación del rol DIRECTOR.
 
 ---
 
@@ -44,39 +44,52 @@ ganaderia-ph/
 | html5-qrcode | Escaneo desde cámara (Code 128, QR) |
 | date-fns | Formateo de fechas |
 
-### Rutas implementadas
+### Rutas implementadas — separación desktop / mobile
+
+A partir de Etapa 9 el frontend separa explícitamente dos espacios de navegación:
+
+- `(app)/` — espacio de **escritorio / dirección** (DIRECTOR, SUPERUSUARIO). Sidebar, tablas, formularios densos.
+- `operador/` — espacio **mobile-first del OPERADOR**. Sin sidebar, header móvil, flujos en pasos grandes optimizados para guantes/sol/escáner Bluetooth. El layout enruta automáticamente al operador a este árbol al iniciar sesión.
 
 ```
 apps/web/src/app/
 ├── (auth)/
-│   └── login/                        ✅ Login JWT
-└── (app)/
-    ├── layout.tsx                     ✅ Auth guard + sidebar colapsable + mobile topbar
-    ├── dashboard/                     ✅ KPIs, gráfica 30 días, stock crítico, resumen grupos
-    ├── animales/                      ✅ Listado, nueva llegada, ficha
-    │   ├── page.tsx
-    │   ├── nuevo/page.tsx
-    │   └── [id]/page.tsx
-    ├── tratamientos/                  ✅ Aplicación mobile-first (scan → kit → preview → éxito)
-    ├── comederos/                     ✅ Scan corral → estado con colores → confirmación
-    ├── raciones/                      ✅ Landing
-    │   ├── definir/page.tsx           ✅ Admin define kg por grupo/corral
-    │   └── surtir/page.tsx            ✅ Operador escanea + turno + diferencia
-    ├── farmacia/                      ✅ Overview con KPIs y accesos rápidos
-    │   ├── medicamentos/page.tsx      ✅ CRUD
-    │   ├── inventario/page.tsx        ✅ Unidades, alta FIFO, bajas
-    │   └── salidas/page.tsx           ✅ Salidas temporales y regresos
-    ├── reportes/
-    │   ├── animales/page.tsx          ✅ Costo por animal
-    │   └── tratamientos/page.tsx     ✅ Historial tratamientos
-    └── admin/
-        ├── farmacias/                 ✅ CRUD
-        ├── corrales/                  ✅ CRUD grupos y corrales
-        ├── aretes/                    ✅ Pool de aretes blancos
-        ├── tratamientos/kits/         ✅ CRUD kits de tratamiento
-        ├── comederos/estados/         ✅ CRUD estados con color picker
-        └── usuarios/                  ✅ CRUD + modal de permisos
+│   └── login/                            ✅ Login JWT
+├── (app)/                                ✅ Espacio escritorio (DIRECTOR/SUPERUSUARIO)
+│   ├── layout.tsx                        ✅ Auth guard + sidebar colapsable + mobile topbar + banner móvil
+│   ├── dashboard/                        ✅ KPIs, gráfica 30 días, stock crítico, resumen grupos
+│   ├── animales/
+│   │   ├── page.tsx                      ✅ Listado con filtros y paginación
+│   │   ├── nuevo/page.tsx                ✅ Alta — solo selección de grupo (corral auto-asignado)
+│   │   └── [id]/page.tsx                 ✅ Ficha con costo acumulado e historial
+│   ├── farmacia/                         ✅ Overview, medicamentos, inventario, salidas
+│   ├── raciones/
+│   │   ├── page.tsx                      ✅ Raciones activas
+│   │   ├── definir/page.tsx              ✅ Selecciona ración del catálogo + cantidades por turno
+│   │   └── historial/page.tsx            ✅ Historial de definiciones
+│   ├── reportes/
+│   │   ├── animales/page.tsx             ✅ Costo por animal
+│   │   └── tratamientos/page.tsx         ✅ Historial tratamientos
+│   └── admin/
+│       ├── farmacias/                    ✅ CRUD
+│       ├── corrales/                     ✅ CRUD grupos y corrales
+│       ├── aretes/                       ✅ Pool de aretes blancos
+│       ├── tratamientos/kits/            ✅ CRUD kits de tratamiento
+│       ├── comederos/estados/            ✅ CRUD estados con color picker
+│       ├── raciones-catalogo/            ✅ CRUD del catálogo de raciones
+│       ├── notificaciones/               ✅ Crear/listar notificaciones a operadores
+│       └── usuarios/                     ✅ CRUD + modal de permisos
+└── operador/                             ✅ Espacio mobile-first del OPERADOR
+    ├── layout.tsx                        ✅ Auth guard + header móvil + bottom nav contextual
+    ├── page.tsx                          ✅ Home del operador con accesos a sus actividades
+    ├── animales/nuevo/page.tsx           ✅ Alta en 2 pasos: ubicación → datos
+    ├── tratamientos/                     ✅ Aplicación (scan → kit → preview → éxito)
+    │   └── historial/                    ✅ Aplicaciones recientes propias
+    ├── comederos/                        ✅ Scan corral → estado con colores → confirmación
+    └── raciones/                         ✅ Surtido (scan → turno sugerido → diferencia)
 ```
+
+> **Nota sobre rutas movidas:** las páginas `tratamientos`, `comederos`, `raciones/surtir` y `animales/nuevo` operativas vivían antes bajo `(app)/` y se movieron a `operador/`. La versión equivalente que queda en `(app)/` está pensada para el director (ej: `(app)/animales/nuevo/page.tsx` es el formulario de alta de escritorio, distinto del flujo en pasos del operador).
 
 ### Componentes UI base (`components/ui/`)
 
@@ -142,10 +155,14 @@ apps/api/src/modules/
 ├── scan/                  ✅ POST /scan/resolve (con racionActiva + ultimaLectura)
 ├── medicamentos/          ✅ Catálogo por farmacia, soft delete
 ├── inventario/            ✅ Alta FIFO, salidas temporales, regresos, bajas
-├── tratamientos/          ✅ Templates (kits), aplicaciones, preview costo
-├── comederos/             ✅ Lecturas, estado actual por grupo
+├── tratamiento-templates/ ✅ CRUD de kits con ítems
+├── tratamientos/          ✅ Aplicaciones, preview costo
+├── comederos/             ✅ Lecturas, estado actual por grupo, configuración de estados
 ├── raciones/              ✅ Definiciones, surtido, historial
-└── dashboard/             ✅ KPIs con caché, resumen grupos, tratamientos/día
+├── raciones-catalogo/     ✅ Catálogo de raciones por organización (CRUD)
+├── dashboard/             ✅ KPIs con caché in-memory (TTL 5 min), resumen grupos, tratamientos/día
+├── reportes/              ✅ Costo por animal, stock crítico, tratamientos por período
+└── notificaciones/        ✅ Notificaciones internas DIRECTOR → OPERADOR
 ```
 
 ### Infraestructura de autorización (3 capas globales en `APP_GUARD`)
@@ -155,9 +172,12 @@ Request
   → JwtAuthGuard      valida token JWT. Rutas sin auth: @Public()
   → RolesGuard        valida TipoUsuario con @RequiereRoles(...)
   → ActividadGuard    valida actividad del OPERADOR con @RequiereActividad(...)
-                      SUPERUSUARIO, ADMIN y DIRECTOR bypasan actividades
+                      SUPERUSUARIO y DIRECTOR bypasan actividades
+                      (ROLES_SIN_RESTRICCION en common/guards/actividad.guard.ts)
   → Handler
 ```
+
+> **Nota:** desde la consolidación `ADMIN → DIRECTOR` (mig. `20260501070000_consolidate_director_role`), el rol `ADMIN` ya no existe en el enum `TipoUsuario`. Cualquier referencia previa quedó migrada a `DIRECTOR`.
 
 **Decoradores custom:**
 - `@Public()` — ruta pública sin token
@@ -264,5 +284,6 @@ pnpm dev                  # Levanta API (3001) y Web (3000) en paralelo
 ### Notas de compilación (monorepo)
 
 - `packages/shared` debe compilarse antes de correr el API: `pnpm --filter @ganaderia/shared build`
+- `packages/database`: tras editar `schema.prisma` o crear migraciones (`prisma/migrations/*`), correr `pnpm db:generate` antes de levantar el API. El cliente Prisma vive en `packages/database/generated/`. Si un módulo nuevo (ej: `RacionCatalogo`) no aparece en el cliente generado, los servicios del API que lo usan fallan al compilar y `nest start --watch` se queda con el último build válido (sus rutas devuelven `Cannot POST /api/...` 404).
 - `apps/api/nest-cli.json` tiene `"entryFile": "apps/api/src/main"` para que el output TypeScript en `dist/` encuentre el entrypoint correcto
 - `apps/api/src/app.module.ts` carga `.env` con `envFilePath: ['../../.env', '.env']` para resolver desde el root del monorepo

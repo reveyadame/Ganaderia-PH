@@ -1,12 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import type { Route } from 'next'
 import { useRouter } from 'next/navigation'
 import { Menu } from 'lucide-react'
 import { PageTransition } from '@/components/animations/PageTransition'
 import { LoadingScreen } from '@/components/animations/LoadingScreen'
 import { Sidebar } from '@/components/layout/sidebar'
+import { MobileOperatorBanner } from '@/components/layout/mobile-operator-banner'
 import { useAuthStore } from '@/stores/auth.store'
+import { TipoUsuario } from '@ganaderia/shared'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -14,6 +17,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const accessToken = useAuthStore((s) => s.accessToken)
+  const usuario = useAuthStore((s) => s.usuario)
 
   useEffect(() => {
     setHydrated(true)
@@ -22,10 +26,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (hydrated && !accessToken) {
+    if (!hydrated) return
+    if (!accessToken) {
       router.replace('/login')
+      return
     }
-  }, [hydrated, accessToken, router])
+    if (usuario?.tipo === TipoUsuario.OPERADOR) {
+      router.replace('/operador' as Route)
+    }
+  }, [hydrated, accessToken, usuario, router])
 
   const handleToggle = () => {
     setCollapsed((prev) => {
@@ -77,6 +86,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="flex-1 overflow-y-auto">
+          <MobileOperatorBanner />
           <div className="mx-auto w-full max-w-7xl px-4 md:px-6 lg:px-10 py-6 md:py-8">
             <PageTransition>
               {children}

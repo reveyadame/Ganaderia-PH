@@ -81,7 +81,7 @@ costoPorMedidaMomento = unidadVigente.costoPorMedida
 **Fecha:** 2026-04-29
 **Estado:** Aprobado e implementado
 
-**Decisión:** La liberación del arete blanco de un animal egresado solo puede hacerla un usuario ADMIN o SUPERUSUARIO mediante `PATCH /animales/:id/liberar-arete`. No se libera automáticamente al registrar el egreso.
+**Decisión:** La liberación del arete blanco de un animal egresado solo puede hacerla un usuario DIRECTOR o SUPERUSUARIO mediante `PATCH /animales/:id/liberar-arete`. No se libera automáticamente al registrar el egreso. (Originalmente `ADMIN`; consolidado en `DIRECTOR` por DEC-018.)
 
 **Razón:** El administrador libera el arete cuando lo recupera físicamente. Eso no siempre ocurre al mismo tiempo que el egreso se registra en el sistema.
 
@@ -118,7 +118,7 @@ packages/database/  Prisma schema + migraciones
 
 ## DEC-009 — Roles sistémicos + actividades + grupos de corrales
 **Fecha:** 2026-04-29
-**Estado:** Aprobado e implementado
+**Estado:** Aprobado e implementado (revisado en DEC-018)
 
 **Decisión:** Tres capas de autorización en orden de evaluación:
 1. `TipoUsuario` (SUPERUSUARIO, ADMIN, DIRECTOR, OPERADOR) — capacidades sistémicas
@@ -128,6 +128,8 @@ packages/database/  Prisma schema + migraciones
 SUPERUSUARIO, ADMIN y DIRECTOR bypasan la capa de actividades.
 
 **Razón:** Representa el modelo operativo real del cliente. Un operador puede tener TRATAMIENTOS en Corrales Matriz y COMEDEROS en Corrales El Álamo, con acceso denegado a todo lo demás.
+
+> **Update 2026-05-01 (DEC-018):** los roles `ADMIN` y `DIRECTOR` se consolidaron en `DIRECTOR`. El enum `TipoUsuario` queda con tres valores: `SUPERUSUARIO`, `DIRECTOR`, `OPERADOR`.
 
 ---
 
@@ -241,3 +243,89 @@ window.location.replace('/login')
 ```
 
 **Razón:** Los JWT tienen TTL. Sin este interceptor, un token expirado dejaba al usuario en el dashboard con todas las queries fallando silenciosamente. El interceptor garantiza que cualquier 401 (token expirado, inválido, o sesión revocada) desencadena un logout limpio y redirección inmediata, sin depender de que el usuario recargue manualmente.
+
+---
+
+## DEC-018 — Consolidación de roles ADMIN y DIRECTOR
+**Fecha:** 2026-05-01
+**Estado:** Aprobado e implementado (mig. `20260501070000_consolidate_director_role`)
+
+**Decisión:** Eliminar el rol `ADMIN` del enum `TipoUsuario`. Las capacidades de gestión por GrupoCorrales que tenía `ADMIN` se fusionan en `DIRECTOR`, que también mantiene su acceso al dashboard consolidado y reportes. El enum queda con tres valores: `SUPERUSUARIO`, `DIRECTOR`, `OPERADOR`.
+
+**Migración de datos:** todos los usuarios con `tipo = 'ADMIN'` se promovieron a `tipo = 'DIRECTOR'`. La migración SQL es idempotente y compatible con el enum nuevo.
+
+**Cambios derivados:**
+- `ActividadGuard.ROLES_SIN_RESTRICCION = [SUPERUSUARIO, DIRECTOR]` (antes solo `SUPERUSUARIO`).
+- `@RequiereRoles(...)` en controladores: cualquier referencia a `TipoUsuario.ADMIN` se reemplazó por `TipoUsuario.DIRECTOR`.
+- Reglas de negocio actualizadas (BR-AN-003, BR-AR-001, BR-FA-005, BR-CO-002, BR-RA-003, BR-US-*).
+
+**Alternativas consideradas:**
+- Mantener ambos con permisos diferenciados.
+
+**Razón:** La distinción ADMIN (gestión por grupo) vs DIRECTOR (lectura global) generaba confusión operativa. En el cliente real una misma persona suele cumplir las dos funciones. Reducir a un solo rol simplifica la matriz de permisos y la pantalla de usuarios sin perder granularidad: el alcance se sigue controlando con `UsuarioGrupoCorrales`.
+
+---
+
+## DEC-019 — Catálogo de raciones (RacionCatalogo) separado de cantidades
+**Fecha:** 2026-05-02
+**Estado:** Aprobado e implementado (mig. `20260502090000_racion_catalogo`)
+
+**Decisión:** Las raciones se nombran a partir de un catálogo (`RacionCatalogo`) por organización. `RacionDefinicion` gana un campo `nombre String` (mig. `racion_nombre`) y un FK opcional `catalogoId` a la entrada del catálogo. Las cantidades por turno (`cantidadKgManana`, `cantidadKgTarde`) **siguen viviendo en `RacionDefinicion`**, no en el catálogo.
+
+**Backfill:** la migración `20260502090000_racion_catalogo` crea entradas de catálogo a partir de los nombres distintos de raciones existentes y enlaza las definiciones por nombre + organización.
+
+**Alternativas consideradas:**
+- Catálogo con cantidades default por receta: descartado porque las cantidades varían por corral y por estado del comedero — son decisión del director, no de la receta.
+- Lista enum cerrada: descartado, cada cliente quiere personalizar nombres.
+
+**Razón:** En operación los nombres de ración se repiten ("Engorda fase 2", "Crecimiento") y antes se escribían a mano por corral con typos. El catálogo unifica nomenclatura y abre la puerta a futuras métricas por receta sin acoplar el flujo de definición de cantidades.
+
+---
+
+## DEC-020 — Notificaciones internas DIRECTOR → OPERADOR
+**Fecha:** 2026-05-02
+**Estado:** Aprobado e implementado (mig. `20260502070000_add_notificaciones`)
+
+**Decisión:** Sistema de notificaciones internas con tres modelos: `Notificacion` (cabecera), `NotificacionDestinatario` (lista explícita por usuario) y `NotificacionLectura` (eventos `leidaEn` y `confirmadaEn` por destinatario). Solo DIRECTOR y SUPERUSUARIO emiten. Prioridades: `INFO`, `AVISO`, `CRITICA`.
+
+**Alternativas consideradas:**
+- Push notifications nativas: fuera de alcance v1.0; requiere infra de Firebase/APNs.
+- Email/WhatsApp: desplazado a Etapa 10/post-v1.0.
+- Broadcast por rol/grupo sin lista explícita: descartado para evitar entregas accidentales y por la necesidad de auditar quién recibió qué.
+
+**Razón:** El director necesita comunicar instrucciones puntuales a operadores ("hoy ajustar ración del corral 12 a 30 kg"). Construir un canal interno es barato (3 modelos, sin servicios externos) y deja registro de lectura/confirmación para auditoría operativa. Sienta la base para canales externos futuros.
+
+---
+
+## DEC-021 — Separación de espacios `(app)/` desktop y `operador/` mobile
+**Fecha:** 2026-05-02
+**Estado:** Aprobado e implementado
+
+**Decisión:** El frontend Next.js separa dos árboles bajo `apps/web/src/app/`:
+- `(app)/` — espacio de **dirección/escritorio** (DIRECTOR, SUPERUSUARIO). Sidebar colapsable, tablas densas, modales.
+- `operador/` — espacio **mobile-first del OPERADOR**. Sin sidebar, header móvil, flujos en pasos grandes, optimizado para uso en campo (guantes, sol, escáner).
+
+El layout raíz redirige al `OPERADOR` automáticamente a `/operador` al iniciar sesión. Las páginas operativas que antes vivían bajo `(app)/` (`tratamientos`, `comederos`, `raciones/surtir`, `animales/nuevo`) se movieron a `operador/`. Donde aplica, hay dos páginas diferentes (ej: `(app)/animales/nuevo/page.tsx` para el director y `operador/animales/nuevo/page.tsx` para el campo).
+
+**Alternativas consideradas:**
+- Una sola UI responsive con condicionales por rol: terminó produciendo componentes con muchas ramas y peor performance en mobile.
+- Apps Next.js separadas: sobreingeniería para una sola organización; complica auth, deploy y duplica código de UI base.
+
+**Razón:** Los dos públicos tienen necesidades muy distintas (densidad de información vs. interacción de un dedo enguantado). Separar árboles permite tipografía, paddings y patrones de navegación específicos sin pelearse con condicionales. La capa de datos (TanStack Query, API client, Zustand) sigue siendo una sola.
+
+---
+
+## DEC-022 — Asignación automática de corral al registrar animal
+**Fecha:** 2026-05-02
+**Estado:** Aprobado e implementado
+
+**Decisión:** Al registrar un animal, el usuario solo selecciona el `GrupoCorrales` de destino. La UI auto-asigna silenciosamente el primer corral activo del grupo y envía `corralId` al API. La columna `Animal.corralId` se mantiene `NOT NULL` en DB.
+
+Aplica tanto al flujo de operador (`operador/animales/nuevo`) como al de director (`(app)/animales/nuevo`).
+
+**Alternativas consideradas:**
+- Hacer `corralId` opcional y permitir animales "huérfanos": rompe los índices `[corralId, estado]` y los reportes por corral.
+- Forzar selección manual: añade fricción y errores en campo; el operador rara vez sabe el corral exacto antes de la descarga física.
+- Crear un corral "default" por grupo: complica el modelo y duplica datos.
+
+**Razón:** Refleja la operación real: el corral exacto se asigna al momento de la descarga. La pantalla deja al director reasignar después desde la ficha, lo que ya es el flujo natural. La invariante de DB (`corralId NOT NULL`) preserva trazabilidad y queries históricas sin cambios.

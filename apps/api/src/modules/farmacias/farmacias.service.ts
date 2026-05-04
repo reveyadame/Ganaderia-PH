@@ -1,15 +1,20 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common'
+import { TipoUsuario, UsuarioSesion } from '@ganaderia/shared'
 import { PrismaService } from '../../prisma/prisma.service'
 import { CreateFarmaciaDto } from './dto/create-farmacia.dto'
 import { UpdateFarmaciaDto } from './dto/update-farmacia.dto'
+import { getFarmaciasAccesibles, assertFarmaciaAccess } from '../../common/utils/farmacia-access.util'
 
 @Injectable()
 export class FarmaciasService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(organizacionId: string) {
+  async findAll(user: UsuarioSesion) {
+    const accesibles = await getFarmaciasAccesibles(this.prisma, user)
+    if (accesibles.length === 0) return []
+
     return this.prisma.farmacia.findMany({
-      where: { organizacionId },
+      where: { organizacionId: user.organizacionId, id: { in: accesibles } },
       orderBy: { nombre: 'asc' },
       include: {
         _count: { select: { gruposCorrales: true, medicamentos: true } },
@@ -17,9 +22,10 @@ export class FarmaciasService {
     })
   }
 
-  async findOne(id: string, organizacionId: string) {
+  async findOne(id: string, user: UsuarioSesion) {
+    await assertFarmaciaAccess(this.prisma, user, id)
     const farmacia = await this.prisma.farmacia.findFirst({
-      where: { id, organizacionId },
+      where: { id, organizacionId: user.organizacionId },
       include: {
         gruposCorrales: { where: { activo: true }, orderBy: { nombre: 'asc' } },
         _count: { select: { medicamentos: true } },
@@ -40,12 +46,12 @@ export class FarmaciasService {
     })
   }
 
-  async update(id: string, dto: UpdateFarmaciaDto, organizacionId: string) {
-    await this.findOne(id, organizacionId)
+  async update(id: string, dto: UpdateFarmaciaDto, user: UsuarioSesion) {
+    await this.findOne(id, user)
 
     if (dto.nombre) {
       const existe = await this.prisma.farmacia.findFirst({
-        where: { organizacionId, nombre: { equals: dto.nombre, mode: 'insensitive' }, NOT: { id } },
+        where: { organizacionId: user.organizacionId, nombre: { equals: dto.nombre, mode: 'insensitive' }, NOT: { id } },
       })
       if (existe) throw new ConflictException('Ya existe una farmacia con ese nombre')
     }
@@ -53,8 +59,8 @@ export class FarmaciasService {
     return this.prisma.farmacia.update({ where: { id }, data: dto })
   }
 
-  async remove(id: string, organizacionId: string) {
-    await this.findOne(id, organizacionId)
+  async remove(id: string, user: UsuarioSesion) {
+    await this.findOne(id, user)
 
     const tieneGrupos = await this.prisma.grupoCorrales.count({
       where: { farmaciaId: id, activo: true },

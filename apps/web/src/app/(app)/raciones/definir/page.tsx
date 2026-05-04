@@ -2,23 +2,25 @@
 
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { CheckCircle2, Scale, RotateCcw } from 'lucide-react'
-import { racionesApi, CreateRacionInput } from '@/lib/api/raciones.api'
+import Link from 'next/link'
+import type { Route } from 'next'
+import { CheckCircle2, Scale, ArrowLeft } from 'lucide-react'
+import { racionesApi } from '@/lib/api/raciones.api'
+import { racionesCatalogoApi } from '@/lib/api/raciones-catalogo.api'
 import { gruposCorralesApi } from '@/lib/api/grupos-corrales.api'
 import { corralesApi } from '@/lib/api/corrales.api'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { toast } from '@/components/ui/toast'
-import { formatCurrency } from '@/lib/utils'
 
 export default function DefinirRacionPage() {
   const qc = useQueryClient()
   const [step, setStep] = useState<'form' | 'exito'>('form')
   const [grupoCorralesId, setGrupoCorralesId] = useState('')
   const [corralId, setCorralId] = useState('')
+  const [catalogoId, setCatalogoId] = useState('')
   const [totalKg, setTotalKg] = useState<number>(50)
   const [mananaKg, setMananaKg] = useState<number>(25)
   const [tardeKg, setTardeKg] = useState<number>(25)
@@ -34,6 +36,12 @@ export default function DefinirRacionPage() {
     queryKey: ['corrales', grupoCorralesId],
     queryFn: () => corralesApi.findAll(grupoCorralesId),
     enabled: !!grupoCorralesId,
+  })
+
+  const { data: catalogo } = useQuery({
+    queryKey: ['raciones-catalogo'],
+    queryFn: racionesCatalogoApi.findAll,
+    select: (xs) => xs.filter((x) => x.activo),
   })
 
   const { data: racionActual } = useQuery({
@@ -74,10 +82,12 @@ export default function DefinirRacionPage() {
 
   function handleSubmit() {
     if (!corralId) { toast('error', 'Selecciona un corral'); return }
+    if (!catalogoId) { toast('error', 'Selecciona la ración del catálogo'); return }
     if (mananaKg < 0 || tardeKg < 0) { toast('error', 'Las cantidades deben ser positivas'); return }
 
     crearMutation.mutate({
       corralId,
+      catalogoId,
       cantidadKgManana: mananaKg,
       cantidadKgTarde: tardeKg,
       descripcion: descripcion.trim() || undefined,
@@ -87,6 +97,7 @@ export default function DefinirRacionPage() {
   function reset() {
     setStep('form')
     setCorralId('')
+    setCatalogoId('')
     setDescripcion('')
     setTotalKg(50)
     setMananaKg(25)
@@ -99,8 +110,10 @@ export default function DefinirRacionPage() {
   const corralOptions = (corrales ?? [])
     .filter(c => c.activo)
     .map(c => ({ value: c.id, label: `${c.nombre} (${c.codigo})` }))
+  const catalogoOptions = (catalogo ?? []).map(c => ({ value: c.id, label: c.nombre }))
 
   const corralSeleccionado = corrales?.find(c => c.id === corralId)
+  const catalogoSeleccionado = catalogo?.find(c => c.id === catalogoId)
 
   if (step === 'exito') {
     return (
@@ -109,7 +122,7 @@ export default function DefinirRacionPage() {
         <div className="max-w-lg mx-auto space-y-6">
           <div className="rounded-xl border border-green-500/40 bg-green-500/5 p-6 text-center space-y-3">
             <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto" />
-            <p className="font-semibold text-foreground text-lg">Ración guardada</p>
+            <p className="font-semibold text-foreground text-lg">{catalogoSeleccionado?.nombre ?? 'Ración guardada'}</p>
             <p className="text-sm text-muted-foreground">
               {corralSeleccionado?.nombre} · Mañana: {mananaKg} kg · Tarde: {tardeKg} kg
             </p>
@@ -127,7 +140,12 @@ export default function DefinirRacionPage() {
     <div className="space-y-6">
       <PageHeader
         title="Definir Ración"
-        description="Establece los kilogramos de alimento para mañana y tarde"
+        description="Asigna una ración del catálogo a un corral"
+        action={
+          <Link href={'/raciones' as Route}>
+            <Button variant="secondary" size="md"><ArrowLeft className="h-4 w-4" />Volver</Button>
+          </Link>
+        }
       />
 
       <div className="max-w-lg mx-auto space-y-5">
@@ -149,7 +167,9 @@ export default function DefinirRacionPage() {
         {/* Ración actual */}
         {racionActual && corralId && (
           <div className="rounded-lg bg-amber-500/10 border border-amber-500/30 p-3 text-sm">
-            <p className="font-medium text-amber-600 dark:text-amber-400 mb-1">Ración activa actual</p>
+            <p className="font-medium text-amber-600 dark:text-amber-400 mb-1">
+              Ración activa: {racionActual.nombre}
+            </p>
             <div className="flex gap-4 text-muted-foreground">
               <span>Mañana: <strong>{Number(racionActual.cantidadKgManana)} kg</strong></span>
               <span>Tarde: <strong>{Number(racionActual.cantidadKgTarde)} kg</strong></span>
@@ -162,6 +182,25 @@ export default function DefinirRacionPage() {
             </p>
           </div>
         )}
+
+        {/* Ración del catálogo */}
+        <div className="space-y-1.5">
+          <Select
+            label="Ración (del catálogo)"
+            value={catalogoId}
+            onChange={e => setCatalogoId(e.target.value)}
+            options={[{ value: '', label: 'Selecciona ración...' }, ...catalogoOptions]}
+            required
+          />
+          {(catalogo ?? []).length === 0 && (
+            <p className="text-xs text-muted-foreground">
+              No hay raciones en el catálogo.{' '}
+              <Link href={'/admin/raciones-catalogo' as Route} className="text-brand hover:underline">
+                Crea una primero
+              </Link>
+            </p>
+          )}
+        </div>
 
         {/* Total kg con sugerencia 50/50 */}
         <div className="space-y-1">
@@ -240,7 +279,7 @@ export default function DefinirRacionPage() {
           variant="primary"
           className="w-full"
           onClick={handleSubmit}
-          disabled={!corralId || crearMutation.isPending}
+          disabled={!corralId || !catalogoId || crearMutation.isPending}
         >
           {crearMutation.isPending ? 'Guardando…' : 'Definir ración'}
         </Button>

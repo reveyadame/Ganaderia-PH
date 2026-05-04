@@ -3,8 +3,12 @@
 Guía de referencia visual y de componentes. Todo el frontend debe seguir estas especificaciones para garantizar consistencia total.
 
 **Referencia estética:** Linear, Vercel Dashboard, Stripe.
-**Filosofía:** SaaS empresarial moderno. Light mode como default. Limpio, denso en información sin ser abrumador, totalmente responsivo para uso en campo (móvil) y en oficina (desktop).
-**Estado:** Sistema de tokens HSL implementado. Componentes UI base completos. Sidebar colapsable y responsivo. Tipografía Plus Jakarta Sans.
+**Filosofía:** SaaS empresarial moderno. Light mode como default. Limpio, denso en información sin ser abrumador.
+**Dos espacios diferenciados:** desde Etapa 9 hay dos árboles de UI con tratamiento distinto:
+- **`(app)/`** — escritorio/dirección: sidebar colapsable, tablas densas, modales, foco en datos consolidados.
+- **`operador/`** — mobile-first del operador: sin sidebar, header móvil, flujos en pasos grandes, controles aptos para guantes/sol/escáner.
+
+**Estado:** Sistema de tokens HSL implementado. Componentes UI base completos. Sidebar colapsable y responsivo en `(app)/`. Operador con header propio y `MobilePageHeader`. Tipografía Plus Jakarta Sans.
 
 ---
 
@@ -123,7 +127,9 @@ shimmer                                  — skeleton loading 2s linear infinite
 
 ## Layout Principal
 
-### Shell de la aplicación
+### Espacio `(app)/` — escritorio del director
+
+
 
 ```
 Desktop (sidebar expandido, 248px):
@@ -169,7 +175,7 @@ Mobile (< 768px):
 └──────────────┴─────────────────┘
 ```
 
-### Sidebar — comportamiento
+### Sidebar — comportamiento (`(app)/` solamente)
 
 | Estado | Ancho | Contenido |
 |--------|-------|-----------|
@@ -180,6 +186,44 @@ Mobile (< 768px):
 El estado `collapsed` se persiste en `localStorage` bajo la clave `sidebar-collapsed`.
 
 **Active state:** `bg-accent-subtle text-accent-foreground` + barra izquierda `bg-accent`. Los iconos activos usan `text-accent`.
+
+### Espacio `operador/` — UI mobile-first del operador
+
+Layout independiente en `apps/web/src/app/operador/layout.tsx`. Sin sidebar. Header móvil en cada página vía `MobilePageHeader` (`components/operador/`).
+
+```
+Mobile (≤ 768px, target principal):
+┌─────────────────────────────────┐
+│ ← Título                        │  ← MobilePageHeader (back + title + action)
+│   Subtítulo opcional            │
+├─────────────────────────────────┤
+│                                 │
+│  Contenido en una sola columna  │
+│  (px-4, py-5, space-y-5)        │
+│                                 │
+│  Botones grandes (size="xl",    │
+│  alto ≥ 56px) para uso con      │
+│  guantes y bajo el sol.         │
+│                                 │
+└─────────────────────────────────┘
+
+Desktop (>= 768px):
+La UI del operador no se diseña para escritorio. Si un director entra desde un dispositivo móvil al espacio `(app)/`, ve un banner (`MobileOperatorBanner`) ofreciendo cambiar al espacio operador o seguir en escritorio.
+```
+
+#### Convenciones del espacio operador
+
+- **Tipografía y tamaños:** body 14–15px, títulos 18–20px. Aumentar de 13/14 que se usa en `(app)/`.
+- **Botones:** alto mínimo 48px (`size="lg"`), preferir `size="xl"` (≥56px) en CTAs primarios de pasos.
+- **Inputs:** mismo `Input`/`Select` base, pero envueltos en cards `rounded-2xl` con padding generoso.
+- **Pasos guiados:** flujos como alta de animal o aplicación de tratamiento se dividen en `step` con un solo objetivo por pantalla; nada de formularios largos.
+- **Color accent (índigo):** se mantiene para estados activos (cards seleccionables con borde `border-brand`/`bg-brand/5`).
+- **Sin tablas:** listados se muestran como cards apilables, no como tablas.
+
+#### Componentes específicos del operador (`components/operador/`)
+
+- `MobilePageHeader` — header consistente con back, título, subtítulo opcional y slot de acción.
+- (otros que se vayan agregando viven en este folder)
 
 ---
 
@@ -319,5 +363,20 @@ Usuarios:       Users, UserCog
 Corrales:       MapPin, Building2
 Escáner:        ScanLine, Camera, X
 Dashboard:      LayoutDashboard, TrendingUp, DollarSign, AlertTriangle
-Nav:            PanelLeftClose, PanelLeftOpen, Menu, LogOut
+Notificaciones: Bell, BellRing, AlertOctagon (CRITICA)
+Nav:            PanelLeftClose, PanelLeftOpen, Menu, LogOut, ChevronRight, Check
 ```
+
+---
+
+## Notificaciones (UI)
+
+Las `Notificacion` (DEC-020) tienen tres prioridades con tratamiento visual diferenciado:
+
+| Prioridad | Color | Componente sugerido | Comportamiento |
+|---|---|---|---|
+| `INFO` | `info` (azul) | Toast suave + entrada en lista | Auto-cierre, sin confirmación |
+| `AVISO` | `warning` (ámbar) | Banner persistente hasta `leidaEn` | Requiere abrir/leer |
+| `CRITICA` | `danger` (rojo) | Modal bloqueante + banner persistente | Requiere `confirmadaEn` explícito |
+
+En el espacio `operador/`, las notificaciones críticas se muestran como modal bloqueante apenas el operador entra a la app, hasta que confirma. En `(app)/`, el director ve un panel de bell-icon con contador no leídas en el header.

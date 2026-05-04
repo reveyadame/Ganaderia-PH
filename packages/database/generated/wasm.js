@@ -259,6 +259,20 @@ exports.Prisma.BajaMedicamentoScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.AjusteInventarioScalarFieldEnum = {
+  id: 'id',
+  medicamentoId: 'medicamentoId',
+  farmaciaId: 'farmaciaId',
+  cantidadAnterior: 'cantidadAnterior',
+  cantidadNueva: 'cantidadNueva',
+  delta: 'delta',
+  costoUnitario: 'costoUnitario',
+  justificacion: 'justificacion',
+  realizadoPorId: 'realizadoPorId',
+  fechaAjuste: 'fechaAjuste',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.TratamientoTemplateScalarFieldEnum = {
   id: 'id',
   organizacionId: 'organizacionId',
@@ -322,10 +336,22 @@ exports.Prisma.LecturaComedorScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.RacionCatalogoScalarFieldEnum = {
+  id: 'id',
+  organizacionId: 'organizacionId',
+  nombre: 'nombre',
+  descripcion: 'descripcion',
+  activo: 'activo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.RacionDefinicionScalarFieldEnum = {
   id: 'id',
   corralId: 'corralId',
   definidaPorId: 'definidaPorId',
+  catalogoId: 'catalogoId',
+  nombre: 'nombre',
   cantidadKgManana: 'cantidadKgManana',
   cantidadKgTarde: 'cantidadKgTarde',
   descripcion: 'descripcion',
@@ -386,6 +412,31 @@ exports.Prisma.AuditLogScalarFieldEnum = {
   datosNuevos: 'datosNuevos',
   ipAddress: 'ipAddress',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.NotificacionScalarFieldEnum = {
+  id: 'id',
+  organizacionId: 'organizacionId',
+  autorId: 'autorId',
+  titulo: 'titulo',
+  mensaje: 'mensaje',
+  prioridad: 'prioridad',
+  expiraEn: 'expiraEn',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.NotificacionDestinatarioScalarFieldEnum = {
+  id: 'id',
+  notificacionId: 'notificacionId',
+  usuarioId: 'usuarioId'
+};
+
+exports.Prisma.NotificacionLecturaScalarFieldEnum = {
+  id: 'id',
+  notificacionId: 'notificacionId',
+  usuarioId: 'usuarioId',
+  leidaEn: 'leidaEn',
+  confirmadaEn: 'confirmadaEn'
 };
 
 exports.Prisma.SortOrder = {
@@ -485,7 +536,6 @@ exports.TurnoRacion = exports.$Enums.TurnoRacion = {
 
 exports.TipoUsuario = exports.$Enums.TipoUsuario = {
   SUPERUSUARIO: 'SUPERUSUARIO',
-  ADMIN: 'ADMIN',
   DIRECTOR: 'DIRECTOR',
   OPERADOR: 'OPERADOR'
 };
@@ -505,6 +555,12 @@ exports.AccionAudit = exports.$Enums.AccionAudit = {
   DELETE: 'DELETE'
 };
 
+exports.PrioridadNotificacion = exports.$Enums.PrioridadNotificacion = {
+  INFO: 'INFO',
+  AVISO: 'AVISO',
+  CRITICA: 'CRITICA'
+};
+
 exports.Prisma.ModelName = {
   Organizacion: 'Organizacion',
   Farmacia: 'Farmacia',
@@ -518,18 +574,23 @@ exports.Prisma.ModelName = {
   UnidadMedicamento: 'UnidadMedicamento',
   SalidaTemporal: 'SalidaTemporal',
   BajaMedicamento: 'BajaMedicamento',
+  AjusteInventario: 'AjusteInventario',
   TratamientoTemplate: 'TratamientoTemplate',
   TratamientoTemplateItem: 'TratamientoTemplateItem',
   AplicacionTratamiento: 'AplicacionTratamiento',
   AplicacionTratamientoItem: 'AplicacionTratamientoItem',
   EstadoComederoConfig: 'EstadoComederoConfig',
   LecturaComedor: 'LecturaComedor',
+  RacionCatalogo: 'RacionCatalogo',
   RacionDefinicion: 'RacionDefinicion',
   SurtidoRacion: 'SurtidoRacion',
   Usuario: 'Usuario',
   UsuarioActividad: 'UsuarioActividad',
   UsuarioGrupoCorrales: 'UsuarioGrupoCorrales',
-  AuditLog: 'AuditLog'
+  AuditLog: 'AuditLog',
+  Notificacion: 'Notificacion',
+  NotificacionDestinatario: 'NotificacionDestinatario',
+  NotificacionLectura: 'NotificacionLectura'
 };
 
 /**

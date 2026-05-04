@@ -7,7 +7,7 @@ import { scanApi } from '@/lib/api/scan.api'
 import { comederoEstadosApi, comederoLecturasApi, EstadoActualCorral } from '@/lib/api/comederos.api'
 import { gruposCorralesApi } from '@/lib/api/grupos-corrales.api'
 import { BarcodeInput } from '@/components/scanner/barcode-input'
-import { PageHeader } from '@/components/ui/page-header'
+import { MobilePageHeader } from '@/components/operador/mobile-page-header'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select } from '@/components/ui/select'
@@ -81,21 +81,14 @@ export default function ComederoPage() {
   // ── STEP: SCAN ──────────────────────────────────────────────────────────────
   if (step === 'scan') {
     return (
-      <div className="space-y-8">
-        <PageHeader
-          title="Lecturas de Comedero"
-          description="Escanea un corral para registrar el estado del comedero"
+      <div className="space-y-6">
+        <MobilePageHeader title="Lecturas de comedero" subtitle="Escanea un corral" />
+        <BarcodeInput
+          onScan={codigo => scanMutation.mutate(codigo)}
+          loading={scanMutation.isPending}
+          label="Código del corral"
+          autoFocus
         />
-        <div className="max-w-lg mx-auto space-y-4">
-          <BarcodeInput
-            onScan={codigo => scanMutation.mutate(codigo)}
-            loading={scanMutation.isPending}
-            label="Código del corral"
-            autoFocus
-          />
-        </div>
-
-        {/* Dashboard abajo */}
         <DashboardSection
           grupoOptions={grupoOptions}
           grupoCorralesId={grupoCorralesId}
@@ -111,18 +104,22 @@ export default function ComederoPage() {
   if (step === 'seleccion' && corralResult) {
     const { corral } = corralResult
     return (
-      <div className="space-y-6">
-        <PageHeader
+      <div className="space-y-5">
+        <MobilePageHeader
           title="Estado del comedero"
+          back={false}
           action={
-            <button onClick={reset} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <button
+              onClick={reset}
+              aria-label="Otro corral"
+              className="w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground active:bg-muted transition-colors"
+            >
               <RotateCcw className="h-4 w-4" />
-              Otro corral
             </button>
           }
         />
 
-        <div className="max-w-lg mx-auto space-y-4">
+        <div className="space-y-4">
           {/* Info corral */}
           <div className="rounded-xl border border-border bg-background px-4 py-3 space-y-1">
             <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
@@ -185,6 +182,7 @@ export default function ComederoPage() {
           {estadoSeleccionado && (
             <Button
               variant="primary"
+              size="xl"
               className="w-full"
               onClick={() => registrarMutation.mutate()}
               disabled={registrarMutation.isPending}
@@ -201,23 +199,22 @@ export default function ComederoPage() {
   if (step === 'exito') {
     const estadoNombre = estados?.find(e => e.id === estadoSeleccionado)?.nombre
     return (
-      <div className="space-y-6">
-        <PageHeader title="Lectura registrada" />
-        <div className="max-w-lg mx-auto space-y-6">
-          <div className="rounded-xl border border-green-500/40 bg-green-500/5 p-6 text-center space-y-3">
-            <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto" />
-            <p className="font-semibold text-foreground text-lg">Lectura registrada</p>
+      <div className="space-y-5">
+        <div className="rounded-2xl border border-success/30 bg-success-subtle/60 p-6 text-center space-y-3">
+          <CheckCircle2 className="h-14 w-14 text-success mx-auto" />
+          <div className="space-y-1">
+            <p className="font-semibold text-foreground text-[17px]">Lectura registrada</p>
             {corralResult && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-[13px] text-muted-foreground">
                 {corralResult.corral.nombre} — <span className="font-medium text-foreground">{estadoNombre}</span>
               </p>
             )}
           </div>
-          <Button variant="secondary" className="w-full" onClick={reset}>
-            <UtensilsCrossed className="h-4 w-4 mr-2" />
-            Registrar otro corral
-          </Button>
         </div>
+        <Button variant="primary" size="xl" className="w-full" onClick={reset}>
+          <UtensilsCrossed className="h-5 w-5" />
+          Registrar otro corral
+        </Button>
       </div>
     )
   }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common'
 import { PrismaService } from '../../prisma/prisma.service'
 import { CreateRacionDto } from './dto/create-racion.dto'
 import { CreateSurtidoDto } from './dto/create-surtido.dto'
@@ -16,6 +16,76 @@ export class RacionesService {
       include: {
         corral: { select: { id: true, nombre: true, codigo: true } },
         definidaPor: { select: { id: true, nombre: true } },
+        catalogo: { select: { id: true, nombre: true } },
+      },
+    })
+  }
+
+  async listarActivas(organizacionId: string, gruposPermitidosIds?: string[]) {
+    return this.prisma.racionDefinicion.findMany({
+      where: {
+        activa: true,
+        corral: {
+          grupoCorrales: {
+            organizacionId,
+            ...(gruposPermitidosIds ? { id: { in: gruposPermitidosIds } } : {}),
+          },
+        },
+      },
+      orderBy: [{ corral: { grupoCorrales: { nombre: 'asc' } } }, { corral: { nombre: 'asc' } }],
+      include: {
+        corral: {
+          select: {
+            id: true, nombre: true, codigo: true,
+            grupoCorrales: { select: { id: true, nombre: true } },
+          },
+        },
+        definidaPor: { select: { id: true, nombre: true, apellido: true } },
+        catalogo: { select: { id: true, nombre: true } },
+      },
+    })
+  }
+
+  async listarHistorial(organizacionId: string, gruposPermitidosIds?: string[], limit = 100) {
+    return this.prisma.racionDefinicion.findMany({
+      where: {
+        corral: {
+          grupoCorrales: {
+            organizacionId,
+            ...(gruposPermitidosIds ? { id: { in: gruposPermitidosIds } } : {}),
+          },
+        },
+      },
+      orderBy: { fechaInicio: 'desc' },
+      take: limit,
+      include: {
+        corral: {
+          select: {
+            id: true, nombre: true, codigo: true,
+            grupoCorrales: { select: { id: true, nombre: true } },
+          },
+        },
+        definidaPor: { select: { id: true, nombre: true, apellido: true } },
+        catalogo: { select: { id: true, nombre: true } },
+      },
+    })
+  }
+
+  async actualizarCantidades(id: string, cantidadKgManana: number, cantidadKgTarde: number, organizacionId: string) {
+    const racion = await this.prisma.racionDefinicion.findFirst({
+      where: { id, corral: { grupoCorrales: { organizacionId } } },
+    })
+    if (!racion) throw new NotFoundException('Ración no encontrada')
+    if (!racion.activa) throw new BadRequestException('Solo se pueden ajustar cantidades de raciones activas')
+    if (cantidadKgManana < 0 || cantidadKgTarde < 0) {
+      throw new BadRequestException('Las cantidades deben ser positivas')
+    }
+    return this.prisma.racionDefinicion.update({
+      where: { id },
+      data: { cantidadKgManana, cantidadKgTarde },
+      include: {
+        corral: { select: { id: true, nombre: true, codigo: true } },
+        catalogo: { select: { id: true, nombre: true } },
       },
     })
   }
@@ -35,6 +105,18 @@ export class RacionesService {
   async crearRacion(dto: CreateRacionDto, definidaPorId: string, organizacionId: string) {
     await this.validateCorral(dto.corralId, organizacionId)
 
+    let nombre = dto.nombre?.trim()
+    if (dto.catalogoId) {
+      const cat = await this.prisma.racionCatalogo.findFirst({
+        where: { id: dto.catalogoId, organizacionId, activo: true },
+      })
+      if (!cat) throw new BadRequestException('Ración del catálogo no encontrada o inactiva')
+      nombre = cat.nombre
+    }
+    if (!nombre || nombre.length < 2) {
+      throw new BadRequestException('Especifica un catalogoId o un nombre válido')
+    }
+
     return this.prisma.$transaction(async tx => {
       // BR-RA-001: cerrar ración activa anterior
       await tx.racionDefinicion.updateMany({
@@ -46,6 +128,8 @@ export class RacionesService {
         data: {
           corralId: dto.corralId,
           definidaPorId,
+          catalogoId: dto.catalogoId ?? null,
+          nombre: nombre!,
           cantidadKgManana: dto.cantidadKgManana,
           cantidadKgTarde: dto.cantidadKgTarde,
           descripcion: dto.descripcion,
@@ -53,6 +137,7 @@ export class RacionesService {
         include: {
           corral: { select: { id: true, nombre: true, codigo: true } },
           definidaPor: { select: { id: true, nombre: true } },
+          catalogo: { select: { id: true, nombre: true } },
         },
       })
     })

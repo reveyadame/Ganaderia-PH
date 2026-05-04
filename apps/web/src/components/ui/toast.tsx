@@ -30,14 +30,16 @@ export function ToastProvider() {
   toastCallback = addToast
 
   return (
-    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none">
+    <div
+      className="fixed left-4 right-4 bottom-[calc(env(safe-area-inset-bottom)+5rem)] md:bottom-4 md:left-auto md:right-4 z-[100] flex flex-col gap-2 pointer-events-none items-stretch md:items-end"
+    >
       {toasts.map((t) => (
         <div
           key={t.id}
           role="status"
           className={cn(
             'flex items-start gap-3 pl-4 pr-3 py-3 rounded-xl shadow-lg pointer-events-auto',
-            'slide-up text-sm min-w-[280px] max-w-md bg-surface-raised border',
+            'slide-up text-sm w-full md:w-auto md:min-w-[280px] max-w-md bg-surface-raised border',
             t.type === 'success' ? 'border-success/30' : 'border-danger/30',
           )}
         >

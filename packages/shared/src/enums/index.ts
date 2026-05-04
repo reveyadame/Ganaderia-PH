@@ -1,6 +1,5 @@
 export enum TipoUsuario {
   SUPERUSUARIO = 'SUPERUSUARIO',
-  ADMIN = 'ADMIN',
   DIRECTOR = 'DIRECTOR',
   OPERADOR = 'OPERADOR',
 }
@@ -77,6 +76,12 @@ export enum CausaEgresoAnimal {
   MUERTE = 'MUERTE',
   TRASLADO = 'TRASLADO',
   OTRO = 'OTRO',
+}
+
+export enum PrioridadNotificacion {
+  INFO = 'INFO',
+  AVISO = 'AVISO',
+  CRITICA = 'CRITICA',
 }
 
 export enum EstadoRegreso {

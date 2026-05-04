@@ -37,7 +37,15 @@
       "Bash(curl -s http://localhost:3000/login)",
       "Bash(curl -s -o /dev/null -w \"Login: %{http_code}\\\\nDashboard: %{http_code}\\\\n\" http://localhost:3000/login -w \"\" http://localhost:3000/dashboard)",
       "Bash(pnpm --filter web build)",
-      "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")"
+      "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
+      "Bash(xargs sed *)",
+      "Bash(git mv *)",
+      "Bash(pnpm --filter @ganaderia/web build)",
+      "Bash(pnpm --filter @ganaderia/database generate)",
+      "Bash(pnpm --filter web tsc --noEmit)",
+      "Bash(git -C /Users/reveyadame/Desktop/Ganaderia-PH log --oneline -20)",
+      "Bash(git -C /Users/reveyadame/Desktop/Ganaderia-PH status --short)",
+      "Bash(git -C /Users/reveyadame/Desktop/Ganaderia-PH diff --stat docs/ CLAUDE.md)"
     ]
   }
 }

@@ -1,42 +1,23 @@
 'use client'
 
-import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { Package, AlertTriangle, ArrowUpFromLine, ArrowDownToLine, FlaskConical, ChevronRight } from 'lucide-react'
-import { farmaciasApi } from '@/lib/api/farmacias.api'
 import { inventarioApi } from '@/lib/api/inventario.api'
 import { PageHeader } from '@/components/ui/page-header'
-import { Button } from '@/components/ui/button'
-import { Select } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { FarmaciaSwitcher, SinFarmaciasMensaje, useFarmaciaActiva } from '@/components/farmacia/farmacia-switcher'
 
 export default function FarmaciaPage() {
   const router = useRouter()
-  const [farmaciaId, setFarmaciaId] = useState<string>('')
-
-  const { data: farmacias, isLoading: loadingFarmacias } = useQuery({
-    queryKey: ['farmacias'],
-    queryFn: farmaciasApi.findAll,
-    select: farmacias => farmacias.filter(f => f.activa),
-  })
+  const { farmaciaActivaId: farmaciaId, hasAccess, isLoading: loadingFarmacias } = useFarmaciaActiva()
 
   const { data: stock, isLoading: loadingStock } = useQuery({
     queryKey: ['inventario-stock', farmaciaId],
     queryFn: () => inventarioApi.getStock(farmaciaId),
     enabled: !!farmaciaId,
   })
-
-  const farmaciaOptions = [
-    { value: '', label: 'Selecciona una farmacia...' },
-    ...(farmacias?.map(f => ({ value: f.id, label: f.nombre })) ?? []),
-  ]
-
-  // Auto-seleccionar si solo hay una farmacia
-  if (farmacias?.length === 1 && !farmaciaId) {
-    setFarmaciaId(farmacias[0].id)
-  }
 
   const totalDisponibles = stock?.medicamentos.reduce((sum, m) => sum + m.stock.disponibles, 0) ?? 0
   const totalSalidas = stock?.medicamentos.reduce((sum, m) => sum + m.stock.salidas, 0) ?? 0
@@ -47,30 +28,12 @@ export default function FarmaciaPage() {
       <PageHeader
         title="Farmacia"
         description="Gestión de medicamentos e inventario"
+        action={<FarmaciaSwitcher />}
       />
 
-      {/* Selector de farmacia */}
-      <div className="flex items-center gap-3">
-        {loadingFarmacias ? (
-          <Skeleton className="h-9 w-56" />
-        ) : (
-          <Select
-            options={farmaciaOptions}
-            value={farmaciaId}
-            onChange={e => setFarmaciaId(e.target.value)}
-            className="w-56"
-          />
-        )}
-      </div>
+      {!loadingFarmacias && !hasAccess && <SinFarmaciasMensaje />}
 
-      {!farmaciaId && (
-        <div className="rounded-lg border border-border bg-surface p-12 text-center">
-          <FlaskConical className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground">Selecciona una farmacia para ver su inventario</p>
-        </div>
-      )}
-
-      {farmaciaId && (
+      {hasAccess && farmaciaId && (
         <>
           {/* KPI Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

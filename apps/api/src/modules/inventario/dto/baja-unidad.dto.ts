@@ -3,7 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { TipoBajaMedicamento } from '@ganaderia/shared'
 
 export class BajaUnidadDto {
-  @ApiProperty({ description: 'ID de la UnidadMedicamento a dar de baja (debe estar DISPONIBLE)' })
+  @ApiProperty({ description: 'ID de la UnidadMedicamento a dar de baja (debe estar DISPONIBLE o PRE_INGRESO)' })
   @IsString()
   unidadMedicamentoId!: string
 

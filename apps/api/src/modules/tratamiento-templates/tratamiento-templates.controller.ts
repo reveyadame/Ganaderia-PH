@@ -16,7 +16,7 @@ export class TratamientoTemplatesController {
 
   @Get()
   @ApiOperation({ summary: 'Listar kits de tratamiento' })
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
   @RequiereActividad(ActividadUsuario.TRATAMIENTOS, ActividadUsuario.REPORTES)
   findAll(@CurrentUser() user: UsuarioSesion) {
     return this.service.findAll(user.organizacionId)
@@ -24,7 +24,7 @@ export class TratamientoTemplatesController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener kit por ID' })
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
   @RequiereActividad(ActividadUsuario.TRATAMIENTOS, ActividadUsuario.REPORTES)
   findOne(@Param('id') id: string, @CurrentUser() user: UsuarioSesion) {
     return this.service.findOne(id, user.organizacionId)
@@ -32,21 +32,21 @@ export class TratamientoTemplatesController {
 
   @Post()
   @ApiOperation({ summary: 'Crear kit de tratamiento' })
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   create(@Body() dto: CreateTemplateDto, @CurrentUser() user: UsuarioSesion) {
     return this.service.create(dto, user.organizacionId, user.id)
   }
 
   @Put(':id')
   @ApiOperation({ summary: 'Actualizar kit' })
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   update(@Param('id') id: string, @Body() dto: UpdateTemplateDto, @CurrentUser() user: UsuarioSesion) {
     return this.service.update(id, dto, user.organizacionId)
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar kit (soft delete)' })
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   remove(@Param('id') id: string, @CurrentUser() user: UsuarioSesion) {
     return this.service.remove(id, user.organizacionId)
   }

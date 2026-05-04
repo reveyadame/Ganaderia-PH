@@ -3,9 +3,9 @@
 Definición completa del modelo de datos en formato Prisma Schema.
 Ver [business-rules.md](./business-rules.md) para las reglas que gobiernan cada entidad.
 
-**Estado:** Schema completo definido desde Etapa 1. Prisma client generado. Migraciones aplicadas.
+**Estado:** Schema vigente al 2026-05-02. Migraciones aplicadas en orden: `20260501060356_initial_migration` → `20260501070000_consolidate_director_role` → `20260502070000_add_notificaciones` → `20260502080000_racion_nombre` → `20260502090000_racion_catalogo`.
 **Archivo fuente:** `packages/database/prisma/schema.prisma`
-**Cliente generado en:** `packages/database/generated/`
+**Cliente generado en:** `packages/database/generated/` (regenerar con `pnpm db:generate` tras cualquier cambio de schema o nueva migración).
 
 **Nota sobre enums:** El generador de Prisma crea sus propios tipos de enum en el cliente generado. En los servicios NestJS que retornan `UsuarioSesion` (de `@ganaderia/shared`), se usa `as` cast para convertir entre los enums de Prisma y los enums de shared, ya que son string-equivalentes pero TypeScript los trata como tipos distintos.
 
@@ -35,8 +35,13 @@ Organizacion
 │
 ├── EstadoComederoConfig (catálogo configurable por organización)
 ├── LecturaComedor (→ Corral, → EstadoComederoConfig)
-├── RacionDefinicion (→ Corral, kgManana + kgTarde)
-└── SurtidoRacion (→ Corral, → RacionDefinicion, turno: MANANA | TARDE)
+├── RacionCatalogo (catálogo de raciones por organización)
+│   └── RacionDefinicion (→ Corral, → RacionCatalogo opcional, nombre + kgManana + kgTarde)
+│       └── SurtidoRacion (→ Corral, → RacionDefinicion, turno: MANANA | TARDE)
+│
+└── Notificacion (DIRECTOR/SUPERUSUARIO → operadores)
+    ├── NotificacionDestinatario (1:N)
+    └── NotificacionLectura (1:N, lectura/confirmación por destinatario)
 
 Usuario
 ├── UsuarioActividad (1:N)
@@ -65,8 +70,7 @@ datasource db {
 
 enum TipoUsuario {
   SUPERUSUARIO
-  ADMIN
-  DIRECTOR
+  DIRECTOR     // consolidación de ADMIN + DIRECTOR (mig. consolidate_director_role)
   OPERADOR
 }
 
@@ -149,6 +153,12 @@ enum CausaEgresoAnimal {
   OTRO
 }
 
+enum PrioridadNotificacion {
+  INFO
+  AVISO
+  CRITICA
+}
+
 enum AccionAudit {
   CREATE
   UPDATE
@@ -165,13 +175,15 @@ model Organizacion {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  farmacias       Farmacia[]
-  gruposCorrales  GrupoCorrales[]
-  animales        Animal[]
-  aretessBlancos  AreteBlanco[]
-  usuarios        Usuario[]
-  templates       TratamientoTemplate[]
-  estadosComedero EstadoComederoConfig[]
+  farmacias        Farmacia[]
+  gruposCorrales   GrupoCorrales[]
+  animales         Animal[]
+  aretessBlancos   AreteBlanco[]
+  usuarios         Usuario[]
+  templates        TratamientoTemplate[]
+  estadosComedero  EstadoComederoConfig[]
+  racionesCatalogo RacionCatalogo[]
+  notificaciones   Notificacion[]
 }
 
 // ─────────────────────────────────────────────
@@ -463,7 +475,7 @@ model AplicacionTratamientoItem {
 // ─────────────────────────────────────────────
 
 // Catálogo configurable de estados del comedero por organización.
-// Ejemplos: "Con comida", "Bien", "Lamido", "Muy lamido". Definidos por ADMIN.
+// Ejemplos: "Con comida", "Bien", "Lamido", "Muy lamido". Definidos por DIRECTOR.
 model EstadoComederoConfig {
   id             String   @id @default(cuid())
   organizacionId String
@@ -499,11 +511,32 @@ model LecturaComedor {
   @@index([estadoConfigId])
 }
 
-// Ración diaria por corral, dividida en mañana/tarde (kg). Captura manual del admin.
+// Catálogo de raciones por organización (solo nombres + descripción).
+// Las cantidades por turno NO viven aquí — se definen por corral en RacionDefinicion.
+model RacionCatalogo {
+  id             String   @id @default(cuid())
+  organizacionId String
+  nombre         String
+  descripcion    String?
+  activo         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organizacion Organizacion       @relation(fields: [organizacionId], references: [id])
+  definiciones RacionDefinicion[]
+
+  @@unique([organizacionId, nombre])
+  @@index([organizacionId, activo])
+}
+
+// Ración diaria por corral, dividida en mañana/tarde (kg). Captura manual del director.
+// El nombre se copia desde RacionCatalogo al crear; catalogoId queda como referencia trazable.
 model RacionDefinicion {
   id               String    @id @default(cuid())
   corralId         String
   definidaPorId    String
+  catalogoId       String?
+  nombre           String
   cantidadKgManana Decimal   @db.Decimal(10, 2)
   cantidadKgTarde  Decimal   @db.Decimal(10, 2)
   descripcion      String?
@@ -515,9 +548,11 @@ model RacionDefinicion {
 
   corral      Corral          @relation(fields: [corralId], references: [id])
   definidaPor Usuario         @relation("RacionDefinidor", fields: [definidaPorId], references: [id])
+  catalogo    RacionCatalogo? @relation(fields: [catalogoId], references: [id])
   surtidos    SurtidoRacion[]
 
   @@index([corralId, activa])
+  @@index([catalogoId])
 }
 
 // Registro del surtido real por turno. Un corral puede tener 1 o 2 surtidos por día.
@@ -622,6 +657,59 @@ model AuditLog {
 
   @@index([entidad, entidadId])
   @@index([usuarioId, createdAt])
+}
+
+// ─────────────────────────────────────────────
+// NOTIFICACIONES
+// ─────────────────────────────────────────────
+
+// Notificación interna emitida por DIRECTOR/SUPERUSUARIO a una lista explícita
+// de operadores destinatarios. No hay broadcasts implícitos por rol/grupo.
+model Notificacion {
+  id             String                @id @default(cuid())
+  organizacionId String
+  autorId        String
+  titulo         String
+  mensaje        String
+  prioridad      PrioridadNotificacion @default(INFO)
+  expiraEn       DateTime?
+  createdAt      DateTime              @default(now())
+
+  organizacion  Organizacion               @relation(fields: [organizacionId], references: [id])
+  autor         Usuario                    @relation("NotificacionAutor", fields: [autorId], references: [id])
+  destinatarios NotificacionDestinatario[]
+  lecturas      NotificacionLectura[]
+
+  @@index([organizacionId, createdAt])
+  @@index([autorId, createdAt])
+}
+
+model NotificacionDestinatario {
+  id             String @id @default(cuid())
+  notificacionId String
+  usuarioId      String
+
+  notificacion Notificacion @relation(fields: [notificacionId], references: [id], onDelete: Cascade)
+  usuario      Usuario      @relation("NotificacionDestinatario", fields: [usuarioId], references: [id])
+
+  @@unique([notificacionId, usuarioId])
+  @@index([usuarioId])
+}
+
+// Eventos de lectura/confirmación por destinatario.
+// `confirmadaEn` es opcional; las notificaciones CRITICA suelen exigir confirmación explícita.
+model NotificacionLectura {
+  id             String    @id @default(cuid())
+  notificacionId String
+  usuarioId      String
+  leidaEn        DateTime  @default(now())
+  confirmadaEn   DateTime?
+
+  notificacion Notificacion @relation(fields: [notificacionId], references: [id], onDelete: Cascade)
+  usuario      Usuario      @relation("NotificacionLectura", fields: [usuarioId], references: [id])
+
+  @@unique([notificacionId, usuarioId])
+  @@index([usuarioId])
 }
 ```
 

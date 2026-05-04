@@ -7,9 +7,12 @@ import { UpdateGrupoCorralesDto } from './dto/update-grupo-corrales.dto'
 export class GruposCorralesService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(organizacionId: string) {
+  async findAll(organizacionId: string, gruposPermitidosIds?: string[]) {
     return this.prisma.grupoCorrales.findMany({
-      where: { organizacionId },
+      where: {
+        organizacionId,
+        ...(gruposPermitidosIds ? { id: { in: gruposPermitidosIds } } : {}),
+      },
       orderBy: { nombre: 'asc' },
       include: {
         farmacia: { select: { id: true, nombre: true } },

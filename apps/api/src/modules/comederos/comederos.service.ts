@@ -122,6 +122,81 @@ export class ComederoService {
     })
   }
 
+  async getResumenGlobal(organizacionId: string, gruposPermitidosIds?: string[]) {
+    const corrales = await this.prisma.corral.findMany({
+      where: {
+        activo: true,
+        grupoCorrales: {
+          organizacionId,
+          ...(gruposPermitidosIds ? { id: { in: gruposPermitidosIds } } : {}),
+        },
+      },
+      orderBy: [{ grupoCorrales: { nombre: 'asc' } }, { nombre: 'asc' }],
+      include: {
+        grupoCorrales: { select: { id: true, nombre: true } },
+        _count: { select: { animales: { where: { estado: 'ACTIVO' } } } },
+      },
+    })
+
+    const corralIds = corrales.map((c) => c.id)
+    if (corralIds.length === 0) return []
+
+    const [ultimasLecturas, racionesActivas] = await Promise.all([
+      this.prisma.lecturaComedor.findMany({
+        where: { corralId: { in: corralIds } },
+        orderBy: { fechaLectura: 'desc' },
+        distinct: ['corralId'],
+        include: {
+          estadoConfig: { select: { id: true, nombre: true, color: true } },
+          registradoPor: { select: { id: true, nombre: true } },
+        },
+      }),
+      this.prisma.racionDefinicion.findMany({
+        where: { corralId: { in: corralIds }, activa: true },
+        select: {
+          id: true, corralId: true, nombre: true,
+          cantidadKgManana: true, cantidadKgTarde: true,
+          catalogo: { select: { id: true, nombre: true } },
+        },
+      }),
+    ])
+
+    return corrales.map((c) => ({
+      id: c.id,
+      nombre: c.nombre,
+      codigo: c.codigo,
+      animalesCount: c._count.animales,
+      grupoCorrales: c.grupoCorrales,
+      ultimaLectura: ultimasLecturas.find((l) => l.corralId === c.id) ?? null,
+      racionActiva: racionesActivas.find((r) => r.corralId === c.id) ?? null,
+    }))
+  }
+
+  async listarHistorialLecturas(organizacionId: string, gruposPermitidosIds?: string[], limit = 100) {
+    return this.prisma.lecturaComedor.findMany({
+      where: {
+        corral: {
+          grupoCorrales: {
+            organizacionId,
+            ...(gruposPermitidosIds ? { id: { in: gruposPermitidosIds } } : {}),
+          },
+        },
+      },
+      orderBy: { fechaLectura: 'desc' },
+      take: limit,
+      include: {
+        estadoConfig: { select: { id: true, nombre: true, color: true } },
+        registradoPor: { select: { id: true, nombre: true, apellido: true } },
+        corral: {
+          select: {
+            id: true, nombre: true, codigo: true,
+            grupoCorrales: { select: { id: true, nombre: true } },
+          },
+        },
+      },
+    })
+  }
+
   // ── Dashboard ─────────────────────────────────────────────────────────────
 
   async getEstadoActual(grupoCorralesId: string, organizacionId: string) {

@@ -6,7 +6,7 @@ import { CheckCircle2, RotateCcw, Scale, Clock, AlertCircle, ChevronRight } from
 import { scanApi } from '@/lib/api/scan.api'
 import { racionesApi } from '@/lib/api/raciones.api'
 import { BarcodeInput } from '@/components/scanner/barcode-input'
-import { PageHeader } from '@/components/ui/page-header'
+import { MobilePageHeader } from '@/components/operador/mobile-page-header'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -96,19 +96,14 @@ export default function SurtirRacionPage() {
   // ── STEP: SCAN ──────────────────────────────────────────────────────────────
   if (step === 'scan') {
     return (
-      <div className="space-y-6">
-        <PageHeader
-          title="Surtir Ración"
-          description="Escanea el corral para registrar el surtido"
+      <div className="space-y-5">
+        <MobilePageHeader title="Surtir ración" subtitle="Escanea el corral" />
+        <BarcodeInput
+          onScan={codigo => scanMutation.mutate(codigo)}
+          loading={scanMutation.isPending}
+          label="Código del corral"
+          autoFocus
         />
-        <div className="max-w-lg mx-auto">
-          <BarcodeInput
-            onScan={codigo => scanMutation.mutate(codigo)}
-            loading={scanMutation.isPending}
-            label="Código del corral"
-            autoFocus
-          />
-        </div>
       </div>
     )
   }
@@ -117,18 +112,22 @@ export default function SurtirRacionPage() {
   if (step === 'surtido' && corralResult) {
     const { corral } = corralResult
     return (
-      <div className="space-y-6">
-        <PageHeader
+      <div className="space-y-5">
+        <MobilePageHeader
           title="Registrar surtido"
+          back={false}
           action={
-            <button onClick={reset} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+            <button
+              onClick={reset}
+              aria-label="Otro corral"
+              className="w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground active:bg-muted transition-colors"
+            >
               <RotateCcw className="h-4 w-4" />
-              Otro corral
             </button>
           }
         />
 
-        <div className="max-w-lg mx-auto space-y-4">
+        <div className="space-y-4">
           {/* Info corral */}
           <div className="rounded-xl border border-border bg-background px-4 py-3 space-y-1">
             <p className="font-semibold text-foreground">{corral.nombre}</p>
@@ -148,7 +147,10 @@ export default function SurtirRacionPage() {
           {/* Ración activa */}
           {racion && (
             <div className="rounded-xl border border-border bg-background p-4 space-y-2">
-              <p className="text-sm font-medium text-foreground">Ración activa</p>
+              <div className="space-y-0.5">
+                <p className="text-[11px] font-bold tracking-widest uppercase text-muted-foreground">Ración activa</p>
+                <p className="text-[16px] font-bold text-foreground tracking-tight leading-tight">{racion.nombre}</p>
+              </div>
               <div className="flex gap-4 text-sm">
                 <span className={`font-mono ${turno === TurnoRacion.MANANA ? 'text-brand font-semibold' : 'text-muted-foreground'}`}>
                   ☀️ Mañana: {Number(racion.cantidadKgManana)} kg
@@ -226,11 +228,12 @@ export default function SurtirRacionPage() {
 
           <Button
             variant="primary"
+            size="xl"
             className="w-full"
             onClick={handleSurtir}
             disabled={surtirMutation.isPending}
           >
-            <Scale className="h-4 w-4 mr-2" />
+            <Scale className="h-5 w-5" />
             {surtirMutation.isPending ? 'Registrando…' : 'Confirmar surtido'}
           </Button>
         </div>
@@ -241,32 +244,31 @@ export default function SurtirRacionPage() {
   // ── STEP: ÉXITO ─────────────────────────────────────────────────────────────
   if (step === 'exito') {
     return (
-      <div className="space-y-6">
-        <PageHeader title="Surtido registrado" />
-        <div className="max-w-lg mx-auto space-y-6">
-          <div className="rounded-xl border border-green-500/40 bg-green-500/5 p-6 text-center space-y-3">
-            <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto" />
-            <p className="font-semibold text-foreground text-lg">Surtido registrado</p>
+      <div className="space-y-5">
+        <div className="rounded-2xl border border-success/30 bg-success-subtle/60 p-6 text-center space-y-3">
+          <CheckCircle2 className="h-14 w-14 text-success mx-auto" />
+          <div className="space-y-1">
+            <p className="font-semibold text-foreground text-[17px]">Surtido registrado</p>
             {corralResult && ultimoSurtido && (
-              <div className="text-sm text-muted-foreground space-y-1">
+              <div className="text-[13px] text-muted-foreground space-y-1">
                 <p>{corralResult.corral.nombre}</p>
                 <p>
                   {ultimoSurtido.turno === TurnoRacion.MANANA ? '☀️ Mañana' : '🌙 Tarde'}
                   {' · '}<strong className="text-foreground">{ultimoSurtido.kg} kg surtidos</strong>
                 </p>
                 {ultimoSurtido.diferencia !== null && (
-                  <p className={ultimoSurtido.diferencia > 0 ? 'text-amber-500' : ultimoSurtido.diferencia < 0 ? 'text-red-500' : 'text-green-500'}>
+                  <p className={ultimoSurtido.diferencia > 0 ? 'text-warning-foreground' : ultimoSurtido.diferencia < 0 ? 'text-danger-foreground' : 'text-success-foreground'}>
                     Diferencia: {ultimoSurtido.diferencia > 0 ? '+' : ''}{ultimoSurtido.diferencia.toFixed(1)} kg
                   </p>
                 )}
               </div>
             )}
           </div>
-          <Button variant="secondary" className="w-full" onClick={reset}>
-            <Scale className="h-4 w-4 mr-2" />
-            Surtir otro corral
-          </Button>
         </div>
+        <Button variant="primary" size="xl" className="w-full" onClick={reset}>
+          <Scale className="h-5 w-5" />
+          Surtir otro corral
+        </Button>
       </div>
     )
   }

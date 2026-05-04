@@ -9,15 +9,15 @@ import { UsuarioSesion, TipoUsuario } from '@ganaderia/shared'
 
 @ApiTags('Grupos de Corrales')
 @ApiBearerAuth()
-@RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN)
 @Controller('grupos-corrales')
 export class GruposCorralesController {
   constructor(private readonly service: GruposCorralesService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Listar grupos de corrales' })
+  @ApiOperation({ summary: 'Listar grupos de corrales (operador filtrado a sus asignados)' })
   findAll(@CurrentUser() user: UsuarioSesion) {
-    return this.service.findAll(user.organizacionId)
+    const filtro = user.tipo === TipoUsuario.OPERADOR ? user.gruposCorralesIds : undefined
+    return this.service.findAll(user.organizacionId, filtro)
   }
 
   @Get(':id')
@@ -27,18 +27,21 @@ export class GruposCorralesController {
   }
 
   @Post()
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   @ApiOperation({ summary: 'Crear grupo de corrales' })
   create(@Body() dto: CreateGrupoCorralesDto, @CurrentUser() user: UsuarioSesion) {
     return this.service.create(dto, user.organizacionId)
   }
 
   @Put(':id')
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   @ApiOperation({ summary: 'Actualizar grupo de corrales' })
   update(@Param('id') id: string, @Body() dto: UpdateGrupoCorralesDto, @CurrentUser() user: UsuarioSesion) {
     return this.service.update(id, dto, user.organizacionId)
   }
 
   @Delete(':id')
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   @ApiOperation({ summary: 'Desactivar grupo de corrales' })
   remove(@Param('id') id: string, @CurrentUser() user: UsuarioSesion) {
     return this.service.remove(id, user.organizacionId)

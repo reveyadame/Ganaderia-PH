@@ -68,9 +68,24 @@ export interface AplicacionTratamiento {
   notas: string | null
   costoTotalCalculado: number
   createdAt: string
-  aplicadoPor: { id: string; nombre: string }
+  aplicadoPor: { id: string; nombre: string; apellido?: string }
   template: { id: string; nombre: string } | null
   items: AplicacionItem[]
+}
+
+export interface AplicacionTratamientoConAnimal extends AplicacionTratamiento {
+  animal: {
+    id: string
+    areteSiniiga: string | null
+    estado: string
+    corral: {
+      id: string
+      nombre: string
+      codigo: string
+      grupoCorrales: { id: string; nombre: string }
+    }
+    asignacionesArete: Array<{ areteBlanco: { id: string; codigo: string } }>
+  }
 }
 
 export interface TratamientoItemIndividualInput {
@@ -119,6 +134,8 @@ export const tratamientoTemplatesApi = {
 export const tratamientosApi = {
   findByAnimal: (animalId: string) =>
     api.get<AplicacionTratamiento[]>(`/tratamientos?animalId=${animalId}`),
+  listarRecientes: (limit?: number) =>
+    api.get<AplicacionTratamientoConAnimal[]>(`/tratamientos/recientes${limit ? `?limit=${limit}` : ''}`),
   previewCosto: (data: CreateTratamientoInput) =>
     api.post<PreviewCostoResult>('/tratamientos/preview-costo', data),
   create: (data: CreateTratamientoInput) =>

@@ -19,7 +19,6 @@ import { TipoUsuario, ActividadUsuario } from '@ganaderia/shared'
 
 const TIPO_OPTIONS = [
   { value: TipoUsuario.SUPERUSUARIO, label: 'Superusuario' },
-  { value: TipoUsuario.ADMIN, label: 'Administrador' },
   { value: TipoUsuario.DIRECTOR, label: 'Director' },
   { value: TipoUsuario.OPERADOR, label: 'Operador' },
 ]
@@ -33,9 +32,15 @@ const ACTIVIDAD_LABELS: Record<ActividadUsuario, string> = {
   [ActividadUsuario.REPORTES]: 'Reportes',
 }
 
+const ACTIVIDADES_OPERADOR: ActividadUsuario[] = [
+  ActividadUsuario.REGISTRO,
+  ActividadUsuario.TRATAMIENTOS,
+  ActividadUsuario.COMEDEROS,
+  ActividadUsuario.RACIONES,
+]
+
 const TIPO_BADGE: Record<TipoUsuario, React.ReactNode> = {
   [TipoUsuario.SUPERUSUARIO]: <Badge variant="info">Superusuario</Badge>,
-  [TipoUsuario.ADMIN]: <Badge variant="default">Admin</Badge>,
   [TipoUsuario.DIRECTOR]: <Badge variant="success">Director</Badge>,
   [TipoUsuario.OPERADOR]: <Badge variant="muted">Operador</Badge>,
 }
@@ -148,6 +153,11 @@ export default function UsuariosPage() {
     setSelectedGrupos(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
 
   const isOperador = form.tipo === TipoUsuario.OPERADOR
+  const isDirector = form.tipo === TipoUsuario.DIRECTOR
+  const necesitaActividades = isOperador || isDirector
+  const actividadesDisponibles = isOperador
+    ? Object.entries(ACTIVIDAD_LABELS).filter(([key]) => ACTIVIDADES_OPERADOR.includes(key as ActividadUsuario))
+    : Object.entries(ACTIVIDAD_LABELS)
 
   return (
     <div className="space-y-6">
@@ -186,18 +196,16 @@ export default function UsuariosPage() {
                   </td>
                   <td className="px-4 py-3.5">{TIPO_BADGE[u.tipo]}</td>
                   <td className="px-4 py-3.5">
-                    {u.tipo === TipoUsuario.OPERADOR ? (
-                      u.actividades.length ? (
-                        <div className="flex flex-wrap gap-1">
-                          {u.actividades.slice(0, 2).map(a => (
-                            <Badge key={a.actividad} variant="muted" className="text-[10px]">{a.actividad}</Badge>
-                          ))}
-                          {u.actividades.length > 2 && <Badge variant="muted" className="text-[10px]">+{u.actividades.length - 2}</Badge>}
-                        </div>
-                      ) : <span className="text-xs text-muted-foreground">Sin actividades</span>
-                    ) : (
+                    {u.tipo === TipoUsuario.SUPERUSUARIO ? (
                       <span className="text-xs text-muted-foreground">Acceso completo</span>
-                    )}
+                    ) : u.actividades.length ? (
+                      <div className="flex flex-wrap gap-1">
+                        {u.actividades.slice(0, 2).map(a => (
+                          <Badge key={a.actividad} variant="muted" className="text-[10px]">{a.actividad}</Badge>
+                        ))}
+                        {u.actividades.length > 2 && <Badge variant="muted" className="text-[10px]">+{u.actividades.length - 2}</Badge>}
+                      </div>
+                    ) : <span className="text-xs text-muted-foreground">Sin actividades</span>}
                   </td>
                   <td className="px-4 py-3.5 text-muted-foreground text-xs">
                     {u.ultimoAcceso ? formatDateTime(u.ultimoAcceso) : '—'}
@@ -205,7 +213,7 @@ export default function UsuariosPage() {
                   <td className="px-4 py-3.5"><ActiveBadge activo={u.activo} /></td>
                   <td className="px-4 py-3.5">
                     <div className="flex items-center justify-end gap-1">
-                      {u.tipo === TipoUsuario.OPERADOR && (
+                      {u.tipo !== TipoUsuario.SUPERUSUARIO && (
                         <button onClick={() => openPermisos(u)} title="Gestionar permisos"
                           className="p-1.5 rounded-md text-muted-foreground hover:text-brand hover:bg-brand/10 transition-colors">
                           <ShieldCheck className="h-3.5 w-3.5" />
@@ -238,12 +246,12 @@ export default function UsuariosPage() {
             <Select label="Tipo de usuario" value={form.tipo} onChange={e => setForm({ ...form, tipo: e.target.value as TipoUsuario })} options={TIPO_OPTIONS} required />
           </div>
 
-          {/* Actividades y grupos solo para OPERADOR en creación */}
-          {mode === 'create' && isOperador && (
+          {/* Actividades y grupos para OPERADOR y DIRECTOR en creación */}
+          {mode === 'create' && necesitaActividades && (
             <div className="space-y-3 pt-1">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Actividades permitidas</p>
               <div className="grid grid-cols-2 gap-2">
-                {Object.entries(ACTIVIDAD_LABELS).map(([key, label]) => (
+                {actividadesDisponibles.map(([key, label]) => (
                   <label key={key} className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={selectedActividades.includes(key as ActividadUsuario)}
                       onChange={() => toggleActividad(key as ActividadUsuario)}
@@ -288,7 +296,10 @@ export default function UsuariosPage() {
           <div>
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Actividades</p>
             <div className="grid grid-cols-2 gap-2">
-              {Object.entries(ACTIVIDAD_LABELS).map(([key, label]) => (
+              {(target?.tipo === TipoUsuario.OPERADOR
+                ? Object.entries(ACTIVIDAD_LABELS).filter(([key]) => ACTIVIDADES_OPERADOR.includes(key as ActividadUsuario))
+                : Object.entries(ACTIVIDAD_LABELS)
+              ).map(([key, label]) => (
                 <label key={key} className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={selectedActividades.includes(key as ActividadUsuario)}
                     onChange={() => toggleActividad(key as ActividadUsuario)}

@@ -16,8 +16,10 @@ import { TratamientoTemplatesModule } from './modules/tratamiento-templates/trat
 import { TratamientosModule } from './modules/tratamientos/tratamientos.module'
 import { ComederoModule } from './modules/comederos/comederos.module'
 import { RacionesModule } from './modules/raciones/raciones.module'
+import { RacionesCatalogoModule } from './modules/raciones-catalogo/raciones-catalogo.module'
 import { DashboardModule } from './modules/dashboard/dashboard.module'
 import { ReportesModule } from './modules/reportes/reportes.module'
+import { NotificacionesModule } from './modules/notificaciones/notificaciones.module'
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard'
 import { RolesGuard } from './common/guards/roles.guard'
 import { ActividadGuard } from './common/guards/actividad.guard'
@@ -42,8 +44,10 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor'
     TratamientosModule,
     ComederoModule,
     RacionesModule,
+    RacionesCatalogoModule,
     DashboardModule,
     ReportesModule,
+    NotificacionesModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },

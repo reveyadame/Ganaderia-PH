@@ -5,6 +5,8 @@ export interface RacionDefinicion {
   id: string
   corralId: string
   definidaPorId: string
+  catalogoId: string | null
+  nombre: string
   cantidadKgManana: number
   cantidadKgTarde: number
   descripcion: string | null
@@ -12,8 +14,9 @@ export interface RacionDefinicion {
   fechaFin: string | null
   activa: boolean
   createdAt: string
-  corral?: { id: string; nombre: string; codigo: string }
-  definidaPor: { id: string; nombre: string }
+  corral?: { id: string; nombre: string; codigo: string; grupoCorrales?: { id: string; nombre: string } }
+  definidaPor: { id: string; nombre: string; apellido?: string }
+  catalogo?: { id: string; nombre: string } | null
   _count?: { surtidos: number }
 }
 
@@ -35,6 +38,8 @@ export interface SurtidoRacion {
 
 export interface CreateRacionInput {
   corralId: string
+  catalogoId?: string
+  nombre?: string
   cantidadKgManana: number
   cantidadKgTarde: number
   descripcion?: string
@@ -53,6 +58,12 @@ export const racionesApi = {
     api.get<RacionDefinicion | null>(`/raciones/activa?corralId=${corralId}`),
   getRacionesCorral: (corralId: string) =>
     api.get<RacionDefinicion[]>(`/raciones/corral/${corralId}`),
+  listarActivas: () =>
+    api.get<RacionDefinicion[]>('/raciones/activas'),
+  listarHistorial: (limit?: number) =>
+    api.get<RacionDefinicion[]>(`/raciones/historial${limit ? `?limit=${limit}` : ''}`),
+  actualizarCantidades: (id: string, cantidadKgManana: number, cantidadKgTarde: number) =>
+    api.patch<RacionDefinicion>(`/raciones/${id}/cantidades`, { cantidadKgManana, cantidadKgTarde }),
   crearRacion: (data: CreateRacionInput) =>
     api.post<RacionDefinicion>('/raciones/definir', data),
   getSurtidosRecientes: (corralId: string, limite?: number) => {

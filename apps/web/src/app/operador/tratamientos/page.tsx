@@ -1,18 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
+import type { Route } from 'next'
+import Link from 'next/link'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import {
   Syringe, CheckCircle2, AlertCircle, RotateCcw, ChevronRight,
-  Plus, X, DollarSign,
+  Plus, X, DollarSign, History,
 } from 'lucide-react'
 import { scanApi } from '@/lib/api/scan.api'
+import { animalesApi } from '@/lib/api/animales.api'
 import { tratamientoTemplatesApi, tratamientosApi, TratamientoTemplate, PreviewCostoResult } from '@/lib/api/tratamientos.api'
 import { medicamentosApi } from '@/lib/api/medicamentos.api'
 import { farmaciasApi } from '@/lib/api/farmacias.api'
 import { BarcodeInput } from '@/components/scanner/barcode-input'
 import { ScanResultAnimalCard } from '@/components/scanner/scan-result-animal'
-import { PageHeader } from '@/components/ui/page-header'
+import { MobilePageHeader } from '@/components/operador/mobile-page-header'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -35,6 +39,9 @@ interface ItemIndividual {
 const UNIDAD_OPTIONS = Object.values(UnidadMedida).map(v => ({ value: v, label: v }))
 
 export default function TratamientosPage() {
+  const searchParams = useSearchParams()
+  const animalIdParam = searchParams.get('animalId')
+
   const [step, setStep] = useState<Step>('scan')
   const [animalResult, setAnimalResult] = useState<ScanResultAnimal | null>(null)
   const [modo, setModo] = useState<Modo>('kit')
@@ -97,6 +104,47 @@ export default function TratamientosPage() {
     onSuccess: () => setStep('exito'),
     onError: (e: { message?: string }) => toast('error', e.message ?? 'Error al registrar tratamiento'),
   })
+
+  // Pre-cargar animal si viene por query param (desde historial)
+  useEffect(() => {
+    if (!animalIdParam || animalResult || step !== 'scan') return
+    let cancelled = false
+    animalesApi.findOne(animalIdParam)
+      .then((animal) => {
+        if (cancelled) return
+        if (animal.estado !== 'ACTIVO') {
+          toast('error', `Animal no activo (${animal.estado})`)
+          return
+        }
+        const result: ScanResultAnimal = {
+          tipo: 'ANIMAL',
+          animal: {
+            id: animal.id,
+            areteSiniiga: animal.areteSiniiga,
+            areteBlancoActual: animal.areteBlancoActual?.codigo ?? null,
+            sexo: animal.sexo,
+            pesoEntrada: Number(animal.pesoEntrada),
+            fechaEntrada: animal.fechaEntrada,
+            estado: animal.estado,
+            corral: {
+              id: animal.corral.id,
+              nombre: animal.corral.nombre,
+              codigo: animal.corral.codigo,
+              grupoCorrales: {
+                id: animal.corral.grupoCorrales.id,
+                nombre: animal.corral.grupoCorrales.nombre,
+              },
+            },
+            costoAcumulado: Number(animal.costoAcumulado),
+            tratamientosCount: animal.aplicaciones?.length ?? 0,
+          },
+        }
+        setAnimalResult(result)
+        setStep('seleccion')
+      })
+      .catch(() => toast('error', 'No se pudo cargar el animal'))
+    return () => { cancelled = true }
+  }, [animalIdParam, animalResult, step])
 
   function handleScan(codigo: string) {
     if (!codigo.trim()) return
@@ -175,12 +223,9 @@ export default function TratamientosPage() {
   // ── STEP: SCAN ──────────────────────────────────────────────────────────────
   if (step === 'scan') {
     return (
-      <div className="space-y-6">
-        <PageHeader
-          title="Aplicar Tratamiento"
-          description="Escanea el arete del animal para comenzar"
-        />
-        <div className="max-w-lg mx-auto space-y-4">
+      <div className="space-y-5">
+        <MobilePageHeader title="Aplicar tratamiento" subtitle="Escanea el arete del animal" />
+        <div className="space-y-3">
           <BarcodeInput
             onScan={handleScan}
             loading={scanMutation.isPending}
@@ -194,6 +239,20 @@ export default function TratamientosPage() {
             </p>
           )}
         </div>
+
+        <Link
+          href={'/operador/tratamientos/historial' as Route}
+          className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3 hover:border-border-strong active:bg-muted/40 transition-all"
+        >
+          <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+            <History className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[14px] font-semibold text-foreground">Ver tratamientos recientes</p>
+            <p className="text-[12px] text-muted-foreground">Repite uno sin volver a escanear</p>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+        </Link>
       </div>
     )
   }
@@ -201,21 +260,22 @@ export default function TratamientosPage() {
   // ── STEP: SELECCIÓN ─────────────────────────────────────────────────────────
   if (step === 'seleccion' && animalResult) {
     return (
-      <div className="space-y-6">
-        <PageHeader
-          title="Seleccionar Tratamiento"
+      <div className="space-y-5">
+        <MobilePageHeader
+          title="Seleccionar tratamiento"
+          back={false}
           action={
             <button
               onClick={resetAll}
-              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Nuevo escaneo"
+              className="w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground active:bg-muted transition-colors"
             >
               <RotateCcw className="h-4 w-4" />
-              Nuevo escaneo
             </button>
           }
         />
 
-        <div className="max-w-lg mx-auto space-y-4">
+        <div className="space-y-4">
           {/* Animal card */}
           <ScanResultAnimalCard result={animalResult} onClear={resetAll} />
 
@@ -370,12 +430,13 @@ export default function TratamientosPage() {
 
           <Button
             variant="primary"
+            size="xl"
             className="w-full"
             onClick={handleIrAPreview}
             disabled={previewMutation.isPending}
           >
             {previewMutation.isPending ? 'Calculando…' : 'Ver costo estimado'}
-            <ChevronRight className="h-4 w-4 ml-1.5" />
+            <ChevronRight className="h-5 w-5" />
           </Button>
         </div>
       </div>
@@ -387,21 +448,22 @@ export default function TratamientosPage() {
     const haysinStock = preview.items.some(i => i.sinStock)
 
     return (
-      <div className="space-y-6">
-        <PageHeader
-          title="Confirmar Tratamiento"
+      <div className="space-y-5">
+        <MobilePageHeader
+          title="Confirmar tratamiento"
+          back={false}
           action={
             <button
               onClick={() => setStep('seleccion')}
-              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Volver al paso anterior"
+              className="w-10 h-10 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground active:bg-muted transition-colors"
             >
               <RotateCcw className="h-4 w-4" />
-              Volver
             </button>
           }
         />
 
-        <div className="max-w-lg mx-auto space-y-4">
+        <div className="space-y-4">
           <ScanResultAnimalCard result={animalResult} />
 
           {/* Preview de costo */}
@@ -463,11 +525,12 @@ export default function TratamientosPage() {
 
           <Button
             variant="primary"
+            size="xl"
             className="w-full"
             onClick={handleConfirmar}
             disabled={aplicarMutation.isPending}
           >
-            <Syringe className="h-4 w-4 mr-2" />
+            <Syringe className="h-5 w-5" />
             {aplicarMutation.isPending ? 'Registrando…' : 'Confirmar tratamiento'}
           </Button>
         </div>
@@ -478,14 +541,13 @@ export default function TratamientosPage() {
   // ── STEP: ÉXITO ─────────────────────────────────────────────────────────────
   if (step === 'exito') {
     return (
-      <div className="space-y-6">
-        <PageHeader title="Tratamiento registrado" />
-        <div className="max-w-lg mx-auto space-y-6">
-          <div className="rounded-xl border border-green-500/40 bg-green-500/5 p-6 text-center space-y-3">
-            <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto" />
-            <p className="font-semibold text-foreground text-lg">Tratamiento aplicado</p>
+      <div className="space-y-5">
+        <div className="rounded-2xl border border-success/30 bg-success-subtle/60 p-6 text-center space-y-3">
+          <CheckCircle2 className="h-14 w-14 text-success mx-auto" />
+          <div className="space-y-1">
+            <p className="font-semibold text-foreground text-[17px]">Tratamiento aplicado</p>
             {animalResult && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-[13px] text-muted-foreground">
                 {animalResult.animal.areteSiniiga
                   ? `SINIIGA: ${animalResult.animal.areteSiniiga}`
                   : animalResult.animal.areteBlancoActual
@@ -494,14 +556,12 @@ export default function TratamientosPage() {
               </p>
             )}
           </div>
-
-          <div className="flex gap-3">
-            <Button variant="secondary" className="flex-1" onClick={resetAll}>
-              <Syringe className="h-4 w-4 mr-2" />
-              Otro tratamiento
-            </Button>
-          </div>
         </div>
+
+        <Button variant="primary" size="xl" className="w-full" onClick={resetAll}>
+          <Syringe className="h-5 w-5" />
+          Otro tratamiento
+        </Button>
       </div>
     )
   }

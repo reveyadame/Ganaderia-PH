@@ -11,7 +11,7 @@ import { UsuarioSesion, TipoUsuario } from '@ganaderia/shared'
 
 @ApiTags('Usuarios')
 @ApiBearerAuth()
-@RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN)
+@RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
 @Controller('usuarios')
 export class UsuariosController {
   constructor(private readonly service: UsuariosService) {}

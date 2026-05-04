@@ -49,7 +49,7 @@ export class AnimalesController {
   }
 
   @Patch(':id/liberar-arete')
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   @ApiOperation({ summary: 'Liberar arete blanco (admin)' })
   liberarArete(@Param('id') id: string, @CurrentUser() user: UsuarioSesion) {
     return this.service.liberarAreteBlanco(id, user.organizacionId, user.id)

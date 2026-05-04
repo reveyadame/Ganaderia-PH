@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google'
 import { Providers } from './providers'
 import './globals.css'
@@ -14,6 +14,13 @@ const geistMono = JetBrains_Mono({ variable: '--font-geist-mono', subsets: ['lat
 export const metadata: Metadata = {
   title: { default: 'Ganadería PH', template: '%s — Ganadería PH' },
   description: 'Sistema de gestión de engorda de ganado',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#fafafa',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

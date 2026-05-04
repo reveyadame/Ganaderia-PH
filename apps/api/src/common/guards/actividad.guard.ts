@@ -3,7 +3,7 @@ import { Reflector } from '@nestjs/core'
 import { ActividadUsuario, TipoUsuario, UsuarioSesion } from '@ganaderia/shared'
 import { ACTIVIDAD_KEY } from '../decorators/requiere-actividad.decorator'
 
-const ROLES_SIN_RESTRICCION = [TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN, TipoUsuario.DIRECTOR]
+const ROLES_SIN_RESTRICCION = [TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR]
 
 @Injectable()
 export class ActividadGuard implements CanActivate {

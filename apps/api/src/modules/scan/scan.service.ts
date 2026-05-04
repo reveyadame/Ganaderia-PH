@@ -53,7 +53,7 @@ export class ScanService {
         const [racionActiva, ultimaLectura] = await Promise.all([
           this.prisma.racionDefinicion.findFirst({
             where: { corralId: corral.id, activa: true },
-            select: { id: true, cantidadKgManana: true, cantidadKgTarde: true, descripcion: true },
+            select: { id: true, nombre: true, cantidadKgManana: true, cantidadKgTarde: true, descripcion: true },
           }),
           this.prisma.lecturaComedor.findFirst({
             where: { corralId: corral.id },

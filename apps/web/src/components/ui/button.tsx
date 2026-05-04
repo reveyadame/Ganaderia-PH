@@ -3,7 +3,7 @@ import { Loader2 } from 'lucide-react'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'destructive' | 'ghost'
-  size?: 'sm' | 'md' | 'lg' | 'icon'
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'icon'
   loading?: boolean
 }
 
@@ -25,6 +25,7 @@ const sizes = {
   sm: 'h-8 px-3 text-xs rounded-md gap-1.5',
   md: 'h-9 px-3.5 text-sm rounded-md gap-2',
   lg: 'h-10 px-5 text-sm rounded-lg gap-2',
+  xl: 'h-12 px-6 text-[15px] rounded-xl gap-2',
   icon: 'h-9 w-9 rounded-md',
 }
 

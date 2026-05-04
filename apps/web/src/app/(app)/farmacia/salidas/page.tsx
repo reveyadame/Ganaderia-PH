@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useSearchParams, useRouter } from 'next/navigation'
 import { Plus, ArrowUpFromLine, ChevronLeft, ChevronRight, CheckCircle, Package } from 'lucide-react'
 import { inventarioApi } from '@/lib/api/inventario.api'
 import { medicamentosApi } from '@/lib/api/medicamentos.api'
@@ -17,12 +16,11 @@ import { TableSkeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/ui/empty-state'
 import { toast } from '@/components/ui/toast'
 import { formatDateTime } from '@/lib/utils'
+import { FarmaciaSwitcher, SinFarmaciasMensaje, useFarmaciaActiva } from '@/components/farmacia/farmacia-switcher'
 import { EstadoRegreso } from '@ganaderia/shared'
 
 export default function SalidasPage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const farmaciaId = searchParams.get('farmaciaId') ?? ''
+  const { farmaciaActivaId: farmaciaId, farmaciaActiva, hasAccess, isLoading: loadingFarmacias } = useFarmaciaActiva()
   const qc = useQueryClient()
 
   const [filtroAbierta, setFiltroAbierta] = useState<string>('true')
@@ -31,7 +29,7 @@ export default function SalidasPage() {
   const [nuevaSalidaOpen, setNuevaSalidaOpen] = useState(false)
   const [salidaForm, setSalidaForm] = useState({
     medicamentoId: '',
-    unidadMedicamentoId: '',
+    cantidad: '1',
     medicoId: '',
     notas: '',
   })
@@ -43,18 +41,8 @@ export default function SalidasPage() {
     queryKey: ['medicamentos', farmaciaId],
     queryFn: () => medicamentosApi.findAll(farmaciaId),
     enabled: !!farmaciaId,
-    select: meds => meds.filter(m => m.stock.disponibles > 0),
-  })
-
-  const { data: unidadesDisponibles } = useQuery({
-    queryKey: ['inventario-unidades-disp', farmaciaId, salidaForm.medicamentoId],
-    queryFn: () => inventarioApi.getUnidades({
-      farmaciaId,
-      medicamentoId: salidaForm.medicamentoId,
-      estado: 'DISPONIBLE',
-      limit: 100,
-    }),
-    enabled: !!farmaciaId && !!salidaForm.medicamentoId,
+    // Para salida bulk: cualquier medicamento con DISPONIBLE o PRE_INGRESO sirve
+    select: meds => meds.filter(m => (m.stock.disponibles + m.stock.preIngreso) > 0),
   })
 
   const { data: salidas, isLoading } = useQuery({
@@ -75,17 +63,19 @@ export default function SalidasPage() {
 
   const crearSalidaMutation = useMutation({
     mutationFn: () => inventarioApi.crearSalida({
-      unidadMedicamentoId: salidaForm.unidadMedicamentoId,
+      medicamentoId: salidaForm.medicamentoId,
+      cantidad: parseInt(salidaForm.cantidad) || 1,
       medicoId: salidaForm.medicoId,
       notas: salidaForm.notas || undefined,
     }),
-    onSuccess: () => {
+    onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ['inventario-salidas'] })
       qc.invalidateQueries({ queryKey: ['inventario-stock'] })
       qc.invalidateQueries({ queryKey: ['medicamentos'] })
-      toast('success', 'Salida temporal registrada')
+      const plural = res.cantidad === 1 ? 'unidad entregada' : 'unidades entregadas'
+      toast('success', `${res.cantidad} ${plural} de ${res.medicamento.nombre}`)
       setNuevaSalidaOpen(false)
-      setSalidaForm({ medicamentoId: '', unidadMedicamentoId: '', medicoId: '', notas: '' })
+      setSalidaForm({ medicamentoId: '', cantidad: '1', medicoId: '', notas: '' })
     },
     onError: (e: { message?: string }) => toast('error', e.message ?? 'Error al registrar salida'),
   })
@@ -112,27 +102,25 @@ export default function SalidasPage() {
 
   const medOptions = [
     { value: '', label: 'Selecciona medicamento...' },
-    ...(medicamentos?.map(m => ({ value: m.id, label: `${m.nombre} (${m.stock.disponibles} disp.)` })) ?? []),
-  ]
-
-  const unidadOptions = [
-    { value: '', label: 'Selecciona unidad...' },
-    ...(unidadesDisponibles?.data.map(u => ({
-      value: u.id,
-      label: `Ingreso: ${new Date(u.fechaEntrada).toLocaleDateString('es-MX')} · $${u.costoUnitario}`,
+    ...(medicamentos?.map(m => ({
+      value: m.id,
+      label: `${m.nombre} (${m.stock.disponibles + m.stock.preIngreso} disp.)`,
     })) ?? []),
   ]
+
+  const stockSeleccionado = medicamentos?.find(m => m.id === salidaForm.medicamentoId)
+  const stockDisponible = stockSeleccionado ? stockSeleccionado.stock.disponibles + stockSeleccionado.stock.preIngreso : 0
 
   const medicoOptions = [
     { value: '', label: 'Selecciona médico...' },
     ...(usuarios?.map(u => ({ value: u.id, label: `${u.nombre} ${u.apellido}` })) ?? []),
   ]
 
-  if (!farmaciaId) {
+  if (!loadingFarmacias && !hasAccess) {
     return (
       <div className="space-y-5">
-        <PageHeader title="Salidas temporales" description="Selecciona una farmacia primero" />
-        <Button variant="secondary" onClick={() => router.push('/farmacia')}>← Volver a Farmacia</Button>
+        <PageHeader title="Salidas temporales" description="Unidades entregadas a médicos en campo" />
+        <SinFarmaciasMensaje />
       </div>
     )
   }
@@ -141,11 +129,11 @@ export default function SalidasPage() {
     <div className="space-y-5">
       <PageHeader
         title="Salidas temporales"
-        description="Unidades entregadas a médicos en campo"
+        description={farmaciaActiva ? `Salidas de ${farmaciaActiva.nombre}` : 'Unidades entregadas a médicos en campo'}
         action={
-          <div className="flex gap-2">
-            <Button variant="secondary" onClick={() => router.push('/farmacia')}>← Farmacia</Button>
-            <Button onClick={() => setNuevaSalidaOpen(true)}>
+          <div className="flex items-center gap-2">
+            <FarmaciaSwitcher />
+            <Button onClick={() => setNuevaSalidaOpen(true)} disabled={!farmaciaId}>
               <Plus className="h-4 w-4" />
               Nueva salida
             </Button>
@@ -272,19 +260,21 @@ export default function SalidasPage() {
           <Select
             label="Medicamento *"
             value={salidaForm.medicamentoId}
-            onChange={e => setSalidaForm(f => ({ ...f, medicamentoId: e.target.value, unidadMedicamentoId: '' }))}
+            onChange={e => setSalidaForm(f => ({ ...f, medicamentoId: e.target.value, cantidad: '1' }))}
             options={medOptions}
             required
           />
-          {salidaForm.medicamentoId && (
-            <Select
-              label="Unidad a entregar *"
-              value={salidaForm.unidadMedicamentoId}
-              onChange={e => setSalidaForm(f => ({ ...f, unidadMedicamentoId: e.target.value }))}
-              options={unidadOptions}
-              required
-            />
-          )}
+          <Input
+            label={`Cantidad a entregar *${stockSeleccionado ? ` (máx. ${stockDisponible})` : ''}`}
+            type="number"
+            step="1"
+            min="1"
+            max={stockDisponible || undefined}
+            value={salidaForm.cantidad}
+            onChange={e => setSalidaForm(f => ({ ...f, cantidad: e.target.value }))}
+            hint="Se entregan las unidades más antiguas primero (FIFO)"
+            required
+          />
           <Select
             label="Médico / Veterinario *"
             value={salidaForm.medicoId}
@@ -303,7 +293,12 @@ export default function SalidasPage() {
             <Button
               loading={crearSalidaMutation.isPending}
               onClick={() => crearSalidaMutation.mutate()}
-              disabled={!salidaForm.unidadMedicamentoId || !salidaForm.medicoId}
+              disabled={
+                !salidaForm.medicamentoId ||
+                !salidaForm.medicoId ||
+                !salidaForm.cantidad ||
+                parseInt(salidaForm.cantidad) > stockDisponible
+              }
             >
               Registrar salida
             </Button>

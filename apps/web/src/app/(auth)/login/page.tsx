@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import type { Route } from 'next'
 import { useRouter } from 'next/navigation'
 import { useMutation } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
@@ -8,6 +9,7 @@ import { AlertCircle, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/stores/auth.store'
 import { authApi } from '@/lib/api/auth.api'
+import { TipoUsuario } from '@ganaderia/shared'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -20,7 +22,8 @@ export default function LoginPage() {
     mutationFn: () => authApi.login(email, password),
     onSuccess: (data) => {
       setAuth(data.usuario, data.accessToken)
-      router.push('/dashboard')
+      const destino: Route = data.usuario.tipo === TipoUsuario.OPERADOR ? ('/operador' as Route) : '/dashboard'
+      router.push(destino)
     },
     onError: () => {
       setError('Correo o contraseña incorrectos')

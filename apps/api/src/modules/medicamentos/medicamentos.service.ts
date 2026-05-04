@@ -1,14 +1,16 @@
-import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common'
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common'
+import { UsuarioSesion } from '@ganaderia/shared'
 import { PrismaService } from '../../prisma/prisma.service'
 import { CreateMedicamentoDto } from './dto/create-medicamento.dto'
 import { UpdateMedicamentoDto } from './dto/update-medicamento.dto'
+import { assertFarmaciaAccess } from '../../common/utils/farmacia-access.util'
 
 @Injectable()
 export class MedicamentosService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(farmaciaId: string, organizacionId: string) {
-    await this.validateFarmaciaAccess(farmaciaId, organizacionId)
+  async findAll(farmaciaId: string, user: UsuarioSesion) {
+    await assertFarmaciaAccess(this.prisma, user, farmaciaId)
 
     const medicamentos = await this.prisma.medicamento.findMany({
       where: { farmaciaId, activo: true },
@@ -38,13 +40,14 @@ export class MedicamentosService {
     })
   }
 
-  async findOne(id: string, organizacionId: string) {
+  async findOne(id: string, user: UsuarioSesion) {
     const med = await this.prisma.medicamento.findFirst({
       where: { id, activo: true },
       include: { farmacia: true },
     })
     if (!med) throw new NotFoundException('Medicamento no encontrado')
-    if (med.farmacia.organizacionId !== organizacionId) throw new ForbiddenException()
+    if (med.farmacia.organizacionId !== user.organizacionId) throw new NotFoundException('Medicamento no encontrado')
+    await assertFarmaciaAccess(this.prisma, user, med.farmaciaId)
 
     const stockRows = await this.prisma.unidadMedicamento.groupBy({
       by: ['estado'],
@@ -62,8 +65,8 @@ export class MedicamentosService {
     }
   }
 
-  async create(dto: CreateMedicamentoDto, organizacionId: string) {
-    await this.validateFarmaciaAccess(dto.farmaciaId, organizacionId)
+  async create(dto: CreateMedicamentoDto, user: UsuarioSesion) {
+    await assertFarmaciaAccess(this.prisma, user, dto.farmaciaId)
 
     const existe = await this.prisma.medicamento.findFirst({
       where: { farmaciaId: dto.farmaciaId, nombre: { equals: dto.nombre, mode: 'insensitive' }, activo: true },
@@ -83,8 +86,8 @@ export class MedicamentosService {
     })
   }
 
-  async update(id: string, dto: UpdateMedicamentoDto, organizacionId: string) {
-    const med = await this.findOne(id, organizacionId)
+  async update(id: string, dto: UpdateMedicamentoDto, user: UsuarioSesion) {
+    const med = await this.findOne(id, user)
 
     if (dto.nombre) {
       const existe = await this.prisma.medicamento.findFirst({
@@ -106,14 +109,8 @@ export class MedicamentosService {
     })
   }
 
-  async remove(id: string, organizacionId: string) {
-    await this.findOne(id, organizacionId)
+  async remove(id: string, user: UsuarioSesion) {
+    await this.findOne(id, user)
     return this.prisma.medicamento.update({ where: { id }, data: { activo: false } })
-  }
-
-  private async validateFarmaciaAccess(farmaciaId: string, organizacionId: string) {
-    const farmacia = await this.prisma.farmacia.findFirst({ where: { id: farmaciaId, organizacionId } })
-    if (!farmacia) throw new NotFoundException('Farmacia no encontrada o sin acceso')
-    return farmacia
   }
 }

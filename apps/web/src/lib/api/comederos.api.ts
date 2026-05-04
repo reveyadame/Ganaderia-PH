@@ -29,6 +29,7 @@ export interface EstadoActualCorral {
   nombre: string
   codigo: string
   animalesCount: number
+  grupoCorrales?: { id: string; nombre: string }
   ultimaLectura: {
     id: string
     fechaLectura: string
@@ -39,15 +40,30 @@ export interface EstadoActualCorral {
   racionActiva: {
     id: string
     corralId: string
+    nombre?: string
     cantidadKgManana: number
     cantidadKgTarde: number
-    descripcion: string | null
+    descripcion?: string | null
+    catalogo?: { id: string; nombre: string } | null
   } | null
 }
 
 export interface EstadoActualGrupo {
   grupo: { id: string; nombre: string }
   corrales: EstadoActualCorral[]
+}
+
+export interface LecturaHistorialItem {
+  id: string
+  corralId: string
+  fechaLectura: string
+  notas: string | null
+  estadoConfig: { id: string; nombre: string; color: string | null }
+  registradoPor: { id: string; nombre: string; apellido?: string }
+  corral: {
+    id: string; nombre: string; codigo: string
+    grupoCorrales: { id: string; nombre: string }
+  }
 }
 
 export interface CreateEstadoConfigInput {
@@ -82,4 +98,8 @@ export const comederoLecturasApi = {
   },
   getEstadoActual: (grupoCorralesId: string) =>
     api.get<EstadoActualGrupo>(`/comederos/estado-actual?grupoCorralesId=${grupoCorralesId}`),
+  getResumen: () =>
+    api.get<EstadoActualCorral[]>('/comederos/resumen'),
+  getHistorial: (limit?: number) =>
+    api.get<LecturaHistorialItem[]>(`/comederos/historial${limit ? `?limit=${limit}` : ''}`),
 }

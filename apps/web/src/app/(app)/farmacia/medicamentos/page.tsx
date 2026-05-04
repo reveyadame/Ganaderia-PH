@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useSearchParams, useRouter } from 'next/navigation'
-import { Plus, FlaskConical, AlertTriangle, Pencil, Trash2 } from 'lucide-react'
+import { Plus, FlaskConical, AlertTriangle, Pencil, Trash2, ArrowUpFromLine, Sliders } from 'lucide-react'
 import { medicamentosApi, CreateMedicamentoInput, MedicamentoConStock } from '@/lib/api/medicamentos.api'
-import { farmaciasApi } from '@/lib/api/farmacias.api'
+import { inventarioApi } from '@/lib/api/inventario.api'
+import { usuariosApi } from '@/lib/api/usuarios.api'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -15,7 +15,10 @@ import { Select } from '@/components/ui/select'
 import { TableSkeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/ui/empty-state'
 import { toast } from '@/components/ui/toast'
-import { PresentacionMedicamento, UnidadMedida } from '@ganaderia/shared'
+import { FarmaciaSwitcher, SinFarmaciasMensaje, useFarmaciaActiva } from '@/components/farmacia/farmacia-switcher'
+import { useAuthStore } from '@/stores/auth.store'
+import { PresentacionMedicamento, UnidadMedida, TipoUsuario } from '@ganaderia/shared'
+import { formatCurrency } from '@/lib/utils'
 
 const PRESENTACION_OPTIONS = Object.values(PresentacionMedicamento).map(v => ({ value: v, label: v }))
 const UNIDAD_OPTIONS = Object.values(UnidadMedida).map(v => ({ value: v, label: v }))
@@ -31,9 +34,9 @@ const emptyForm: CreateMedicamentoInput = {
 }
 
 export default function MedicamentosPage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const farmaciaId = searchParams.get('farmaciaId') ?? ''
+  const { farmaciaActivaId: farmaciaId, farmaciaActiva, hasAccess, isLoading: loadingFarmacias } = useFarmaciaActiva()
+  const { usuario } = useAuthStore()
+  const esSuperusuario = usuario?.tipo === TipoUsuario.SUPERUSUARIO
   const qc = useQueryClient()
 
   const [modalOpen, setModalOpen] = useState(false)
@@ -41,14 +44,31 @@ export default function MedicamentosPage() {
   const [deleteTarget, setDeleteTarget] = useState<MedicamentoConStock | null>(null)
   const [form, setForm] = useState<CreateMedicamentoInput>({ ...emptyForm, farmaciaId })
 
-  const { data: farmacias } = useQuery({ queryKey: ['farmacias'], queryFn: farmaciasApi.findAll })
+  // Salida desde fila
+  const [salidaTarget, setSalidaTarget] = useState<MedicamentoConStock | null>(null)
+  const [salidaForm, setSalidaForm] = useState({ cantidad: '1', medicoId: '', notas: '' })
+
+  // Ajuste desde fila (solo SU)
+  const [ajusteTarget, setAjusteTarget] = useState<MedicamentoConStock | null>(null)
+  const [ajusteForm, setAjusteForm] = useState({ cantidadNueva: '', costoUnitario: '', justificacion: '' })
+
+  const { data: usuarios } = useQuery({
+    queryKey: ['usuarios'],
+    queryFn: usuariosApi.findAll,
+    select: (us) => us.filter((u) => u.activo),
+    enabled: !!salidaTarget, // solo carga cuando se abre el dialog de salida
+  })
+
+  // Mantén farmaciaId del form sincronizado con el switcher
+  useEffect(() => {
+    if (farmaciaId) setForm((f) => ({ ...f, farmaciaId }))
+  }, [farmaciaId])
+
   const { data: medicamentos, isLoading } = useQuery({
     queryKey: ['medicamentos', farmaciaId],
     queryFn: () => medicamentosApi.findAll(farmaciaId),
     enabled: !!farmaciaId,
   })
-
-  const selectedFarmacia = farmacias?.find(f => f.id === farmaciaId)
 
   const createMutation = useMutation({
     mutationFn: medicamentosApi.create,
@@ -80,6 +100,57 @@ export default function MedicamentosPage() {
     },
     onError: (e: { message?: string }) => toast('error', e.message ?? 'Error al desactivar'),
   })
+
+  const salidaMutation = useMutation({
+    mutationFn: () => inventarioApi.crearSalida({
+      medicamentoId: salidaTarget!.id,
+      cantidad: parseInt(salidaForm.cantidad) || 1,
+      medicoId: salidaForm.medicoId,
+      notas: salidaForm.notas || undefined,
+    }),
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ['medicamentos', farmaciaId] })
+      qc.invalidateQueries({ queryKey: ['inventario-stock'] })
+      qc.invalidateQueries({ queryKey: ['inventario-salidas'] })
+      qc.invalidateQueries({ queryKey: ['inventario-unidades'] })
+      const plural = res.cantidad === 1 ? 'unidad entregada' : 'unidades entregadas'
+      toast('success', `${res.cantidad} ${plural} de ${res.medicamento.nombre}`)
+      setSalidaTarget(null)
+      setSalidaForm({ cantidad: '1', medicoId: '', notas: '' })
+    },
+    onError: (e: { message?: string }) => toast('error', e.message ?? 'Error al registrar salida'),
+  })
+
+  const ajusteMutation = useMutation({
+    mutationFn: () => inventarioApi.crearAjuste({
+      medicamentoId: ajusteTarget!.id,
+      cantidadNueva: parseInt(ajusteForm.cantidadNueva),
+      costoUnitario: ajusteForm.costoUnitario ? parseFloat(ajusteForm.costoUnitario) : undefined,
+      justificacion: ajusteForm.justificacion,
+    }),
+    onSuccess: (ajuste) => {
+      qc.invalidateQueries({ queryKey: ['medicamentos', farmaciaId] })
+      qc.invalidateQueries({ queryKey: ['inventario-stock'] })
+      qc.invalidateQueries({ queryKey: ['inventario-unidades'] })
+      qc.invalidateQueries({ queryKey: ['inventario-ajustes'] })
+      const dir = ajuste.delta > 0 ? '+' : ''
+      toast('success', `Stock ajustado: ${ajuste.cantidadAnterior} → ${ajuste.cantidadNueva} (${dir}${ajuste.delta})`)
+      setAjusteTarget(null)
+      setAjusteForm({ cantidadNueva: '', costoUnitario: '', justificacion: '' })
+    },
+    onError: (e: { message?: string }) => toast('error', e.message ?? 'Error al ajustar inventario'),
+  })
+
+  const openSalida = (med: MedicamentoConStock) => {
+    setSalidaTarget(med)
+    setSalidaForm({ cantidad: '1', medicoId: '', notas: '' })
+  }
+
+  const openAjuste = (med: MedicamentoConStock) => {
+    setAjusteTarget(med)
+    const stockActual = med.stock.disponibles + med.stock.preIngreso + med.stock.salidas
+    setAjusteForm({ cantidadNueva: String(stockActual), costoUnitario: '', justificacion: '' })
+  }
 
   const openCreate = () => {
     setEditTarget(null)
@@ -118,13 +189,11 @@ export default function MedicamentosPage() {
 
   const isMutating = createMutation.isPending || updateMutation.isPending
 
-  if (!farmaciaId) {
+  if (!loadingFarmacias && !hasAccess) {
     return (
       <div className="space-y-5">
-        <PageHeader title="Medicamentos" description="Selecciona una farmacia primero" />
-        <Button variant="secondary" onClick={() => router.push('/farmacia')}>
-          ← Volver a Farmacia
-        </Button>
+        <PageHeader title="Medicamentos" description="Catálogo de medicamentos por farmacia" />
+        <SinFarmaciasMensaje />
       </div>
     )
   }
@@ -133,11 +202,11 @@ export default function MedicamentosPage() {
     <div className="space-y-5">
       <PageHeader
         title="Medicamentos"
-        description={selectedFarmacia ? `Farmacia: ${selectedFarmacia.nombre}` : 'Catálogo de medicamentos'}
+        description={farmaciaActiva ? `Catálogo de ${farmaciaActiva.nombre}` : 'Catálogo de medicamentos'}
         action={
-          <div className="flex gap-2">
-            <Button variant="secondary" onClick={() => router.push('/farmacia')}>← Farmacia</Button>
-            <Button onClick={openCreate}>
+          <div className="flex items-center gap-2">
+            <FarmaciaSwitcher />
+            <Button onClick={openCreate} disabled={!farmaciaId}>
               <Plus className="h-4 w-4" />
               Nuevo medicamento
             </Button>
@@ -204,8 +273,31 @@ export default function MedicamentosPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(med)}>
+                      <div className="flex items-center gap-1 justify-end">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs gap-1"
+                          onClick={() => openSalida(med)}
+                          disabled={med.stock.disponibles + med.stock.preIngreso === 0}
+                          title={med.stock.disponibles + med.stock.preIngreso === 0 ? 'Sin stock disponible' : 'Registrar salida'}
+                        >
+                          <ArrowUpFromLine className="h-3.5 w-3.5" />
+                          Salida
+                        </Button>
+                        {esSuperusuario && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs gap-1 text-amber-600"
+                            onClick={() => openAjuste(med)}
+                            title="Ajustar stock real"
+                          >
+                            <Sliders className="h-3.5 w-3.5" />
+                            Ajuste
+                          </Button>
+                        )}
+                        <Button variant="ghost" size="icon" onClick={() => openEdit(med)} title="Editar">
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button
@@ -213,6 +305,7 @@ export default function MedicamentosPage() {
                           size="icon"
                           className="text-red-500 hover:text-red-500"
                           onClick={() => setDeleteTarget(med)}
+                          title="Desactivar"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -306,6 +399,149 @@ export default function MedicamentosPage() {
         variant="danger"
         loading={deleteMutation.isPending}
       />
+
+      {/* Salida desde fila */}
+      <Dialog open={!!salidaTarget} onClose={() => setSalidaTarget(null)} title="Registrar salida temporal" size="sm">
+        {salidaTarget && (
+          <div className="space-y-4">
+            <div className="rounded-md bg-muted/30 px-3 py-2 text-sm">
+              <p className="font-medium text-foreground">{salidaTarget.nombre}</p>
+              <p className="text-xs text-muted-foreground">
+                {salidaTarget.stock.disponibles + salidaTarget.stock.preIngreso} unidades disponibles · FIFO (más antigua sale primero)
+              </p>
+            </div>
+            <Input
+              label={`Cantidad a entregar * (máx. ${salidaTarget.stock.disponibles + salidaTarget.stock.preIngreso})`}
+              type="number"
+              step="1"
+              min="1"
+              max={salidaTarget.stock.disponibles + salidaTarget.stock.preIngreso}
+              value={salidaForm.cantidad}
+              onChange={(e) => setSalidaForm((f) => ({ ...f, cantidad: e.target.value }))}
+              required
+            />
+            <Select
+              label="Médico / Veterinario *"
+              value={salidaForm.medicoId}
+              onChange={(e) => setSalidaForm((f) => ({ ...f, medicoId: e.target.value }))}
+              options={[
+                { value: '', label: 'Selecciona médico...' },
+                ...(usuarios?.map((u) => ({ value: u.id, label: `${u.nombre} ${u.apellido}` })) ?? []),
+              ]}
+              required
+            />
+            <Input
+              label="Notas"
+              value={salidaForm.notas}
+              onChange={(e) => setSalidaForm((f) => ({ ...f, notas: e.target.value }))}
+              placeholder="Indicaciones, animales a tratar..."
+            />
+            <div className="flex justify-end gap-2 pt-1">
+              <Button variant="secondary" onClick={() => setSalidaTarget(null)}>Cancelar</Button>
+              <Button
+                loading={salidaMutation.isPending}
+                onClick={() => salidaMutation.mutate()}
+                disabled={
+                  !salidaForm.medicoId ||
+                  !salidaForm.cantidad ||
+                  parseInt(salidaForm.cantidad) > (salidaTarget.stock.disponibles + salidaTarget.stock.preIngreso)
+                }
+              >
+                Registrar salida
+              </Button>
+            </div>
+          </div>
+        )}
+      </Dialog>
+
+      {/* Ajuste de inventario (SUPERUSUARIO) */}
+      <Dialog open={!!ajusteTarget} onClose={() => setAjusteTarget(null)} title="Ajustar inventario" size="sm">
+        {ajusteTarget && (() => {
+          const stockActual = ajusteTarget.stock.disponibles + ajusteTarget.stock.preIngreso + ajusteTarget.stock.salidas
+          const cantidadNuevaNum = parseInt(ajusteForm.cantidadNueva)
+          const delta = isNaN(cantidadNuevaNum) ? 0 : cantidadNuevaNum - stockActual
+          const requiereCosto = delta > 0
+          const stockNoSalido = ajusteTarget.stock.disponibles + ajusteTarget.stock.preIngreso
+          const noPuedeBajar = delta < 0 && Math.abs(delta) > stockNoSalido
+          return (
+            <div className="space-y-4">
+              <div className="rounded-md bg-muted/30 px-3 py-2 text-sm space-y-1">
+                <p className="font-medium text-foreground">{ajusteTarget.nombre}</p>
+                <p className="text-xs text-muted-foreground">
+                  Stock actual: <strong className="text-foreground">{stockActual}</strong>
+                  {' '}({ajusteTarget.stock.disponibles + ajusteTarget.stock.preIngreso} en almacén · {ajusteTarget.stock.salidas} en campo)
+                </p>
+              </div>
+              <Input
+                label="Cantidad real en almacén *"
+                type="number"
+                step="1"
+                min="0"
+                value={ajusteForm.cantidadNueva}
+                onChange={(e) => setAjusteForm((f) => ({ ...f, cantidadNueva: e.target.value }))}
+                required
+                hint={
+                  delta === 0
+                    ? 'Igual al stock actual'
+                    : delta > 0
+                      ? `Se crearán ${delta} unidades nuevas`
+                      : `Se darán de baja ${Math.abs(delta)} unidades (más recientes primero)`
+                }
+              />
+              {requiereCosto && (
+                <Input
+                  label="Costo unitario para las unidades nuevas (MXN) *"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={ajusteForm.costoUnitario}
+                  onChange={(e) => setAjusteForm((f) => ({ ...f, costoUnitario: e.target.value }))}
+                  placeholder="0.00"
+                  required
+                  hint={
+                    parseFloat(ajusteForm.costoUnitario) > 0
+                      ? `Costo por ${ajusteTarget.unidadMedida.toLowerCase()}: ${formatCurrency(parseFloat(ajusteForm.costoUnitario) / ajusteTarget.volumenPresentacion)}`
+                      : undefined
+                  }
+                />
+              )}
+              <Input
+                label="Justificación *"
+                value={ajusteForm.justificacion}
+                onChange={(e) => setAjusteForm((f) => ({ ...f, justificacion: e.target.value }))}
+                placeholder="Ej: Conteo físico mensual, frasco roto, etc."
+                required
+              />
+              {noPuedeBajar && (
+                <div className="rounded-md bg-danger-subtle border border-danger/30 p-3 text-xs text-danger-foreground">
+                  <AlertTriangle className="h-3.5 w-3.5 inline mr-1" />
+                  No puedes bajar a {ajusteForm.cantidadNueva}: solo {stockNoSalido} unidades están en almacén (las demás están entregadas a un médico).
+                </div>
+              )}
+              <div className="rounded-md bg-muted/30 p-3 text-xs text-muted-foreground">
+                <AlertTriangle className="h-3.5 w-3.5 inline mr-1 text-amber-500" />
+                Este ajuste queda registrado en el <strong>historial de ajustes</strong> con tu usuario y fecha.
+              </div>
+              <div className="flex justify-end gap-2 pt-1">
+                <Button variant="secondary" onClick={() => setAjusteTarget(null)}>Cancelar</Button>
+                <Button
+                  loading={ajusteMutation.isPending}
+                  onClick={() => ajusteMutation.mutate()}
+                  disabled={
+                    !ajusteForm.cantidadNueva ||
+                    !ajusteForm.justificacion.trim() ||
+                    delta === 0 ||
+                    noPuedeBajar ||
+                    (requiereCosto && !ajusteForm.costoUnitario)
+                  }
+                >
+                  Aplicar ajuste
+                </Button>
+              </div>
+            </div>
+          )
+        })()}
+      </Dialog>
     </div>
   )
 }

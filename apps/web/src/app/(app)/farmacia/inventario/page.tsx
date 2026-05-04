@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useSearchParams, useRouter } from 'next/navigation'
-import { Plus, ArrowDownToLine, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { Plus, ArrowDownToLine, Download, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react'
 import { inventarioApi } from '@/lib/api/inventario.api'
 import { medicamentosApi } from '@/lib/api/medicamentos.api'
 import { PageHeader } from '@/components/ui/page-header'
@@ -15,7 +15,8 @@ import { Select } from '@/components/ui/select'
 import { TableSkeleton } from '@/components/ui/skeleton'
 import { EmptyState } from '@/components/ui/empty-state'
 import { toast } from '@/components/ui/toast'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils'
+import { FarmaciaSwitcher, SinFarmaciasMensaje, useFarmaciaActiva } from '@/components/farmacia/farmacia-switcher'
 import { EstadoUnidadMedicamento, TipoBajaMedicamento } from '@ganaderia/shared'
 
 const ESTADO_OPTIONS = [
@@ -49,10 +50,9 @@ function estadoVariant(e: EstadoUnidadMedicamento): 'success' | 'warning' | 'inf
 }
 
 export default function InventarioPage() {
-  const router = useRouter()
   const searchParams = useSearchParams()
-  const farmaciaId = searchParams.get('farmaciaId') ?? ''
   const initialMedId = searchParams.get('medicamentoId') ?? ''
+  const { farmaciaActivaId: farmaciaId, farmaciaActiva, hasAccess, isLoading: loadingFarmacias } = useFarmaciaActiva()
   const qc = useQueryClient()
 
   const [medicamentoId, setMedicamentoId] = useState(initialMedId)
@@ -60,7 +60,7 @@ export default function InventarioPage() {
   const [page, setPage] = useState(1)
 
   const [altaOpen, setAltaOpen] = useState(false)
-  const [altaForm, setAltaForm] = useState({ medicamentoId: initialMedId, costoUnitario: '', notasProveedor: '' })
+  const [altaForm, setAltaForm] = useState({ medicamentoId: initialMedId, cantidad: '1', costoUnitario: '', notasProveedor: '' })
 
   const [bajaOpen, setBajaOpen] = useState<string | null>(null)
   const [bajaForm, setBajaForm] = useState({ tipo: TipoBajaMedicamento.CONSUMO_CAMPO, justificacion: '' })
@@ -80,17 +80,18 @@ export default function InventarioPage() {
   const altaMutation = useMutation({
     mutationFn: () => inventarioApi.altaUnidad({
       medicamentoId: altaForm.medicamentoId,
+      cantidad: parseInt(altaForm.cantidad) || 1,
       costoUnitario: parseFloat(altaForm.costoUnitario),
       notasProveedor: altaForm.notasProveedor || undefined,
     }),
-    onSuccess: (unidad) => {
+    onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ['inventario-unidades'] })
       qc.invalidateQueries({ queryKey: ['inventario-stock'] })
       qc.invalidateQueries({ queryKey: ['medicamentos'] })
-      const estadoIngreso = unidad.estado === 'PRE_INGRESO' ? 'PRE-INGRESO (hay stock existente)' : 'DISPONIBLE'
-      toast('success', `Unidad dada de alta como ${estadoIngreso}`)
+      const plural = res.cantidad === 1 ? 'unidad dada de alta' : 'unidades dadas de alta'
+      toast('success', `${res.cantidad} ${plural} de ${res.medicamento.nombre}`)
       setAltaOpen(false)
-      setAltaForm({ medicamentoId: medicamentoId, costoUnitario: '', notasProveedor: '' })
+      setAltaForm({ medicamentoId: medicamentoId, cantidad: '1', costoUnitario: '', notasProveedor: '' })
     },
     onError: (e: { message?: string }) => toast('error', e.message ?? 'Error al dar de alta'),
   })
@@ -105,7 +106,7 @@ export default function InventarioPage() {
       qc.invalidateQueries({ queryKey: ['inventario-unidades'] })
       qc.invalidateQueries({ queryKey: ['inventario-stock'] })
       qc.invalidateQueries({ queryKey: ['medicamentos'] })
-      toast('success', 'Baja registrada')
+      toast('success', 'Unidad dada de baja')
       setBajaOpen(null)
       setBajaForm({ tipo: TipoBajaMedicamento.CONSUMO_CAMPO, justificacion: '' })
     },
@@ -117,28 +118,83 @@ export default function InventarioPage() {
     ...(medicamentos?.map(m => ({ value: m.id, label: m.nombre })) ?? []),
   ]
 
-  if (!farmaciaId) {
+  if (!loadingFarmacias && !hasAccess) {
     return (
       <div className="space-y-5">
-        <PageHeader title="Inventario" description="Selecciona una farmacia primero" />
-        <Button variant="secondary" onClick={() => router.push('/farmacia')}>← Volver a Farmacia</Button>
+        <PageHeader title="Inventario" description="Unidades de medicamento por farmacia" />
+        <SinFarmaciasMensaje />
       </div>
     )
   }
 
   const necesitaJustificacion = REQUIEREN_JUSTIFICACION.includes(bajaForm.tipo)
 
+  const exportarCSV = async () => {
+    if (!farmaciaId) return
+    try {
+      // Pide TODAS las páginas (limit alto) para exportar el inventario completo de la farmacia
+      const todas = await inventarioApi.getUnidades({
+        farmaciaId,
+        medicamentoId: medicamentoId || undefined,
+        estado: estado || undefined,
+        page: 1,
+        limit: 5000,
+      })
+      const headers = [
+        'Medicamento', 'Presentación', 'Volumen', 'Unidad medida',
+        'Estado', 'Costo unitario', 'Costo por medida',
+        'Fecha ingreso', 'Ingresado por', 'Médico (si en campo)', 'Notas proveedor',
+      ]
+      const rows = todas.data.map((u) => [
+        u.medicamento.nombre,
+        u.medicamento.presentacion,
+        String(u.medicamento.volumenPresentacion),
+        u.medicamento.unidadMedida,
+        estadoLabel(u.estado as EstadoUnidadMedicamento),
+        String(u.costoUnitario),
+        String(u.costoPorMedida),
+        formatDateTime(u.fechaEntrada),
+        u.ingresadoPor.nombre ?? '',
+        u.salidasTemporales[0]?.medico.nombre ?? '',
+        u.notasProveedor ?? '',
+      ])
+      const csv = [headers, ...rows]
+        .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+        .join('\n')
+      // Prefijo BOM para que Excel detecte UTF-8 correctamente
+      const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      const fechaStr = new Date().toISOString().split('T')[0]
+      const slug = (farmaciaActiva?.nombre ?? 'farmacia').toLowerCase().replace(/[^a-z0-9]+/g, '-')
+      a.href = url
+      a.download = `inventario-${slug}-${fechaStr}.csv`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+      toast('success', `Exportadas ${rows.length} unidades`)
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Error al exportar'
+      toast('error', msg)
+    }
+  }
+
   return (
     <div className="space-y-5">
       <PageHeader
         title="Inventario"
-        description="Unidades de medicamento — altas, bajas y seguimiento"
+        description={farmaciaActiva ? `Unidades de ${farmaciaActiva.nombre}` : 'Unidades de medicamento — altas, bajas y seguimiento'}
         action={
-          <div className="flex gap-2">
-            <Button variant="secondary" onClick={() => router.push('/farmacia')}>← Farmacia</Button>
-            <Button onClick={() => setAltaOpen(true)}>
+          <div className="flex items-center gap-2">
+            <FarmaciaSwitcher />
+            <Button variant="secondary" onClick={exportarCSV} disabled={!farmaciaId || !unidades?.data.length}>
+              <Download className="h-4 w-4" />
+              Exportar
+            </Button>
+            <Button onClick={() => setAltaOpen(true)} disabled={!farmaciaId}>
               <Plus className="h-4 w-4" />
-              Alta de unidad
+              Alta de unidades
             </Button>
           </div>
         }
@@ -252,7 +308,7 @@ export default function InventarioPage() {
       )}
 
       {/* Alta Modal */}
-      <Dialog open={altaOpen} onClose={() => setAltaOpen(false)} title="Alta de unidad" size="sm">
+      <Dialog open={altaOpen} onClose={() => setAltaOpen(false)} title="Alta de unidades" size="sm">
         <div className="space-y-4">
           <Select
             label="Medicamento *"
@@ -261,24 +317,38 @@ export default function InventarioPage() {
             options={[{ value: '', label: 'Selecciona...' }, ...(medicamentos?.map(m => ({ value: m.id, label: m.nombre })) ?? [])]}
             required
           />
-          <Input
-            label="Costo de adquisición (MXN) *"
-            type="number"
-            step="0.01"
-            min="0.01"
-            value={altaForm.costoUnitario}
-            onChange={e => setAltaForm(f => ({ ...f, costoUnitario: e.target.value }))}
-            placeholder="0.00"
-            required
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Cantidad *"
+              type="number"
+              step="1"
+              min="1"
+              max="500"
+              value={altaForm.cantidad}
+              onChange={e => setAltaForm(f => ({ ...f, cantidad: e.target.value }))}
+              required
+            />
+            <Input
+              label="Costo unitario (MXN) *"
+              type="number"
+              step="0.01"
+              min="0.01"
+              value={altaForm.costoUnitario}
+              onChange={e => setAltaForm(f => ({ ...f, costoUnitario: e.target.value }))}
+              placeholder="0.00"
+              required
+            />
+          </div>
           {altaForm.medicamentoId && medicamentos && (
             <p className="text-xs text-muted-foreground -mt-2">
               {(() => {
                 const med = medicamentos.find(m => m.id === altaForm.medicamentoId)
                 const costo = parseFloat(altaForm.costoUnitario)
+                const cant = parseInt(altaForm.cantidad) || 1
                 if (!med || !costo) return null
                 const costoPorMedida = costo / med.volumenPresentacion
-                return `Costo por ${med.unidadMedida.toLowerCase()}: ${formatCurrency(costoPorMedida)}`
+                const total = costo * cant
+                return `Costo por ${med.unidadMedida.toLowerCase()}: ${formatCurrency(costoPorMedida)} · Total: ${formatCurrency(total)}`
               })()}
             </p>
           )}
@@ -290,14 +360,14 @@ export default function InventarioPage() {
           />
           <div className="rounded-md bg-muted/30 p-3 text-xs text-muted-foreground">
             <AlertTriangle className="h-3.5 w-3.5 inline mr-1 text-amber-500" />
-            Si ya hay unidades DISPONIBLES de este medicamento, esta unidad entrará como <strong>PRE-INGRESO</strong> hasta que se agote el stock actual.
+            Si ya hay unidades DISPONIBLES, todas las nuevas entrarán como <strong>PRE-INGRESO</strong>. Si no hay stock activo, una entrará DISPONIBLE y el resto PRE-INGRESO (FIFO).
           </div>
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="secondary" onClick={() => setAltaOpen(false)}>Cancelar</Button>
             <Button
               loading={altaMutation.isPending}
               onClick={() => altaMutation.mutate()}
-              disabled={!altaForm.medicamentoId || !altaForm.costoUnitario}
+              disabled={!altaForm.medicamentoId || !altaForm.costoUnitario || !altaForm.cantidad}
             >
               Dar de alta
             </Button>
@@ -305,8 +375,8 @@ export default function InventarioPage() {
         </div>
       </Dialog>
 
-      {/* Baja Modal */}
-      <Dialog open={!!bajaOpen} onClose={() => setBajaOpen(null)} title="Registrar baja" size="sm">
+      {/* Baja single Modal (desde fila de la tabla) */}
+      <Dialog open={!!bajaOpen} onClose={() => setBajaOpen(null)} title="Registrar baja de unidad" size="sm">
         <div className="space-y-4">
           <Select
             label="Tipo de baja *"
@@ -340,6 +410,7 @@ export default function InventarioPage() {
           </div>
         </div>
       </Dialog>
+
     </div>
   )
 }

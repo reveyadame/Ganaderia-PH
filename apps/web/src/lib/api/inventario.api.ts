@@ -91,8 +91,11 @@ export const inventarioApi = {
     return api.get<PaginatedUnidades>(`/inventario/unidades?${qs}`)
   },
 
-  altaUnidad: (data: { medicamentoId: string; costoUnitario: number; notasProveedor?: string }) =>
-    api.post<UnidadMedicamento>('/inventario/alta', data),
+  altaUnidad: (data: { medicamentoId: string; costoUnitario: number; cantidad?: number; notasProveedor?: string }) =>
+    api.post<{ cantidad: number; unidades: UnidadMedicamento[]; medicamento: { id: string; nombre: string } }>(
+      '/inventario/alta',
+      data,
+    ),
 
   getSalidas: (params: { farmaciaId: string; abierta?: boolean; page?: number }) => {
     const qs = new URLSearchParams({ farmaciaId: params.farmaciaId })
@@ -101,8 +104,11 @@ export const inventarioApi = {
     return api.get<PaginatedSalidas>(`/inventario/salidas?${qs}`)
   },
 
-  crearSalida: (data: { unidadMedicamentoId: string; medicoId: string; notas?: string }) =>
-    api.post<SalidaTemporal>('/inventario/salidas', data),
+  crearSalida: (data: { medicamentoId: string; cantidad: number; medicoId: string; notas?: string }) =>
+    api.post<{ cantidad: number; salidas: SalidaTemporal[]; medicamento: { id: string; nombre: string } }>(
+      '/inventario/salidas',
+      data,
+    ),
 
   registrarRegreso: (salidaId: string, data: { estadoRegreso: EstadoRegreso; notas?: string }) =>
     api.patch<SalidaTemporal>(`/inventario/salidas/${salidaId}/regreso`, data),
@@ -112,4 +118,43 @@ export const inventarioApi = {
     tipo: TipoBajaMedicamento
     justificacion?: string
   }) => api.post<UnidadMedicamento>('/inventario/bajas', data),
+
+  // ── Ajustes (SUPERUSUARIO) ────────────────────────────────────────────────
+  crearAjuste: (data: {
+    medicamentoId: string
+    cantidadNueva: number
+    costoUnitario?: number
+    justificacion: string
+  }) => api.post<AjusteInventario>('/inventario/ajustes', data),
+
+  getAjustes: (params: { farmaciaId: string; medicamentoId?: string; page?: number; limit?: number }) => {
+    const qs = new URLSearchParams({ farmaciaId: params.farmaciaId })
+    if (params.medicamentoId) qs.set('medicamentoId', params.medicamentoId)
+    if (params.page) qs.set('page', String(params.page))
+    if (params.limit) qs.set('limit', String(params.limit))
+    return api.get<PaginatedAjustes>(`/inventario/ajustes?${qs}`)
+  },
+}
+
+export interface AjusteInventario {
+  id: string
+  medicamentoId: string
+  farmaciaId: string
+  cantidadAnterior: number
+  cantidadNueva: number
+  delta: number
+  costoUnitario: number | null
+  justificacion: string
+  realizadoPorId: string
+  fechaAjuste: string
+  createdAt: string
+  medicamento: { nombre: string; presentacion: PresentacionMedicamento; unidadMedida: string }
+  realizadoPor: { nombre: string; apellido: string }
+}
+
+export interface PaginatedAjustes {
+  data: AjusteInventario[]
+  total: number
+  page: number
+  totalPages: number
 }

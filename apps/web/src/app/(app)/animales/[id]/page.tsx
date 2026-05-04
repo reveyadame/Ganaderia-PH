@@ -1,6 +1,5 @@
 'use client'
 
-import { use } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import {
@@ -18,8 +17,8 @@ import { useAuthStore } from '@/stores/auth.store'
 import { TipoUsuario, SexoAnimal, EstadoAnimal } from '@ganaderia/shared'
 import { useState } from 'react'
 
-export default function FichaAnimalPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+export default function FichaAnimalPage({ params }: { params: { id: string } }) {
+  const { id } = params
   const router = useRouter()
   const qc = useQueryClient()
   const { usuario } = useAuthStore()
@@ -41,7 +40,7 @@ export default function FichaAnimalPage({ params }: { params: Promise<{ id: stri
     onError: (e: { message?: string }) => toast('error', e.message ?? 'Error'),
   })
 
-  const esAdmin = usuario?.tipo === TipoUsuario.SUPERUSUARIO || usuario?.tipo === TipoUsuario.ADMIN
+  const esAdmin = usuario?.tipo === TipoUsuario.SUPERUSUARIO || usuario?.tipo === TipoUsuario.DIRECTOR
 
   if (isLoading) {
     return (

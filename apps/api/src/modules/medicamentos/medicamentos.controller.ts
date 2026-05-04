@@ -17,38 +17,38 @@ export class MedicamentosController {
   @Get()
   @ApiOperation({ summary: 'Listar medicamentos de una farmacia con stock' })
   @ApiQuery({ name: 'farmaciaId', required: true })
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
   @RequiereActividad(ActividadUsuario.FARMACIA, ActividadUsuario.REPORTES)
   findAll(@Query('farmaciaId') farmaciaId: string, @CurrentUser() user: UsuarioSesion) {
-    return this.service.findAll(farmaciaId, user.organizacionId)
+    return this.service.findAll(farmaciaId, user)
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener medicamento por ID' })
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
   @RequiereActividad(ActividadUsuario.FARMACIA, ActividadUsuario.REPORTES)
   findOne(@Param('id') id: string, @CurrentUser() user: UsuarioSesion) {
-    return this.service.findOne(id, user.organizacionId)
+    return this.service.findOne(id, user)
   }
 
   @Post()
   @ApiOperation({ summary: 'Crear medicamento' })
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   create(@Body() dto: CreateMedicamentoDto, @CurrentUser() user: UsuarioSesion) {
-    return this.service.create(dto, user.organizacionId)
+    return this.service.create(dto, user)
   }
 
   @Put(':id')
   @ApiOperation({ summary: 'Actualizar medicamento' })
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   update(@Param('id') id: string, @Body() dto: UpdateMedicamentoDto, @CurrentUser() user: UsuarioSesion) {
-    return this.service.update(id, dto, user.organizacionId)
+    return this.service.update(id, dto, user)
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Desactivar medicamento (soft delete)' })
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   remove(@Param('id') id: string, @CurrentUser() user: UsuarioSesion) {
-    return this.service.remove(id, user.organizacionId)
+    return this.service.remove(id, user)
   }
 }

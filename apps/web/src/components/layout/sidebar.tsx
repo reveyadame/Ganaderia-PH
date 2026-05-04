@@ -3,14 +3,16 @@
 import Link from 'next/link'
 import type { Route } from 'next'
 import { usePathname, useRouter } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 import {
   LayoutDashboard, PawPrint, Syringe, UtensilsCrossed,
-  Scale, Package, Users, MapPin, LogOut,
-  FlaskConical, ArrowUpFromLine, BarChart3,
+  Scale, Package, Users, MapPin, LogOut, Bell, Plus, History,
+  FlaskConical, ArrowUpFromLine, BarChart3, Smartphone,
   PanelLeftClose, PanelLeftOpen, X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/auth.store'
+import { farmaciasApi } from '@/lib/api/farmacias.api'
 import { ActividadUsuario, TipoUsuario } from '@ganaderia/shared'
 
 interface NavItem {
@@ -18,7 +20,7 @@ interface NavItem {
   label: string
   icon: React.ElementType
   actividad?: ActividadUsuario
-  soloAdmin?: boolean
+  soloSuperuser?: boolean
   soloReportes?: boolean
 }
 
@@ -28,9 +30,22 @@ const NAV_GRUPOS: { titulo: string; items: NavItem[] }[] = [
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/animales', label: 'Animales', icon: PawPrint, actividad: ActividadUsuario.REGISTRO },
-      { href: '/tratamientos', label: 'Tratamientos', icon: Syringe, actividad: ActividadUsuario.TRATAMIENTOS },
-      { href: '/comederos', label: 'Comederos', icon: UtensilsCrossed, actividad: ActividadUsuario.COMEDEROS },
-      { href: '/raciones', label: 'Raciones', icon: Scale, actividad: ActividadUsuario.RACIONES },
+      { href: '/operador', label: 'Vista operador', icon: Smartphone },
+    ],
+  },
+  {
+    titulo: 'Raciones',
+    items: [
+      { href: '/raciones', label: 'Activas', icon: Scale, actividad: ActividadUsuario.RACIONES },
+      { href: '/raciones/definir', label: 'Definir', icon: Plus, actividad: ActividadUsuario.RACIONES },
+      { href: '/raciones/historial', label: 'Historial', icon: History, actividad: ActividadUsuario.RACIONES },
+    ],
+  },
+  {
+    titulo: 'Comederos',
+    items: [
+      { href: '/comederos', label: 'Estado actual', icon: UtensilsCrossed, actividad: ActividadUsuario.COMEDEROS },
+      { href: '/comederos/historial', label: 'Historial lecturas', icon: History, actividad: ActividadUsuario.COMEDEROS },
     ],
   },
   {
@@ -47,24 +62,26 @@ const NAV_GRUPOS: { titulo: string; items: NavItem[] }[] = [
       { href: '/farmacia/medicamentos', label: 'Medicamentos', icon: FlaskConical, actividad: ActividadUsuario.FARMACIA },
       { href: '/farmacia/inventario', label: 'Inventario', icon: Package, actividad: ActividadUsuario.FARMACIA },
       { href: '/farmacia/salidas', label: 'Salidas', icon: ArrowUpFromLine, actividad: ActividadUsuario.FARMACIA },
+      { href: '/farmacia/ajustes', label: 'Historial de ajustes', icon: History, actividad: ActividadUsuario.FARMACIA },
     ],
   },
   {
     titulo: 'Administración',
     items: [
-      { href: '/admin/farmacias', label: 'Farmacias', icon: FlaskConical, soloAdmin: true },
-      { href: '/admin/corrales', label: 'Corrales', icon: MapPin, soloAdmin: true },
-      { href: '/admin/aretes', label: 'Aretes blancos', icon: Package, soloAdmin: true },
-      { href: '/admin/tratamientos/kits', label: 'Kits de tratamiento', icon: Syringe, soloAdmin: true },
-      { href: '/admin/comederos/estados', label: 'Estados comedero', icon: UtensilsCrossed, soloAdmin: true },
-      { href: '/admin/usuarios', label: 'Usuarios', icon: Users, soloAdmin: true },
+      { href: '/admin/farmacias', label: 'Farmacias', icon: FlaskConical, actividad: ActividadUsuario.FARMACIA },
+      { href: '/admin/corrales', label: 'Corrales', icon: MapPin, soloSuperuser: true },
+      { href: '/admin/aretes', label: 'Aretes blancos', icon: Package, actividad: ActividadUsuario.REGISTRO },
+      { href: '/admin/tratamientos/kits', label: 'Kits de tratamiento', icon: Syringe, actividad: ActividadUsuario.TRATAMIENTOS },
+      { href: '/admin/comederos/estados', label: 'Estados comedero', icon: UtensilsCrossed, actividad: ActividadUsuario.COMEDEROS },
+      { href: '/admin/raciones-catalogo', label: 'Catálogo de raciones', icon: Scale, actividad: ActividadUsuario.RACIONES },
+      { href: '/admin/notificaciones', label: 'Notificaciones', icon: Bell },
+      { href: '/admin/usuarios', label: 'Usuarios', icon: Users, soloSuperuser: true },
     ],
   },
 ]
 
 const TIPO_LABEL: Record<TipoUsuario, string> = {
   [TipoUsuario.SUPERUSUARIO]: 'Superusuario',
-  [TipoUsuario.ADMIN]: 'Administrador',
   [TipoUsuario.DIRECTOR]: 'Director',
   [TipoUsuario.OPERADOR]: 'Operador',
 }
@@ -81,17 +98,26 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
   const router = useRouter()
   const { usuario, clearAuth } = useAuthStore()
 
+  // El director solo ve la sección Farmacia si tiene acceso a alguna farmacia
+  // (derivado de sus grupos de corrales asignados). El backend ya filtra por usuario.
+  const tieneActividadFarmacia = !!usuario && (
+    usuario.tipo === TipoUsuario.SUPERUSUARIO ||
+    usuario.actividades.includes(ActividadUsuario.FARMACIA)
+  )
+  const necesitaCheckFarmacias = !!usuario && usuario.tipo === TipoUsuario.DIRECTOR && tieneActividadFarmacia
+  const { data: farmaciasAccesibles } = useQuery({
+    queryKey: ['farmacias'],
+    queryFn: farmaciasApi.findAll,
+    enabled: necesitaCheckFarmacias,
+  })
+  const ocultarFarmacia = necesitaCheckFarmacias && farmaciasAccesibles !== undefined && farmaciasAccesibles.length === 0
+
   const canView = (item: NavItem): boolean => {
     if (!usuario) return false
     if (usuario.tipo === TipoUsuario.SUPERUSUARIO) return true
-    if (item.soloAdmin) {
-      return [TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN].includes(usuario.tipo)
-    }
-    if (item.soloReportes) {
-      return usuario.actividades.includes(ActividadUsuario.REPORTES)
-    }
+    if (item.soloSuperuser) return false
+    if (item.soloReportes) return usuario.actividades.includes(ActividadUsuario.REPORTES)
     if (!item.actividad) return true
-    if ([TipoUsuario.ADMIN, TipoUsuario.DIRECTOR].includes(usuario.tipo)) return true
     return usuario.actividades.includes(item.actividad)
   }
 
@@ -160,6 +186,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-4 scrollbar-hide">
         {NAV_GRUPOS.map((grupo) => {
+          if (ocultarFarmacia && grupo.titulo === 'Farmacia') return null
           const itemsVisibles = grupo.items.filter(canView)
           if (itemsVisibles.length === 0) return null
 

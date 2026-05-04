@@ -12,10 +12,12 @@ Sistema de gestión operativa para engorda de ganado. ERP ganadero multi-rancho 
 
 ## Monorepo (pnpm workspaces)
 ```
-apps/api/        → NestJS
-apps/web/        → Next.js
-packages/database/ → Prisma schema + migraciones
-packages/shared/   → Tipos, enums y DTOs compartidos
+apps/api/                 → NestJS
+apps/web/                 → Next.js
+  src/app/(app)/          → espacio escritorio (DIRECTOR / SUPERUSUARIO)
+  src/app/operador/       → espacio mobile-first del OPERADOR
+packages/database/        → Prisma schema + migraciones (regenerar con pnpm db:generate)
+packages/shared/          → Tipos, enums y DTOs compartidos
 ```
 
 ## Comandos para arrancar el proyecto
@@ -47,22 +49,29 @@ pnpm dev
 - **Etapa 5:** Farmacia e Inventario (medicamentos, unidades FIFO, salidas temporales, bajas)
 - **Etapa 6:** Tratamientos (TratamientoTemplate CRUD, AplicacionTratamiento FIFO + snapshot, /tratamientos, /admin/tratamientos/kits)
 - **Etapa 7:** Comederos y Raciones (EstadoComederoConfig, LecturaComedor, RacionDefinicion, SurtidoRacion, /comederos, /raciones, /admin/comederos/estados)
+- **Etapa 8:** Dashboard y Reportes (KPIs con caché in-memory, gráfica 30 días, costo por animal, stock crítico, historial tratamientos)
 
-### 🔜 Siguiente: Etapa 8 — Dashboard y Reportes
-- KPI cards con caché Redis (animales activos, costo promedio, stock crítico, tratamientos recientes)
-- Reportes: costo por animal, stock farmacia, historial tratamientos, consumo comedero, diferencias surtido
-- Gráficas con Recharts
-- Dashboard drill-down: KPI → grupo → corral → animal
+### 🚧 Etapa 9 en curso — Módulos transversales y separación de espacios
+- Consolidación de roles: `ADMIN → DIRECTOR` (mig. `consolidate_director_role`). Enum final: `SUPERUSUARIO`, `DIRECTOR`, `OPERADOR`.
+- `RacionCatalogo` por organización + `RacionDefinicion.nombre` + FK opcional `catalogoId` (DEC-019).
+- Módulo `notificaciones` interno DIRECTOR → OPERADOR con prioridades INFO/AVISO/CRITICA y eventos de lectura/confirmación (DEC-020).
+- Espacio `operador/` mobile-first separado del espacio `(app)/` desktop (DEC-021).
+- Alta de animal sin selección manual de corral — solo grupo, corral auto-asignado (DEC-022).
+
+### 🔜 Siguiente: Etapa 10 — Testing y Calidad
+- Tests unitarios (FIFO, costo, resolución de arete, promoción PRE_INGRESO, copia de nombre desde catálogo)
+- Tests de integración (alta animal, aplicación de tratamiento, ciclo de vida de unidad, notificaciones)
+- E2E con Playwright separados por rol DIRECTOR / OPERADOR
 
 ## Documentación completa en /docs
 | Archivo | Contenido |
 |---|---|
-| `docs/architecture.md` | Arquitectura completa, módulos, infraestructura |
-| `docs/business-rules.md` | Todas las reglas de negocio por módulo |
-| `docs/db-schema.md` | Prisma schema completo con 24 modelos |
-| `docs/decisions-log.md` | 10 decisiones técnicas con contexto y razón |
-| `docs/roadmap.md` | 10 etapas de desarrollo con entregables |
-| `docs/ui-system.md` | Sistema de diseño, tokens, componentes, patrones UX |
+| `docs/architecture.md` | Arquitectura completa, módulos, infraestructura, separación `(app)/` vs `operador/` |
+| `docs/business-rules.md` | Reglas de negocio por módulo (BR-AN-*, BR-FA-*, BR-TR-*, BR-CO-*, BR-RA-*, BR-US-*, BR-DA-*, BR-NO-*) |
+| `docs/db-schema.md` | Prisma schema completo (28 modelos: incluye RacionCatalogo + Notificacion + lecturas) |
+| `docs/decisions-log.md` | 22 decisiones técnicas con contexto y razón (DEC-001 → DEC-022) |
+| `docs/roadmap.md` | Etapas 1–8 ✅, 9 🚧 en curso, 10 testing, 11 deploy |
+| `docs/ui-system.md` | Sistema de diseño, tokens, componentes, patrones UX (espacios desktop + mobile) |
 
 ## Arquitectura de autorización
 Tres capas en orden:
@@ -70,7 +79,7 @@ Tres capas en orden:
 2. `RolesGuard` — valida tipo de usuario (`@RequiereRoles(...)`)
 3. `ActividadGuard` — valida módulos permitidos para OPERADOR (`@RequiereActividad(...)`)
 
-SUPERUSUARIO y ADMIN bypasan actividades. OPERADOR necesita actividad + GrupoCorrales asignado.
+**SUPERUSUARIO y DIRECTOR bypasan actividades** (`ROLES_SIN_RESTRICCION` en `actividad.guard.ts`). OPERADOR necesita actividad + GrupoCorrales asignado. El rol `ADMIN` ya no existe; se consolidó en `DIRECTOR` (DEC-018).
 
 ## Modelo de inventario (farmacia) — IMPORTANTE
 El stock NO se descuenta por aplicación de tratamiento. Cada frasco es una `UnidadMedicamento` con ciclo de vida:

@@ -2,7 +2,7 @@
 
 Documento vivo. Toda regla derivada de decisiones del cliente o del dominio queda registrada aquí con su ID, contexto y comportamiento esperado.
 
-**Última actualización:** 2026-04-29 (Etapas 1–4 completadas)
+**Última actualización:** 2026-05-02 (Etapas 1–8 completadas; en curso Etapa 9 con Notificaciones y Catálogo de Raciones).
 
 ---
 
@@ -23,9 +23,9 @@ Un código de arete blanco solo puede estar asignado a un animal simultáneament
 **Implementación:** el servicio valida que el arete tenga `estado = DISPONIBLE` antes de asignarlo. Un arete en estado `ASIGNADO` no puede asignarse a otro animal.
 
 ### BR-AN-003 — Liberación de arete blanco por administrador
-La liberación del arete blanco de un animal egresado o muerto solo puede hacerla un usuario con tipo ADMIN o SUPERUSUARIO mediante `PATCH /animales/:id/liberar-arete`. No se libera automáticamente al registrar el egreso del animal.
+La liberación del arete blanco de un animal egresado o muerto solo puede hacerla un usuario con tipo DIRECTOR o SUPERUSUARIO mediante `PATCH /animales/:id/liberar-arete`. No se libera automáticamente al registrar el egreso del animal.
 
-**Razón:** el administrador libera el arete cuando lo recupera físicamente, lo que no siempre coincide con el momento del egreso en el sistema.
+**Razón:** el director libera el arete cuando lo recupera físicamente, lo que no siempre coincide con el momento del egreso en el sistema.
 
 ### BR-AN-004 — Resolución de código escaneado
 Al escanear cualquier código en campo, el servicio `ScanService.resolve()` ejecuta esta lógica en orden (código normalizado a UPPERCASE antes de buscar):
@@ -53,6 +53,11 @@ El estado al momento del egreso se determina por la causa: `MUERTE` → `MUERTO`
 ### BR-AN-008 — Lote como agrupación opcional
 Un lote es un grupo de animales que llegan juntos el mismo día de la misma procedencia. Su uso es opcional. Permite consultar y reportar por grupo de llegada.
 
+### BR-AN-010 — Asignación automática de corral al registrar
+El operador y el director **no eligen corral** al dar de alta un animal: solo seleccionan el `GrupoCorrales` de destino. La UI auto-asigna silenciosamente el primer corral activo del grupo y el director puede reasignar después desde la ficha del animal.
+
+**Razón:** en operación real el corral exacto suele decidirse al momento de la descarga física; obligar a elegirlo en pantalla añade fricción y errores. La capacidad legal del registro vive a nivel del grupo, no del corral. La columna `Animal.corralId` permanece `NOT NULL` en DB para preservar trazabilidad y los índices históricos.
+
 ### BR-AN-009 — Costo acumulado calculado dinámicamente
 El costo acumulado de un animal nunca se almacena como campo en `Animal`. Se calcula siempre como:
 ```sql
@@ -65,7 +70,7 @@ Esto garantiza que el dato siempre refleje el historial real sin inconsistencias
 ## Módulo: Pool de Aretes Blancos
 
 ### BR-AR-001 — Aretes administrados por pool
-Los aretes blancos se gestionan en un pool por organización. Solo los usuarios ADMIN o SUPERUSUARIO pueden agregar aretes al pool o eliminarlos.
+Los aretes blancos se gestionan en un pool por organización. Solo los usuarios DIRECTOR o SUPERUSUARIO pueden agregar aretes al pool o eliminarlos.
 
 ### BR-AR-002 — Alta individual o en lote
 Un administrador puede dar de alta aretes individualmente o en lote (múltiples códigos a la vez). El sistema rechaza cualquier código que ya exista en el pool (conflicto).
@@ -107,7 +112,7 @@ Los estados `CONSUMIDO` y `BAJA` son terminales. No se pueden revertir.
 Toda salida temporal debe registrar:
 - Unidades que salen
 - Médico/veterinario que las recibe (usuario del sistema)
-- Usuario que autoriza (ADMIN, SUPERUSUARIO, o actividad FARMACIA)
+- Usuario que autoriza (DIRECTOR, SUPERUSUARIO, o actividad FARMACIA)
 - Fecha y hora
 
 ### BR-FA-006 — Un médico puede tener múltiples unidades simultáneas
@@ -160,7 +165,7 @@ Todo tratamiento registra el usuario operador que lo aplicó, fecha y hora.
 La lectura de comedero se registra a nivel de corral individual (no de GrupoCorrales) y captura un **estado cualitativo configurable**, no cantidades numéricas. Sirve como insumo para que el administrador decida la ración del día siguiente.
 
 ### BR-CO-002 — Estados configurables por organización
-El catálogo de estados posibles del comedero (ej: "Con comida", "Bien", "Lamido", "Muy lamido") lo define un usuario ADMIN o SUPERUSUARIO en `EstadoComederoConfig`. Cada organización tiene su propio catálogo. Solo se pueden registrar lecturas con estados activos del catálogo de la organización.
+El catálogo de estados posibles del comedero (ej: "Con comida", "Bien", "Lamido", "Muy lamido") lo define un usuario DIRECTOR o SUPERUSUARIO en `EstadoComederoConfig`. Cada organización tiene su propio catálogo. Solo se pueden registrar lecturas con estados activos del catálogo de la organización.
 
 ### BR-CO-003 — Soft delete de estados con historial
 Un `EstadoComederoConfig` no se elimina si tiene lecturas asociadas. Se desactiva con `activo = false`. Las lecturas históricas conservan la referencia y se pueden seguir consultando.
@@ -186,7 +191,7 @@ Cada corral tiene como máximo una ración activa. Al crear una nueva ración pa
 La ración diaria se captura en kilogramos divididos en dos turnos: `cantidadKgManana` y `cantidadKgTarde`. Por defecto la UI sugiere 50/50 del total, pero el administrador puede ajustar cada cantidad de forma independiente.
 
 ### BR-RA-003 — Captura manual por administración
-Las cantidades por turno las define un usuario ADMIN, SUPERUSUARIO, o con actividad RACIONES. Es siempre **manual y por criterio del administrador** — no hay cálculo automático. La toma de decisiones se basa en el dashboard de comederos (BR-DA-*) y el historial de lecturas.
+Las cantidades por turno las define un usuario DIRECTOR, SUPERUSUARIO, o con actividad RACIONES. Es siempre **manual y por criterio del director** — no hay cálculo automático. La toma de decisiones se basa en el dashboard de comederos (BR-DA-*) y el historial de lecturas.
 
 ### BR-RA-004 — Surtido por turno
 Cada `SurtidoRacion` registra explícitamente el `turno` (`MANANA` | `TARDE`), la cantidad definida del turno (`cantidadKgManana` o `cantidadKgTarde`) como `cantidadDefinida`, y la cantidad real surtida. Un corral puede recibir 1 o 2 surtidos por día (típicamente 2).
@@ -200,6 +205,14 @@ diferencia = cantidadSurtida - cantidadDefinida
 ### BR-RA-006 — El operador ve el turno y la cantidad al escanear
 Al escanear un corral en el módulo de surtido, el endpoint `/scan/resolve` retorna la ración activa con ambos turnos. El frontend sugiere el turno por defecto según hora del día (MANANA antes de las 14:00, TARDE después), pero el operador puede cambiarlo manualmente.
 
+### BR-RA-007 — Catálogo de raciones por organización
+Las raciones se nombran a partir de un catálogo (`RacionCatalogo`) gestionado por DIRECTOR o SUPERUSUARIO. Al definir una ración para un corral se selecciona una entrada del catálogo y el campo `nombre` de la `RacionDefinicion` se copia desde ahí. La definición conserva además un `catalogoId` opcional como referencia trazable.
+
+Las raciones del catálogo se desactivan con `activo = false` (soft delete). Las definiciones históricas mantienen su nombre copiado y siguen siendo válidas aunque la entrada del catálogo se desactive.
+
+### BR-RA-008 — Catálogo separado de cantidades
+El `RacionCatalogo` solo guarda nombre y descripción genérica. Las cantidades por turno (`cantidadKgManana`, `cantidadKgTarde`) se definen siempre **por corral en `RacionDefinicion`**, no en el catálogo. Esto permite reutilizar una receta ("Engorda fase 2") con cantidades distintas en distintos corrales según consumo observado.
+
 ---
 
 ## Módulo: Usuarios y Acceso
@@ -208,10 +221,11 @@ Al escanear un corral en el módulo de surtido, el endpoint `/scan/resolve` reto
 
 | Tipo | Descripción |
 |---|---|
-| `SUPERUSUARIO` | Acceso total sin restricciones |
-| `ADMIN` | Gestión completa dentro de sus GrupoCorrales asignados |
-| `DIRECTOR` | Solo lectura + reportes + dashboard completo |
-| `OPERADOR` | Acceso por actividades y GrupoCorrales asignados |
+| `SUPERUSUARIO` | Acceso total sin restricciones, en cualquier organización |
+| `DIRECTOR` | Gestión completa dentro de sus GrupoCorrales asignados + dashboard consolidado y reportes |
+| `OPERADOR` | Acceso restringido por actividades y GrupoCorrales asignados |
+
+> **Nota histórica:** El sistema previo distinguía `ADMIN` (gestión por grupos) y `DIRECTOR` (solo lectura). En la migración `20260501070000_consolidate_director_role` ambos roles se consolidaron en `DIRECTOR`, que ahora cubre las dos capacidades. Cualquier usuario `ADMIN` se migró a `DIRECTOR`. Ver DEC-018.
 
 ### BR-US-002 — Acceso efectivo del OPERADOR
 El acceso se determina por la intersección de actividades asignadas × GrupoCorrales asignados. Ejemplo: actividad `TRATAMIENTOS` + grupo "Corrales Matriz" → puede registrar tratamientos solo en animales de corrales de "Corrales Matriz".
@@ -224,8 +238,8 @@ El acceso se determina por la intersección de actividades asignadas × GrupoCor
 - `FARMACIA` — operaciones de farmacia (salidas, bajas, altas de unidades)
 - `REPORTES` — acceso a reportes sin operación
 
-### BR-US-004 — SUPERUSUARIO, ADMIN y DIRECTOR bypasan actividades
-La tabla `UsuarioActividad` solo aplica al tipo `OPERADOR`.
+### BR-US-004 — SUPERUSUARIO y DIRECTOR bypasan actividades
+La tabla `UsuarioActividad` solo aplica al tipo `OPERADOR`. El `ActividadGuard` está configurado con `ROLES_SIN_RESTRICCION = [SUPERUSUARIO, DIRECTOR]`.
 
 ### BR-US-005 — Soft deletes para usuarios
 Los usuarios no se eliminan. Se desactivan con `activo = false`. Un usuario inactivo no puede iniciar sesión.
@@ -235,8 +249,8 @@ Los usuarios no se eliminan. Se desactivan con `activo = false`. Un usuario inac
 ## Módulo: Dashboard y Reportes
 
 ### BR-DA-001 — Acceso al dashboard
-- SUPERUSUARIO, ADMIN: dashboard de sus GrupoCorrales
-- DIRECTOR: dashboard consolidado de todos los GrupoCorrales
+- SUPERUSUARIO: dashboard consolidado de toda la organización
+- DIRECTOR: dashboard de sus GrupoCorrales asignados (o consolidado si los tiene todos)
 - OPERADOR con actividad REPORTES: dashboard de sus GrupoCorrales
 
 ### BR-DA-002 — KPIs mínimos del dashboard (Etapa 8)
@@ -251,3 +265,26 @@ Los usuarios no se eliminan. Se desactivan con `activo = false`. Un usuario inac
 - Por animal individual
 - Por corral
 - Por GrupoCorrales
+
+---
+
+## Módulo: Notificaciones
+
+### BR-NO-001 — Solo DIRECTOR y SUPERUSUARIO emiten
+La creación de una `Notificacion` está restringida a usuarios `DIRECTOR` o `SUPERUSUARIO`. El operador es siempre destinatario, nunca emisor.
+
+### BR-NO-002 — Destinatarios explícitos por usuario
+Cada notificación lista de forma explícita sus `destinatariosIds` (tabla `NotificacionDestinatario`). No existen "broadcasts" implícitos por rol o grupo: si un director quiere notificar a "todos los operadores de Corrales Matriz", el cliente expande la lista al crear la notificación.
+
+### BR-NO-003 — Prioridad y comportamiento del cliente
+Los valores de `PrioridadNotificacion` son `INFO`, `AVISO`, `CRITICA`. La prioridad influye en la presentación visual del cliente (color, persistencia del banner móvil) pero no cambia el comportamiento de entrega — todas se persisten igual.
+
+### BR-NO-004 — Lectura y confirmación
+La tabla `NotificacionLectura` registra dos eventos por destinatario:
+- `leidaEn` — momento en que el usuario abre la notificación
+- `confirmadaEn` — opcional, confirmación explícita ("entendido")
+
+Una notificación crítica puede exigir confirmación además de lectura (validado en cliente).
+
+### BR-NO-005 — Expiración opcional
+`Notificacion.expiraEn` es opcional. Si está presente y la fecha pasó, el cliente la oculta de la lista activa pero el registro queda en histórico.

@@ -1,12 +1,18 @@
-import { IsString, IsOptional, MaxLength } from 'class-validator'
+import { IsString, IsOptional, IsInt, Min, Max, MaxLength } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
 export class SalidaTemporalDto {
-  @ApiProperty({ description: 'ID de la UnidadMedicamento que sale (debe estar DISPONIBLE)' })
+  @ApiProperty({ description: 'ID del medicamento del que se entregan unidades' })
   @IsString()
-  unidadMedicamentoId!: string
+  medicamentoId!: string
 
-  @ApiProperty({ description: 'ID del médico/veterinario que recibe la unidad' })
+  @ApiProperty({ example: 1, description: 'Cantidad de unidades a entregar (FIFO: se toman las más antiguas)' })
+  @IsInt()
+  @Min(1)
+  @Max(500)
+  cantidad!: number
+
+  @ApiProperty({ description: 'ID del médico/veterinario que recibe las unidades' })
   @IsString()
   medicoId!: string
 

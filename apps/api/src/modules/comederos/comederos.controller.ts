@@ -18,21 +18,21 @@ export class ComederoController {
 
   @Get('estados')
   @ApiOperation({ summary: 'Listar estados de comedero de la organización' })
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
   findAllEstados(@CurrentUser() user: UsuarioSesion) {
     return this.service.findAllEstados(user.organizacionId)
   }
 
   @Post('estados')
   @ApiOperation({ summary: 'Crear estado de comedero' })
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   createEstado(@Body() dto: CreateEstadoConfigDto, @CurrentUser() user: UsuarioSesion) {
     return this.service.createEstado(dto, user.organizacionId)
   }
 
   @Put('estados/:id')
   @ApiOperation({ summary: 'Actualizar estado de comedero' })
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   updateEstado(
     @Param('id') id: string,
     @Body() dto: Partial<CreateEstadoConfigDto>,
@@ -43,7 +43,7 @@ export class ComederoController {
 
   @Delete('estados/:id')
   @ApiOperation({ summary: 'Desactivar/eliminar estado de comedero' })
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   removeEstado(@Param('id') id: string, @CurrentUser() user: UsuarioSesion) {
     return this.service.removeEstado(id, user.organizacionId)
   }
@@ -52,7 +52,7 @@ export class ComederoController {
 
   @Post('lecturas')
   @ApiOperation({ summary: 'Registrar lectura de comedero' })
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN, TipoUsuario.OPERADOR)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
   @RequiereActividad(ActividadUsuario.COMEDEROS)
   registrarLectura(@Body() dto: CreateLecturaDto, @CurrentUser() user: UsuarioSesion) {
     return this.service.registrarLectura(dto, user.id, user.organizacionId)
@@ -62,7 +62,7 @@ export class ComederoController {
   @ApiOperation({ summary: 'Historial de lecturas de un corral' })
   @ApiQuery({ name: 'corralId', required: true })
   @ApiQuery({ name: 'limite', required: false })
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
   @RequiereActividad(ActividadUsuario.COMEDEROS, ActividadUsuario.REPORTES)
   getLecturasCorral(
     @Query('corralId') corralId: string,
@@ -74,10 +74,30 @@ export class ComederoController {
 
   // ── Dashboard ─────────────────────────────────────────────────────────────
 
+  @Get('resumen')
+  @ApiOperation({ summary: 'Resumen global de comederos (todos los corrales accesibles)' })
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
+  @RequiereActividad(ActividadUsuario.COMEDEROS, ActividadUsuario.REPORTES)
+  getResumenGlobal(@CurrentUser() user: UsuarioSesion) {
+    const filtro = user.tipo === TipoUsuario.SUPERUSUARIO ? undefined : user.gruposCorralesIds
+    return this.service.getResumenGlobal(user.organizacionId, filtro)
+  }
+
+  @Get('historial')
+  @ApiOperation({ summary: 'Historial global de lecturas de comederos' })
+  @ApiQuery({ name: 'limit', required: false })
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
+  @RequiereActividad(ActividadUsuario.COMEDEROS, ActividadUsuario.REPORTES)
+  listarHistorial(@Query('limit') limit: string | undefined, @CurrentUser() user: UsuarioSesion) {
+    const filtro = user.tipo === TipoUsuario.SUPERUSUARIO ? undefined : user.gruposCorralesIds
+    const parsed = limit ? Math.min(Math.max(parseInt(limit), 1), 500) : 100
+    return this.service.listarHistorialLecturas(user.organizacionId, filtro, parsed)
+  }
+
   @Get('estado-actual')
   @ApiOperation({ summary: 'Estado actual de comederos por GrupoCorrales (dashboard)' })
   @ApiQuery({ name: 'grupoCorralesId', required: true })
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.ADMIN, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
   @RequiereActividad(ActividadUsuario.COMEDEROS, ActividadUsuario.REPORTES)
   getEstadoActual(
     @Query('grupoCorralesId') grupoCorralesId: string,

@@ -5,8 +5,9 @@ Documento de planificación por etapas. Cada etapa tiene entregables concretos, 
 ---
 
 ## Estado actual
-**Fase:** Etapa 8 completada → Iniciando Etapa 9 (Testing y Calidad)
-**Última actualización:** 2026-05-01
+**Fase:** Etapas 1–8 completadas. Etapa 9 en curso: módulos transversales (Notificaciones, Catálogo de Raciones), separación de espacios `(app)/` desktop y `operador/` mobile, consolidación del rol DIRECTOR.
+**Próximo:** Etapa 10 (Testing y Calidad).
+**Última actualización:** 2026-05-02
 
 ---
 
@@ -76,7 +77,7 @@ Documento de planificación por etapas. Cada etapa tiene entregables concretos, 
 #### Backend
 - [x] CRUD Animal — alta, consulta paginada con filtros, egreso con causa
 - [x] `PATCH /animales/:id/egreso` — causa (VENTA, MUERTE, TRASLADO, OTRO), precio de venta, fecha
-- [x] `PATCH /animales/:id/liberar-arete` — solo ADMIN/SUPERUSUARIO
+- [x] `PATCH /animales/:id/liberar-arete` — solo DIRECTOR/SUPERUSUARIO
 - [x] CRUD AreteBlanco — alta individual y en lote, `GET /aretes/disponibles`
 - [x] CRUD Lote — agrupación de llegadas por fecha/procedencia
 - [x] `POST /scan/resolve` — resolución universal con normalización uppercase
@@ -204,20 +205,49 @@ Documento de planificación por etapas. Cada etapa tiene entregables concretos, 
 
 ---
 
-## Etapa 9 — Testing y Calidad
+## Etapa 9 — Módulos transversales y separación de espacios 🚧 EN CURSO
+
 **Dependencia:** Etapas 2–8
 
 ### Entregables
-- [ ] Tests unitarios en lógica crítica: FIFO, cálculo de costo, resolución de arete, promoción PRE_INGRESO
-- [ ] Tests de integración en flujos críticos: alta de animal, aplicación de tratamiento, ciclo de vida de unidad
-- [ ] Tests E2E con Playwright: flujo completo registro → tratamiento → egreso
+
+#### Backend
+- [x] Consolidación rol `ADMIN → DIRECTOR` (mig. `consolidate_director_role`). `ActividadGuard` actualizado: `ROLES_SIN_RESTRICCION = [SUPERUSUARIO, DIRECTOR]` (DEC-018).
+- [x] Módulo `notificaciones` — CRUD + lectura + confirmación + DTO de prioridad (DEC-020).
+- [x] Modelos `RacionCatalogo` + campo `nombre` en `RacionDefinicion` + FK opcional `catalogoId` (DEC-019).
+- [x] Módulo `raciones-catalogo` — CRUD del catálogo por organización.
+
+#### Frontend
+- [x] Espacio `operador/` mobile-first separado de `(app)/` desktop (DEC-021): layout, header móvil, home del operador.
+- [x] Páginas movidas: `operador/animales/nuevo`, `operador/tratamientos`, `operador/comederos`, `operador/raciones`.
+- [x] Alta de animal sin selección de corral — solo grupo, asignación automática (DEC-022).
+- [x] `/admin/raciones-catalogo` — CRUD del catálogo de raciones.
+- [x] `/admin/notificaciones` — emisión y listado de notificaciones.
+- [x] Banner móvil para director cuando entra desde dispositivo pequeño.
+- [x] `(app)/raciones/historial` — historial de definiciones por corral.
+
+### Criterios cumplidos
+- Director y operador ven dos UIs distintas según su rol.
+- Operador no elige corral al registrar; el director puede reasignar después.
+- Las raciones se nombran desde el catálogo y mantienen trazabilidad histórica vía `catalogoId`.
+- DIRECTOR puede emitir notificaciones críticas con confirmación al OPERADOR.
+
+---
+
+## Etapa 10 — Testing y Calidad
+**Dependencia:** Etapa 9
+
+### Entregables
+- [ ] Tests unitarios en lógica crítica: FIFO, cálculo de costo, resolución de arete, promoción PRE_INGRESO, copia de nombre desde catálogo
+- [ ] Tests de integración en flujos críticos: alta de animal, aplicación de tratamiento, ciclo de vida de unidad, emisión y lectura de notificación
+- [ ] Tests E2E con Playwright: flujo completo registro → tratamiento → egreso (rol DIRECTOR y rol OPERADOR por separado)
 - [ ] Revisión de seguridad: guards, inputs, XSS
 - [ ] Auditoría de performance: índices, queries N+1
 
 ---
 
-## Etapa 10 — Deploy en VPS Linux
-**Dependencia:** Etapa 9
+## Etapa 11 — Deploy en VPS Linux
+**Dependencia:** Etapa 10
 
 ### Entregables
 - [ ] VPS configurado con Docker Compose
@@ -235,7 +265,7 @@ Documento de planificación por etapas. Cada etapa tiene entregables concretos, 
 |---|---|---|
 | Pesajes intermedios | GDP (ganancia diaria de peso) por animal y corral | Etapa 4 |
 | Egreso y rentabilidad | Precio de venta vs costo acumulado = margen real | Etapa 6 |
-| App móvil nativa | React Native reutilizando API NestJS | v1.0 estable |
+| App móvil nativa | React Native reutilizando API NestJS y el árbol `operador/` | v1.0 estable |
 | Exportación regulatoria | Reportes SINIIGA/SENASICA | Etapa 8 |
-| Notificaciones push | Alertas de stock por WhatsApp/email | Etapa 8 |
+| Notificaciones push externas | WhatsApp/email/Firebase sobre el modelo `Notificacion` actual | Etapa 9 |
 | Integración contable | Export a CONTPAQi | Post v1.0 |

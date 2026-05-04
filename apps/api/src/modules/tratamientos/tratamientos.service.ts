@@ -39,6 +39,50 @@ export class TratamientosService {
     })
   }
 
+  async listarRecientes(organizacionId: string, gruposCorralesIds: string[], limit = 50) {
+    const gruposFilter = gruposCorralesIds.length > 0
+      ? { animal: { corral: { grupoCorralesId: { in: gruposCorralesIds } } } }
+      : {}
+
+    return this.prisma.aplicacionTratamiento.findMany({
+      where: {
+        animal: { organizacionId },
+        ...gruposFilter,
+      },
+      orderBy: { fechaAplicacion: 'desc' },
+      take: limit,
+      include: {
+        aplicadoPor: { select: { id: true, nombre: true, apellido: true } },
+        template: { select: { id: true, nombre: true } },
+        animal: {
+          select: {
+            id: true,
+            areteSiniiga: true,
+            estado: true,
+            corral: {
+              select: {
+                id: true,
+                nombre: true,
+                codigo: true,
+                grupoCorrales: { select: { id: true, nombre: true } },
+              },
+            },
+            asignacionesArete: {
+              where: { fechaLiberacion: null },
+              take: 1,
+              select: { areteBlanco: { select: { id: true, codigo: true } } },
+            },
+          },
+        },
+        items: {
+          include: {
+            medicamento: { select: { id: true, nombre: true, unidadMedida: true } },
+          },
+        },
+      },
+    })
+  }
+
   async create(dto: CreateTratamientoDto, aplicadoPorId: string, organizacionId: string) {
     // Validar que sea kit o items individuales, no ambos
     if (dto.templateId && dto.items && dto.items.length > 0) {

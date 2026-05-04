@@ -16,7 +16,6 @@ datasource db {
 
 enum TipoUsuario {
   SUPERUSUARIO
-  ADMIN
   DIRECTOR
   OPERADOR
 }
@@ -100,6 +99,12 @@ enum CausaEgresoAnimal {
   OTRO
 }
 
+enum PrioridadNotificacion {
+  INFO
+  AVISO
+  CRITICA
+}
+
 enum AccionAudit {
   CREATE
   UPDATE
@@ -123,6 +128,8 @@ model Organizacion {
   usuarios        Usuario[]
   templates       TratamientoTemplate[]
   estadosComedero EstadoComederoConfig[]
+  notificaciones  Notificacion[]
+  racionesCatalogo RacionCatalogo[]
 }
 
 // ─────────────────────────────────────────────
@@ -142,6 +149,7 @@ model Farmacia {
   gruposCorrales GrupoCorrales[]
   medicamentos   Medicamento[]
   unidades       UnidadMedicamento[]
+  ajustes        AjusteInventario[]
 }
 
 // ─────────────────────────────────────────────
@@ -287,6 +295,7 @@ model Medicamento {
   unidades        UnidadMedicamento[]
   templateItems   TratamientoTemplateItem[]
   aplicacionItems AplicacionTratamientoItem[]
+  ajustes         AjusteInventario[]
 
   @@index([farmaciaId, activo])
 }
@@ -343,6 +352,30 @@ model BajaMedicamento {
 
   unidadMedicamento UnidadMedicamento @relation(fields: [unidadMedicamentoId], references: [id])
   registradoPor     Usuario           @relation("BajaRegistrador", fields: [registradoPorId], references: [id])
+}
+
+// Auditoría de ajustes manuales de inventario realizados por SUPERUSUARIO.
+// El ajuste fija el stock real de un medicamento; si delta > 0 se crean unidades,
+// si delta < 0 se dan de baja unidades (newest-first) con tipo AJUSTE.
+model AjusteInventario {
+  id               String   @id @default(cuid())
+  medicamentoId    String
+  farmaciaId       String
+  cantidadAnterior Int
+  cantidadNueva    Int
+  delta            Int
+  costoUnitario    Decimal? @db.Decimal(10, 2)
+  justificacion    String
+  realizadoPorId   String
+  fechaAjuste      DateTime @default(now())
+  createdAt        DateTime @default(now())
+
+  medicamento  Medicamento @relation(fields: [medicamentoId], references: [id])
+  farmacia     Farmacia    @relation(fields: [farmaciaId], references: [id])
+  realizadoPor Usuario     @relation("AjusteInventarioAutor", fields: [realizadoPorId], references: [id])
+
+  @@index([medicamentoId, fechaAjuste])
+  @@index([farmaciaId, fechaAjuste])
 }
 
 // ─────────────────────────────────────────────
@@ -452,10 +485,28 @@ model LecturaComedor {
 
 // Ración diaria por corral, dividida en turno mañana y turno tarde (kg).
 // Definida manualmente por administración con base en el criterio del admin.
+model RacionCatalogo {
+  id             String   @id @default(cuid())
+  organizacionId String
+  nombre         String
+  descripcion    String?
+  activo         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organizacion Organizacion       @relation(fields: [organizacionId], references: [id])
+  definiciones RacionDefinicion[]
+
+  @@unique([organizacionId, nombre])
+  @@index([organizacionId, activo])
+}
+
 model RacionDefinicion {
-  id               String    @id @default(cuid())
-  corralId         String
+  id                String    @id @default(cuid())
+  corralId          String
   definidaPorId    String
+  catalogoId       String?
+  nombre           String
   cantidadKgManana Decimal   @db.Decimal(10, 2)
   cantidadKgTarde  Decimal   @db.Decimal(10, 2)
   descripcion      String?
@@ -467,9 +518,11 @@ model RacionDefinicion {
 
   corral      Corral          @relation(fields: [corralId], references: [id])
   definidaPor Usuario         @relation("RacionDefinidor", fields: [definidaPorId], references: [id])
+  catalogo    RacionCatalogo? @relation(fields: [catalogoId], references: [id])
   surtidos    SurtidoRacion[]
 
   @@index([corralId, activa])
+  @@index([catalogoId])
 }
 
 // Registro del surtido real por turno. Un corral puede tener 1 o 2 surtidos por día.
@@ -530,6 +583,11 @@ model Usuario {
   racionesDefinidas     RacionDefinicion[]      @relation("RacionDefinidor")
   surtidos              SurtidoRacion[]         @relation("SurtidoOperador")
 
+  notificacionesEmitidas Notificacion[]              @relation("NotificacionAutor")
+  notificacionesRecibidas NotificacionDestinatario[] @relation("NotificacionDestinatario")
+  notificacionesLeidas   NotificacionLectura[]       @relation("NotificacionLectura")
+  ajustesInventario      AjusteInventario[]          @relation("AjusteInventarioAutor")
+
   @@index([email])
   @@index([organizacionId, tipo, activo])
 }
@@ -572,4 +630,53 @@ model AuditLog {
 
   @@index([entidad, entidadId])
   @@index([usuarioId, createdAt])
+}
+
+// ─────────────────────────────────────────────
+// NOTIFICACIONES
+// ─────────────────────────────────────────────
+
+model Notificacion {
+  id             String                @id @default(cuid())
+  organizacionId String
+  autorId        String
+  titulo         String
+  mensaje        String
+  prioridad      PrioridadNotificacion @default(INFO)
+  expiraEn       DateTime?
+  createdAt      DateTime              @default(now())
+
+  organizacion  Organizacion               @relation(fields: [organizacionId], references: [id])
+  autor         Usuario                    @relation("NotificacionAutor", fields: [autorId], references: [id])
+  destinatarios NotificacionDestinatario[]
+  lecturas      NotificacionLectura[]
+
+  @@index([organizacionId, createdAt])
+  @@index([autorId, createdAt])
+}
+
+model NotificacionDestinatario {
+  id             String @id @default(cuid())
+  notificacionId String
+  usuarioId      String
+
+  notificacion Notificacion @relation(fields: [notificacionId], references: [id], onDelete: Cascade)
+  usuario      Usuario      @relation("NotificacionDestinatario", fields: [usuarioId], references: [id])
+
+  @@unique([notificacionId, usuarioId])
+  @@index([usuarioId])
+}
+
+model NotificacionLectura {
+  id             String    @id @default(cuid())
+  notificacionId String
+  usuarioId      String
+  leidaEn        DateTime  @default(now())
+  confirmadaEn   DateTime?
+
+  notificacion Notificacion @relation(fields: [notificacionId], references: [id], onDelete: Cascade)
+  usuario      Usuario      @relation("NotificacionLectura", fields: [usuarioId], references: [id])
+
+  @@unique([notificacionId, usuarioId])
+  @@index([usuarioId])
 }
