@@ -3,7 +3,7 @@ import { PresentacionMedicamento, UnidadMedida } from '@ganaderia/shared'
 
 export interface Medicamento {
   id: string
-  farmaciaId: string
+  organizacionId: string
   nombre: string
   nombreGenerico: string | null
   presentacion: PresentacionMedicamento
@@ -25,7 +25,6 @@ export interface MedicamentoConStock extends Medicamento {
 }
 
 export interface CreateMedicamentoInput {
-  farmaciaId: string
   nombre: string
   nombreGenerico?: string
   presentacion: PresentacionMedicamento
@@ -34,17 +33,13 @@ export interface CreateMedicamentoInput {
   stockMinimo: number
 }
 
-export type UpdateMedicamentoInput = Partial<Omit<CreateMedicamentoInput, 'farmaciaId'>>
+export type UpdateMedicamentoInput = Partial<CreateMedicamentoInput>
 
 export const medicamentosApi = {
-  findAll: (farmaciaId: string) =>
-    api.get<MedicamentoConStock[]>(`/medicamentos?farmaciaId=${farmaciaId}`),
-  findOne: (id: string) =>
-    api.get<MedicamentoConStock>(`/medicamentos/${id}`),
-  create: (data: CreateMedicamentoInput) =>
-    api.post<Medicamento>('/medicamentos', data),
+  findAll: () => api.get<Medicamento[]>('/medicamentos'),
+  findOne: (id: string) => api.get<Medicamento>(`/medicamentos/${id}`),
+  create: (data: CreateMedicamentoInput) => api.post<Medicamento>('/medicamentos', data),
   update: (id: string, data: UpdateMedicamentoInput) =>
     api.put<Medicamento>(`/medicamentos/${id}`, data),
-  remove: (id: string) =>
-    api.delete<Medicamento>(`/medicamentos/${id}`),
+  remove: (id: string) => api.delete<Medicamento>(`/medicamentos/${id}`),
 }

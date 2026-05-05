@@ -6,6 +6,10 @@ export class CreateAjusteInventarioDto {
   @IsString()
   medicamentoId!: string
 
+  @ApiProperty({ description: 'Farmacia donde se hará el ajuste' })
+  @IsString()
+  farmaciaId!: string
+
   @ApiProperty({ example: 12, description: 'Cantidad real en almacén tras el ajuste (puede ser mayor o menor a la actual)' })
   @IsInt()
   @Min(0)

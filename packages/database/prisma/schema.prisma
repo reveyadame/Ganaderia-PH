@@ -130,6 +130,7 @@ model Organizacion {
   estadosComedero EstadoComederoConfig[]
   notificaciones  Notificacion[]
   racionesCatalogo RacionCatalogo[]
+  medicamentos    Medicamento[]
 }
 
 // ─────────────────────────────────────────────
@@ -147,7 +148,6 @@ model Farmacia {
 
   organizacion   Organizacion        @relation(fields: [organizacionId], references: [id])
   gruposCorrales GrupoCorrales[]
-  medicamentos   Medicamento[]
   unidades       UnidadMedicamento[]
   ajustes        AjusteInventario[]
 }
@@ -278,9 +278,11 @@ model AsignacionAreteBlanco {
 // MEDICAMENTOS E INVENTARIO
 // ─────────────────────────────────────────────
 
+// Catálogo de medicamentos a nivel organización (DEC-023).
+// El stock y costo se manejan por farmacia vía UnidadMedicamento.
 model Medicamento {
   id                  String                  @id @default(cuid())
-  farmaciaId          String
+  organizacionId      String
   nombre              String
   nombreGenerico      String?
   presentacion        PresentacionMedicamento
@@ -291,13 +293,14 @@ model Medicamento {
   createdAt           DateTime                @default(now())
   updatedAt           DateTime                @updatedAt
 
-  farmacia        Farmacia                   @relation(fields: [farmaciaId], references: [id])
+  organizacion    Organizacion               @relation(fields: [organizacionId], references: [id])
   unidades        UnidadMedicamento[]
   templateItems   TratamientoTemplateItem[]
   aplicacionItems AplicacionTratamientoItem[]
   ajustes         AjusteInventario[]
 
-  @@index([farmaciaId, activo])
+  @@unique([organizacionId, nombre])
+  @@index([organizacionId, activo])
 }
 
 model UnidadMedicamento {

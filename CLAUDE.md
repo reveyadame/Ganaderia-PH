@@ -50,17 +50,11 @@ pnpm dev
 - **Etapa 6:** Tratamientos (TratamientoTemplate CRUD, AplicacionTratamiento FIFO + snapshot, /tratamientos, /admin/tratamientos/kits)
 - **Etapa 7:** Comederos y Raciones (EstadoComederoConfig, LecturaComedor, RacionDefinicion, SurtidoRacion, /comederos, /raciones, /admin/comederos/estados)
 - **Etapa 8:** Dashboard y Reportes (KPIs con caché in-memory, gráfica 30 días, costo por animal, stock crítico, historial tratamientos)
-
-### 🚧 Etapa 9 en curso — Módulos transversales y separación de espacios
-- Consolidación de roles: `ADMIN → DIRECTOR` (mig. `consolidate_director_role`). Enum final: `SUPERUSUARIO`, `DIRECTOR`, `OPERADOR`.
-- `RacionCatalogo` por organización + `RacionDefinicion.nombre` + FK opcional `catalogoId` (DEC-019).
-- Módulo `notificaciones` interno DIRECTOR → OPERADOR con prioridades INFO/AVISO/CRITICA y eventos de lectura/confirmación (DEC-020).
-- Espacio `operador/` mobile-first separado del espacio `(app)/` desktop (DEC-021).
-- Alta de animal sin selección manual de corral — solo grupo, corral auto-asignado (DEC-022).
+- **Etapa 9:** Módulos transversales y separación de espacios (consolidación DIRECTOR, RacionCatalogo, Notificaciones, espacio operador/ mobile, alta sin corral manual, catálogo medicamentos org-level, dashboard para DIRECTOR, promoción PRE_INGRESO manual)
 
 ### 🔜 Siguiente: Etapa 10 — Testing y Calidad
-- Tests unitarios (FIFO, costo, resolución de arete, promoción PRE_INGRESO, copia de nombre desde catálogo)
-- Tests de integración (alta animal, aplicación de tratamiento, ciclo de vida de unidad, notificaciones)
+- Tests unitarios (FIFO, costo, resolución de arete, promoción PRE_INGRESO manual, copia de nombre desde catálogo)
+- Tests de integración (alta animal, aplicación de tratamiento, ciclo de vida de unidad, emisión + lectura de notificación)
 - E2E con Playwright separados por rol DIRECTOR / OPERADOR
 
 ## Documentación completa en /docs
@@ -69,8 +63,8 @@ pnpm dev
 | `docs/architecture.md` | Arquitectura completa, módulos, infraestructura, separación `(app)/` vs `operador/` |
 | `docs/business-rules.md` | Reglas de negocio por módulo (BR-AN-*, BR-FA-*, BR-TR-*, BR-CO-*, BR-RA-*, BR-US-*, BR-DA-*, BR-NO-*) |
 | `docs/db-schema.md` | Prisma schema completo (28 modelos: incluye RacionCatalogo + Notificacion + lecturas) |
-| `docs/decisions-log.md` | 22 decisiones técnicas con contexto y razón (DEC-001 → DEC-022) |
-| `docs/roadmap.md` | Etapas 1–8 ✅, 9 🚧 en curso, 10 testing, 11 deploy |
+| `docs/decisions-log.md` | 24 decisiones técnicas con contexto y razón (DEC-001 → DEC-024) |
+| `docs/roadmap.md` | Etapas 1–9 ✅, 10 testing, 11 deploy |
 | `docs/ui-system.md` | Sistema de diseño, tokens, componentes, patrones UX (espacios desktop + mobile) |
 
 ## Arquitectura de autorización
@@ -84,6 +78,10 @@ Tres capas en orden:
 ## Modelo de inventario (farmacia) — IMPORTANTE
 El stock NO se descuenta por aplicación de tratamiento. Cada frasco es una `UnidadMedicamento` con ciclo de vida:
 `PRE_INGRESO → DISPONIBLE → SALIDA_TEMPORAL → CONSUMIDO/BAJA`
+
+**Regla de alta (simplificada):** si ya existe cualquier unidad activa del mismo medicamento en esa farmacia (en cualquier estado no terminal) → la nueva unidad entra como `PRE_INGRESO`. Si no existe ninguna → entra directamente como `DISPONIBLE`.
+
+**Promoción manual:** `POST /inventario/promover-preingreso` permite a un DIRECTOR/SUPERUSUARIO promover un batch PRE_INGRESO a DISPONIBLE. Bloqueado con `409 Conflict` si hay una cohorte activa con precio distinto (se debe agotar primero).
 
 Stock decrementado solo cuando el frasco vacío regresa (CONSUMIDO) o se da de baja (ajuste/pérdida).
 Ver `docs/business-rules.md` sección BR-FA-* para detalle completo.

@@ -20,7 +20,7 @@ export class ReportesController {
     @Query('busqueda') busqueda?: string,
   ) {
     return this.reportesService.getCostoAnimal(
-      user.organizacionId,
+      user,
       page ? parseInt(page, 10) : 1,
       limit ? parseInt(limit, 10) : 20,
       grupoCorralesId,
@@ -34,7 +34,7 @@ export class ReportesController {
     @CurrentUser() user: UsuarioSesion,
     @Query('grupoCorralesId') grupoCorralesId?: string,
   ) {
-    return this.reportesService.getStockCritico(user.organizacionId, grupoCorralesId)
+    return this.reportesService.getStockCritico(user, grupoCorralesId)
   }
 
   @Get('tratamientos')
@@ -53,7 +53,7 @@ export class ReportesController {
       : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 
     return this.reportesService.getTratamientosPorPeriodo(
-      user.organizacionId,
+      user,
       desde,
       hasta,
       grupoCorralesId,

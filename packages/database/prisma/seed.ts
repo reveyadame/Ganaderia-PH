@@ -1,4 +1,4 @@
-import { PrismaClient, TipoUsuario } from '../generated'
+import { PrismaClient, TipoUsuario, PresentacionMedicamento, UnidadMedida } from '../generated'
 import * as bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
@@ -75,6 +75,41 @@ async function main() {
     })
   }
   console.log(`✓ ${corrales.length} corrales creados`)
+
+  // Catálogo base de medicamentos (DEC-023: nivel organización)
+  const medicamentosSeed: Array<{
+    nombre: string
+    nombreGenerico?: string
+    presentacion: PresentacionMedicamento
+    volumenPresentacion: number
+    unidadMedida: UnidadMedida
+    stockMinimo: number
+  }> = [
+    {
+      nombre: 'Penicilina G Procaínica',
+      nombreGenerico: 'Bencilpenicilina procaínica',
+      presentacion: PresentacionMedicamento.FRASCO,
+      volumenPresentacion: 100,
+      unidadMedida: UnidadMedida.ML,
+      stockMinimo: 3,
+    },
+    {
+      nombre: 'Oxitetraciclina LA',
+      nombreGenerico: 'Oxitetraciclina',
+      presentacion: PresentacionMedicamento.FRASCO,
+      volumenPresentacion: 250,
+      unidadMedida: UnidadMedida.ML,
+      stockMinimo: 2,
+    },
+  ]
+  for (const med of medicamentosSeed) {
+    await prisma.medicamento.upsert({
+      where: { organizacionId_nombre: { organizacionId: org.id, nombre: med.nombre } },
+      update: {},
+      create: { organizacionId: org.id, ...med },
+    })
+  }
+  console.log(`✓ ${medicamentosSeed.length} medicamentos en el catálogo`)
 
   console.log('\n✅ Seed completado exitosamente')
   console.log('─────────────────────────────────')

@@ -29,6 +29,6 @@ export class ScanController {
     description: 'Recibe cualquier código (arete SINIIGA, arete blanco o código de corral) y devuelve la entidad correspondiente',
   })
   resolve(@Body() dto: ScanResolveDto, @CurrentUser() user: UsuarioSesion) {
-    return this.service.resolve(dto.codigo, user.organizacionId, dto.contexto)
+    return this.service.resolve(dto.codigo, user, dto.contexto)
   }
 }

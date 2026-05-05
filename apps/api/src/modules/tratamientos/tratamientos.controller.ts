@@ -19,7 +19,7 @@ export class TratamientosController {
   @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
   @RequiereActividad(ActividadUsuario.TRATAMIENTOS, ActividadUsuario.REPORTES)
   findByAnimal(@Query('animalId') animalId: string, @CurrentUser() user: UsuarioSesion) {
-    return this.service.findByAnimal(animalId, user.organizacionId)
+    return this.service.findByAnimal(animalId, user)
   }
 
   @Get('recientes')
@@ -29,7 +29,7 @@ export class TratamientosController {
   @RequiereActividad(ActividadUsuario.TRATAMIENTOS, ActividadUsuario.REPORTES)
   listarRecientes(@Query('limit') limit: string | undefined, @CurrentUser() user: UsuarioSesion) {
     const parsed = limit ? Math.min(Math.max(parseInt(limit), 1), 200) : 50
-    return this.service.listarRecientes(user.organizacionId, user.gruposCorralesIds, parsed)
+    return this.service.listarRecientes(user, parsed)
   }
 
   @Post('preview-costo')
@@ -37,7 +37,7 @@ export class TratamientosController {
   @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
   @RequiereActividad(ActividadUsuario.TRATAMIENTOS)
   previewCosto(@Body() dto: CreateTratamientoDto, @CurrentUser() user: UsuarioSesion) {
-    return this.service.previewCosto(dto, user.organizacionId)
+    return this.service.previewCosto(dto, user)
   }
 
   @Post()
@@ -45,6 +45,6 @@ export class TratamientosController {
   @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
   @RequiereActividad(ActividadUsuario.TRATAMIENTOS)
   create(@Body() dto: CreateTratamientoDto, @CurrentUser() user: UsuarioSesion) {
-    return this.service.create(dto, user.id, user.organizacionId)
+    return this.service.create(dto, user)
   }
 }

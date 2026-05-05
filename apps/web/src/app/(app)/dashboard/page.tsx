@@ -8,8 +8,9 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart,
 } from 'recharts'
 import {
-  PawPrint, DollarSign, AlertTriangle, Syringe, ChevronRight, Package, TrendingUp,
+  DollarSign, AlertTriangle, Syringe, ChevronRight, Package,
 } from 'lucide-react'
+import { CattleIcon } from '@/components/icons/cattle-icon'
 import { dashboardApi } from '@/lib/api/dashboard.api'
 import { reportesApi, StockCriticoItem } from '@/lib/api/reportes.api'
 import { gruposCorralesApi } from '@/lib/api/grupos-corrales.api'
@@ -95,8 +96,12 @@ function KpiCard({
 export default function DashboardPage() {
   const [grupoCorralesId, setGrupoCorralesId] = useState<string>('')
   const { usuario } = useAuthStore()
-  const hasReportesAccess = usuario?.tipo === TipoUsuario.SUPERUSUARIO
-    || (usuario?.actividades.includes(ActividadUsuario.REPORTES) ?? false)
+
+  const esSuperusuario = usuario?.tipo === TipoUsuario.SUPERUSUARIO
+  const hasRegistro   = esSuperusuario || (usuario?.actividades.includes(ActividadUsuario.REGISTRO) ?? false)
+  const hasFarmacia   = esSuperusuario || (usuario?.actividades.includes(ActividadUsuario.FARMACIA) ?? false)
+  const hasReportes   = esSuperusuario || (usuario?.actividades.includes(ActividadUsuario.REPORTES) ?? false)
+  const hasTratam     = hasReportes
 
   const { data: grupos } = useQuery({
     queryKey: ['grupos-corrales-dashboard'],
@@ -113,19 +118,19 @@ export default function DashboardPage() {
   const { data: chartData, isLoading: loadingChart } = useQuery({
     queryKey: ['dashboard-tratamientos-dia', grupoFilter],
     queryFn: () => dashboardApi.getTratamientosPorDia(30, grupoFilter),
-    enabled: hasReportesAccess,
+    enabled: hasTratam,
   })
 
   const { data: stockCritico, isLoading: loadingStock } = useQuery({
     queryKey: ['stock-critico', grupoFilter],
     queryFn: () => reportesApi.getStockCritico(grupoFilter),
-    enabled: hasReportesAccess,
+    enabled: hasFarmacia,
   })
 
   const { data: resumenGrupos, isLoading: loadingGrupos } = useQuery({
     queryKey: ['dashboard-grupos'],
     queryFn: dashboardApi.getResumenGrupos,
-    enabled: !grupoCorralesId && hasReportesAccess,
+    enabled: !grupoCorralesId,
   })
 
   const grupoOptions = [
@@ -165,13 +170,15 @@ export default function DashboardPage() {
 
       {/* KPI grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <KpiCard
-          icon={PawPrint}
-          label="Animales activos"
-          value={kpis?.animalesActivos.toLocaleString('es-MX') ?? '—'}
-          loading={loadingKpis}
-          color="blue"
-        />
+        {hasRegistro && (
+          <KpiCard
+            icon={CattleIcon}
+            label="Animales activos"
+            value={kpis?.animalesActivos.toLocaleString('es-MX') ?? '—'}
+            loading={loadingKpis}
+            color="blue"
+          />
+        )}
         <KpiCard
           icon={Syringe}
           label="Tratamientos hoy"
@@ -187,7 +194,7 @@ export default function DashboardPage() {
           loading={loadingKpis}
           color="purple"
         />
-        {hasReportesAccess && (
+        {hasReportes && (
           <>
             <KpiCard
               icon={DollarSign}
@@ -205,20 +212,22 @@ export default function DashboardPage() {
               loading={loadingKpis}
               color="green"
             />
-            <KpiCard
-              icon={Package}
-              label="Stock crítico"
-              value={kpis?.stockCritico.toString() ?? '—'}
-              sub={kpis?.stockCritico ? 'medicamentos bajo mínimo' : 'todo en orden'}
-              loading={loadingKpis}
-              color={kpis?.stockCritico ? 'amber' : 'default'}
-            />
           </>
+        )}
+        {hasFarmacia && (
+          <KpiCard
+            icon={Package}
+            label="Stock crítico"
+            value={kpis?.stockCritico.toString() ?? '—'}
+            sub={kpis?.stockCritico ? 'medicamentos bajo mínimo' : 'todo en orden'}
+            loading={loadingKpis}
+            color={kpis?.stockCritico ? 'amber' : 'default'}
+          />
         )}
       </div>
 
       {/* Stock critical alert */}
-      {hasReportesAccess && !loadingStock && stockCritico && stockCritico.length > 0 && (
+      {hasFarmacia && !loadingStock && stockCritico && stockCritico.length > 0 && (
         <div className="rounded-xl border border-warning/25 bg-warning-subtle/60 p-4 md:p-5">
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-lg bg-warning/15 flex items-center justify-center shrink-0">
@@ -263,7 +272,7 @@ export default function DashboardPage() {
       )}
 
       {/* Chart */}
-      {hasReportesAccess && <div className="rounded-xl border border-border bg-surface overflow-hidden">
+      {hasTratam && <div className="rounded-xl border border-border bg-surface overflow-hidden">
         <div className="flex items-center justify-between px-4 md:px-5 py-4 border-b border-border">
           <div>
             <p className="text-[13px] font-semibold text-foreground tracking-tight">Tratamientos aplicados</p>
@@ -339,7 +348,7 @@ export default function DashboardPage() {
       </div>}
 
       {/* Resumen por grupos */}
-      {hasReportesAccess && !grupoCorralesId && (
+      {!grupoCorralesId && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <p className="text-[13px] font-semibold text-foreground tracking-tight">
@@ -389,11 +398,12 @@ export default function DashboardPage() {
       {/* Quick links */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
-          ...(hasReportesAccess ? [
-            { href: '/reportes/animales' as Route, label: 'Costo por animal', sub: 'Análisis financiero', icon: PawPrint, color: 'green' as KpiColor },
+          ...(hasRegistro ? [{ href: '/animales' as Route, label: 'Animales', sub: 'Registro y fichas', icon: CattleIcon, color: 'blue' as KpiColor }] : []),
+          ...(hasReportes ? [
+            { href: '/reportes/animales' as Route, label: 'Costo por animal', sub: 'Análisis financiero', icon: CattleIcon, color: 'green' as KpiColor },
             { href: '/reportes/tratamientos' as Route, label: 'Historial', sub: 'Tratamientos aplicados', icon: Syringe, color: 'purple' as KpiColor },
           ] : []),
-          { href: '/farmacia' as Route, label: 'Farmacia', sub: 'Inventario y salidas', icon: Package, color: 'amber' as KpiColor },
+          ...(hasFarmacia ? [{ href: '/farmacia' as Route, label: 'Farmacia', sub: 'Inventario y salidas', icon: Package, color: 'amber' as KpiColor }] : []),
         ].map(({ href, label, sub, icon: Icon, color }) => (
           <Link
             key={href}

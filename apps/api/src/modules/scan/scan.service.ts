@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common'
+import { UsuarioSesion } from '@ganaderia/shared'
 import { PrismaService } from '../../prisma/prisma.service'
+import { getGruposCorralesAccesibles } from '../../common/utils/grupos-corrales-access.util'
 
 type ScanContexto = 'ANIMAL' | 'CORRAL' | 'AMBOS'
 
@@ -7,24 +9,32 @@ type ScanContexto = 'ANIMAL' | 'CORRAL' | 'AMBOS'
 export class ScanService {
   constructor(private prisma: PrismaService) {}
 
-  async resolve(codigo: string, organizacionId: string, contexto: ScanContexto = 'AMBOS') {
+  async resolve(codigo: string, user: UsuarioSesion, contexto: ScanContexto = 'AMBOS') {
     const codigoNorm = codigo.trim().toUpperCase()
+    const organizacionId = user.organizacionId
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) return { tipo: 'NO_ENCONTRADO' as const, codigo: codigoNorm }
 
     if (contexto !== 'CORRAL') {
-      // 1. Buscar por arete SINIIGA
+      // 1. Buscar por arete SINIIGA, solo en grupos accesibles
       const porSiniiga = await this.prisma.animal.findFirst({
-        where: { organizacionId, areteSiniiga: codigoNorm },
+        where: {
+          organizacionId,
+          areteSiniiga: codigoNorm,
+          corral: { grupoCorralesId: { in: accesibles } },
+        },
         include: this.animalInclude(),
       })
       if (porSiniiga) {
         return { tipo: 'ANIMAL' as const, animal: await this.buildAnimalResult(porSiniiga) }
       }
 
-      // 2. Buscar por arete blanco activo
+      // 2. Buscar por arete blanco activo (limitado a animales en grupos accesibles)
       const asignacion = await this.prisma.asignacionAreteBlanco.findFirst({
         where: {
           areteBlanco: { organizacionId, codigo: codigoNorm },
           fechaLiberacion: null,
+          animal: { corral: { grupoCorralesId: { in: accesibles } } },
         },
         include: {
           animal: { include: this.animalInclude() },
@@ -36,9 +46,14 @@ export class ScanService {
     }
 
     if (contexto !== 'ANIMAL') {
-      // 3. Buscar corral por código
+      // 3. Buscar corral por código en grupos accesibles
       const corral = await this.prisma.corral.findFirst({
-        where: { codigo: codigoNorm, grupoCorrales: { organizacionId }, activo: true },
+        where: {
+          codigo: codigoNorm,
+          grupoCorrales: { organizacionId },
+          grupoCorralesId: { in: accesibles },
+          activo: true,
+        },
         include: {
           grupoCorrales: {
             select: {

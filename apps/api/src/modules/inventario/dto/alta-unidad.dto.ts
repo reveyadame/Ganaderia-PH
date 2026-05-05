@@ -2,9 +2,13 @@ import { IsString, IsNumber, IsOptional, IsInt, Min, Max, MaxLength } from 'clas
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
 export class AltaUnidadDto {
-  @ApiProperty()
+  @ApiProperty({ description: 'ID del medicamento del catálogo' })
   @IsString()
   medicamentoId!: string
+
+  @ApiProperty({ description: 'Farmacia donde ingresa el stock' })
+  @IsString()
+  farmaciaId!: string
 
   @ApiProperty({ example: 250.0, description: 'Costo de adquisición por frasco/pieza' })
   @IsNumber()

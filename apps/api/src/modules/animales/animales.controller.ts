@@ -19,46 +19,46 @@ export class AnimalesController {
   @Get()
   @ApiOperation({ summary: 'Listar animales con filtros y paginación' })
   findAll(@CurrentUser() user: UsuarioSesion, @Query() query: QueryAnimalesDto) {
-    return this.service.findAll(user.organizacionId, query)
+    return this.service.findAll(user, query)
   }
 
   @Get('lotes')
   @ApiOperation({ summary: 'Listar lotes' })
   findAllLotes(@CurrentUser() user: UsuarioSesion) {
-    return this.service.findAllLotes(user.organizacionId)
+    return this.service.findAllLotes(user)
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener ficha de animal' })
   findOne(@Param('id') id: string, @CurrentUser() user: UsuarioSesion) {
-    return this.service.findOne(id, user.organizacionId)
+    return this.service.findOne(id, user)
   }
 
   @Post()
   @RequiereActividad(ActividadUsuario.REGISTRO)
   @ApiOperation({ summary: 'Registrar llegada de animal' })
   create(@Body() dto: CreateAnimalDto, @CurrentUser() user: UsuarioSesion) {
-    return this.service.create(dto, user.organizacionId, user.id)
+    return this.service.create(dto, user)
   }
 
   @Patch(':id/egreso')
   @RequiereActividad(ActividadUsuario.REGISTRO)
   @ApiOperation({ summary: 'Registrar egreso de animal (venta, muerte, baja)' })
   egreso(@Param('id') id: string, @Body() dto: EgresoAnimalDto, @CurrentUser() user: UsuarioSesion) {
-    return this.service.egreso(id, dto, user.organizacionId)
+    return this.service.egreso(id, dto, user)
   }
 
   @Patch(':id/liberar-arete')
   @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   @ApiOperation({ summary: 'Liberar arete blanco (admin)' })
   liberarArete(@Param('id') id: string, @CurrentUser() user: UsuarioSesion) {
-    return this.service.liberarAreteBlanco(id, user.organizacionId, user.id)
+    return this.service.liberarAreteBlanco(id, user)
   }
 
   @Post('lotes')
   @RequiereActividad(ActividadUsuario.REGISTRO)
   @ApiOperation({ summary: 'Crear lote de llegada' })
   createLote(@Body() dto: CreateLoteDto, @CurrentUser() user: UsuarioSesion) {
-    return this.service.createLote(dto, user.organizacionId, user.id)
+    return this.service.createLote(dto, user)
   }
 }

@@ -17,7 +17,7 @@ export class FarmaciasService {
       where: { organizacionId: user.organizacionId, id: { in: accesibles } },
       orderBy: { nombre: 'asc' },
       include: {
-        _count: { select: { gruposCorrales: true, medicamentos: true } },
+        _count: { select: { gruposCorrales: true } },
       },
     })
   }
@@ -28,7 +28,6 @@ export class FarmaciasService {
       where: { id, organizacionId: user.organizacionId },
       include: {
         gruposCorrales: { where: { activo: true }, orderBy: { nombre: 'asc' } },
-        _count: { select: { medicamentos: true } },
       },
     })
     if (!farmacia) throw new NotFoundException('Farmacia no encontrada')

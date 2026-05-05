@@ -107,10 +107,11 @@ export class NotificacionesService {
     })
     if (!destinatario) throw new NotFoundException('Notificación no encontrada')
 
+    const ahora = new Date()
     return this.prisma.notificacionLectura.upsert({
       where: { notificacionId_usuarioId: { notificacionId, usuarioId: usuario.id } },
-      create: { notificacionId, usuarioId: usuario.id },
-      update: {},
+      create: { notificacionId, usuarioId: usuario.id, leidaEn: ahora },
+      update: { leidaEn: ahora },
     })
   }
 

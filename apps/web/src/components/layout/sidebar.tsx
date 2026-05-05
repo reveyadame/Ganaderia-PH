@@ -5,13 +5,14 @@ import type { Route } from 'next'
 import { usePathname, useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import {
-  LayoutDashboard, PawPrint, Syringe, UtensilsCrossed,
+  LayoutDashboard, Syringe, UtensilsCrossed,
   Scale, Package, Users, MapPin, LogOut, Bell, Plus, History,
   FlaskConical, ArrowUpFromLine, BarChart3, Smartphone,
   PanelLeftClose, PanelLeftOpen, X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/auth.store'
+import { CattleIcon } from '@/components/icons/cattle-icon'
 import { farmaciasApi } from '@/lib/api/farmacias.api'
 import { ActividadUsuario, TipoUsuario } from '@ganaderia/shared'
 
@@ -29,7 +30,7 @@ const NAV_GRUPOS: { titulo: string; items: NavItem[] }[] = [
     titulo: 'Operación',
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { href: '/animales', label: 'Animales', icon: PawPrint, actividad: ActividadUsuario.REGISTRO },
+      { href: '/animales', label: 'Animales', icon: CattleIcon, actividad: ActividadUsuario.REGISTRO },
       { href: '/operador', label: 'Vista operador', icon: Smartphone },
     ],
   },
@@ -59,7 +60,6 @@ const NAV_GRUPOS: { titulo: string; items: NavItem[] }[] = [
     titulo: 'Farmacia',
     items: [
       { href: '/farmacia', label: 'Resumen', icon: FlaskConical, actividad: ActividadUsuario.FARMACIA },
-      { href: '/farmacia/medicamentos', label: 'Medicamentos', icon: FlaskConical, actividad: ActividadUsuario.FARMACIA },
       { href: '/farmacia/inventario', label: 'Inventario', icon: Package, actividad: ActividadUsuario.FARMACIA },
       { href: '/farmacia/salidas', label: 'Salidas', icon: ArrowUpFromLine, actividad: ActividadUsuario.FARMACIA },
       { href: '/farmacia/ajustes', label: 'Historial de ajustes', icon: History, actividad: ActividadUsuario.FARMACIA },
@@ -68,13 +68,14 @@ const NAV_GRUPOS: { titulo: string; items: NavItem[] }[] = [
   {
     titulo: 'Administración',
     items: [
-      { href: '/admin/farmacias', label: 'Farmacias', icon: FlaskConical, actividad: ActividadUsuario.FARMACIA },
+      { href: '/admin/farmacias', label: 'Farmacias', icon: FlaskConical, soloSuperuser: true },
+      { href: '/admin/medicamentos', label: 'Catálogo de medicamentos', icon: FlaskConical, soloSuperuser: true },
       { href: '/admin/corrales', label: 'Corrales', icon: MapPin, soloSuperuser: true },
-      { href: '/admin/aretes', label: 'Aretes blancos', icon: Package, actividad: ActividadUsuario.REGISTRO },
-      { href: '/admin/tratamientos/kits', label: 'Kits de tratamiento', icon: Syringe, actividad: ActividadUsuario.TRATAMIENTOS },
-      { href: '/admin/comederos/estados', label: 'Estados comedero', icon: UtensilsCrossed, actividad: ActividadUsuario.COMEDEROS },
-      { href: '/admin/raciones-catalogo', label: 'Catálogo de raciones', icon: Scale, actividad: ActividadUsuario.RACIONES },
-      { href: '/admin/notificaciones', label: 'Notificaciones', icon: Bell },
+      { href: '/admin/aretes', label: 'Aretes blancos', icon: Package, soloSuperuser: true },
+      { href: '/admin/tratamientos/kits', label: 'Kits de tratamiento', icon: Syringe, soloSuperuser: true },
+      { href: '/admin/comederos/estados', label: 'Estados comedero', icon: UtensilsCrossed, soloSuperuser: true },
+      { href: '/admin/raciones-catalogo', label: 'Catálogo de raciones', icon: Scale, soloSuperuser: true },
+      { href: '/admin/notificaciones', label: 'Notificaciones', icon: Bell, soloSuperuser: true },
       { href: '/admin/usuarios', label: 'Usuarios', icon: Users, soloSuperuser: true },
     ],
   },
@@ -116,7 +117,9 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
     if (!usuario) return false
     if (usuario.tipo === TipoUsuario.SUPERUSUARIO) return true
     if (item.soloSuperuser) return false
-    if (item.soloReportes) return usuario.actividades.includes(ActividadUsuario.REPORTES)
+    if (item.soloReportes) {
+      return usuario.tipo === TipoUsuario.DIRECTOR && usuario.actividades.includes(ActividadUsuario.REPORTES)
+    }
     if (!item.actividad) return true
     return usuario.actividades.includes(item.actividad)
   }

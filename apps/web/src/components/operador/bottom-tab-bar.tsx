@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import type { Route } from 'next'
 import { usePathname } from 'next/navigation'
-import { Home, PawPrint, Syringe, UtensilsCrossed, Scale } from 'lucide-react'
+import { Home, Syringe, UtensilsCrossed, Scale } from 'lucide-react'
+import { CattleIcon } from '@/components/icons/cattle-icon'
 import { useAuthStore } from '@/stores/auth.store'
 import { ActividadUsuario } from '@ganaderia/shared'
 import { cn } from '@/lib/utils'
@@ -17,7 +18,7 @@ interface Tab {
 
 const TABS: Tab[] = [
   { href: '/operador', label: 'Inicio', icon: Home },
-  { href: '/operador/animales/nuevo', label: 'Registrar', icon: PawPrint, actividad: ActividadUsuario.REGISTRO },
+  { href: '/operador/animales/nuevo', label: 'Registrar', icon: CattleIcon, actividad: ActividadUsuario.REGISTRO },
   { href: '/operador/tratamientos', label: 'Tratar', icon: Syringe, actividad: ActividadUsuario.TRATAMIENTOS },
   { href: '/operador/comederos', label: 'Comederos', icon: UtensilsCrossed, actividad: ActividadUsuario.COMEDEROS },
   { href: '/operador/raciones', label: 'Raciones', icon: Scale, actividad: ActividadUsuario.RACIONES },

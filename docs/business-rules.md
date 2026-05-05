@@ -2,7 +2,7 @@
 
 Documento vivo. Toda regla derivada de decisiones del cliente o del dominio queda registrada aquí con su ID, contexto y comportamiento esperado.
 
-**Última actualización:** 2026-05-02 (Etapas 1–8 completadas; en curso Etapa 9 con Notificaciones y Catálogo de Raciones).
+**Última actualización:** 2026-05-04 (Etapas 1–9 completadas).
 
 ---
 
@@ -88,17 +88,20 @@ Cualquier usuario autenticado puede consultar los aretes disponibles para asigna
 ### BR-FA-001 — Una farmacia por GrupoCorrales
 Cada GrupoCorrales puede estar asignado a exactamente una farmacia. Una farmacia puede abastecer a múltiples GrupoCorrales. La clave foránea vive en `GrupoCorrales.farmaciaId`.
 
-### BR-FA-002 — Alta de unidad de medicamento (UnidadMedicamento)
-Al dar de alta una nueva unidad (frasco/pieza) de un medicamento:
-1. Se registra el costo de adquisición de esa unidad (`costoUnitario`)
-2. El sistema calcula: `costoPorMedida = costoUnitario / medicamento.volumenPresentacion`
-3. Si existen unidades `DISPONIBLE` del mismo medicamento en la misma farmacia → la nueva unidad entra como `PRE_INGRESO`
-4. Si no existen unidades `DISPONIBLE` → entra directamente como `DISPONIBLE`
+### BR-FA-002 — Alta de unidad de medicamento: lógica de estado inicial
+Cada alta crea N unidades que comparten un único `costoUnitario` (un alta = un batch). El sistema calcula `costoPorMedida = costoUnitario / medicamento.volumenPresentacion`. El estado inicial de las unidades nuevas:
+
+1. **Existe al menos una unidad activa** (en `DISPONIBLE`, `SALIDA_TEMPORAL` o `PRE_INGRESO`) del mismo medicamento en la misma farmacia → las N unidades nuevas entran como `PRE_INGRESO`.
+2. **No existe ninguna unidad activa** (primer batch o todas consumidas/dadas de baja) → las N unidades nuevas entran directamente como `DISPONIBLE`.
+
+**Invariante:** todas las unidades en `DISPONIBLE` (y las en `SALIDA_TEMPORAL` de esa cohorte) comparten exactamente un `costoPorMedida`. Ese costo es **el valor actual del medicamento** en esa farmacia.
 
 ### BR-FA-003 — Promoción PRE_INGRESO → DISPONIBLE
-Una unidad en `PRE_INGRESO` pasa a `DISPONIBLE` automáticamente cuando no quedan unidades del mismo medicamento en la misma farmacia con estado `DISPONIBLE` o `SALIDA_TEMPORAL` con `fechaEntrada` anterior.
+Hay dos formas de promover unidades PRE_INGRESO:
 
-Esta verificación se ejecuta cada vez que una unidad cambia a `CONSUMIDO` o `BAJA`.
+**Automática:** cuando no queda cohorte activa (`COUNT(DISPONIBLE) = 0` y `COUNT(SALIDA_TEMPORAL) = 0`), el sistema promueve automáticamente **todo el batch PRE_INGRESO más antiguo** a `DISPONIBLE`. Se identifica la unidad PI con `fechaEntrada` más antigua y se promueven todas las PI del mismo medicamento+farmacia con ese `costoPorMedida`. Los batches posteriores permanecen en PRE_INGRESO esperando su turno. Esta verificación ocurre cada vez que una unidad cambia a `CONSUMIDO` o `BAJA`.
+
+**Manual:** `POST /inventario/promover-preingreso` permite a un DIRECTOR o SUPERUSUARIO promover un batch PRE_INGRESO a DISPONIBLE antes de que la cohorte activa se agote. **Condición:** solo está permitido si no existe cohorte activa con precio distinto al del batch a promover; en caso contrario el endpoint responde `409 Conflict`. Si la cohorte activa tiene el mismo precio, las unidades del batch se fusionan con ella (también pasan a DISPONIBLE).
 
 ### BR-FA-004 — Ciclo de vida de una unidad física
 ```
@@ -138,8 +141,8 @@ Un medicamento del catálogo puede tener unidades en diferentes farmacias, cada 
 ### BR-TR-001 — Tratamiento sobre animal activo únicamente
 Solo se puede registrar un tratamiento sobre un animal con estado `ACTIVO`.
 
-### BR-TR-002 — Costo al momento de aplicación (FIFO, inmutable)
-El `costoPorMedidaMomento` se toma de la `UnidadMedicamento` `DISPONIBLE` o `SALIDA_TEMPORAL` con fecha de entrada más antigua (FIFO) de la farmacia del GrupoCorrales del corral del animal. Este valor se almacena en `AplicacionTratamientoItem` y **nunca cambia**.
+### BR-TR-002 — Costo al momento de aplicación (cohorte DISPONIBLE, inmutable)
+El `costoPorMedidaMomento` se toma de cualquier `UnidadMedicamento` en estado `DISPONIBLE` del medicamento en la farmacia del GrupoCorrales del corral del animal. Por BR-FA-002 todas las unidades `DISPONIBLE` comparten un único `costoPorMedida` (la cohorte activa) — ese es el **valor actual del medicamento**. Si no hay unidades `DISPONIBLE`, el costo se calcula como `0` y la respuesta marca `sinStock: true`. Este valor se almacena en `AplicacionTratamientoItem` y **nunca cambia** una vez registrada la aplicación.
 
 ### BR-TR-003 — Dos tipos de aplicación
 - **Por kit (template):** se selecciona un `TratamientoTemplate` predefinido. Se guarda snapshot JSON inmutable.
@@ -249,9 +252,9 @@ Los usuarios no se eliminan. Se desactivan con `activo = false`. Un usuario inac
 ## Módulo: Dashboard y Reportes
 
 ### BR-DA-001 — Acceso al dashboard
-- SUPERUSUARIO: dashboard consolidado de toda la organización
-- DIRECTOR: dashboard de sus GrupoCorrales asignados (o consolidado si los tiene todos)
-- OPERADOR con actividad REPORTES: dashboard de sus GrupoCorrales
+- SUPERUSUARIO: dashboard consolidado de toda la organización.
+- DIRECTOR: dashboard de sus GrupoCorrales asignados (escopo automático; si tiene todos los grupos, equivale a consolidado). Las secciones de KPIs, stock crítico y quick links se muestran condicionalmente según las actividades que el director tenga asignadas.
+- OPERADOR con actividad REPORTES: dashboard de sus GrupoCorrales.
 
 ### BR-DA-002 — KPIs mínimos del dashboard (Etapa 8)
 - Total de animales activos por GrupoCorrales y total consolidado

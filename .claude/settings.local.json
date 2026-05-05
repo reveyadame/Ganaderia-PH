@@ -45,7 +45,16 @@
       "Bash(pnpm --filter web tsc --noEmit)",
       "Bash(git -C /Users/reveyadame/Desktop/Ganaderia-PH log --oneline -20)",
       "Bash(git -C /Users/reveyadame/Desktop/Ganaderia-PH status --short)",
-      "Bash(git -C /Users/reveyadame/Desktop/Ganaderia-PH diff --stat docs/ CLAUDE.md)"
+      "Bash(git -C /Users/reveyadame/Desktop/Ganaderia-PH diff --stat docs/ CLAUDE.md)",
+      "Bash(pnpm typecheck *)",
+      "Bash(pnpm exec *)",
+      "Bash(pnpm --filter @ganaderia/database exec prisma generate)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(pnpm --filter @ganaderia/api exec tsc --noEmit)",
+      "Bash(echo \"exit:$?\")",
+      "Bash(pnpm --filter @ganaderia/api run --silent --if-present typecheck)",
+      "Bash(pnpm --dir /Users/reveyadame/Desktop/Ganaderia-PH/apps/api exec tsc --noEmit)",
+      "Bash(chmod +x /Users/reveyadame/Desktop/Ganaderia-PH/deploy.sh)"
     ]
   }
 }

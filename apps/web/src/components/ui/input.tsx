@@ -7,13 +7,14 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export function Input({ label, error, hint, className, id, ...props }: InputProps) {
-  const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-')
+  const cleanedLabel = label?.replace(/\s*\*+\s*$/, '')
+  const inputId = id ?? cleanedLabel?.toLowerCase().replace(/\s+/g, '-')
 
   return (
     <div className="space-y-1.5">
-      {label && (
+      {cleanedLabel && (
         <label htmlFor={inputId} className="block text-[13px] font-medium text-foreground">
-          {label}
+          {cleanedLabel}
           {props.required && <span className="text-danger ml-0.5">*</span>}
         </label>
       )}

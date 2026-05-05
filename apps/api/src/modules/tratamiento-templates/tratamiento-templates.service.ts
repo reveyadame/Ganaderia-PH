@@ -35,7 +35,6 @@ export class TratamientoTemplatesService {
             medicamento: {
               select: {
                 id: true, nombre: true, unidadMedida: true, presentacion: true,
-                farmacia: { select: { id: true, nombre: true } },
               },
             },
           },
@@ -135,14 +134,10 @@ export class TratamientoTemplatesService {
 
   private async validateMedicamentos(medicamentoIds: string[], organizacionId: string) {
     const medicamentos = await this.prisma.medicamento.findMany({
-      where: { id: { in: medicamentoIds }, activo: true },
-      include: { farmacia: { select: { organizacionId: true } } },
+      where: { id: { in: medicamentoIds }, activo: true, organizacionId },
     })
 
-    const invalidos = medicamentoIds.filter(mid => {
-      const med = medicamentos.find(m => m.id === mid)
-      return !med || med.farmacia.organizacionId !== organizacionId
-    })
+    const invalidos = medicamentoIds.filter(mid => !medicamentos.find(m => m.id === mid))
 
     if (invalidos.length > 0) {
       throw new BadRequestException(`Medicamentos no válidos: ${invalidos.join(', ')}`)

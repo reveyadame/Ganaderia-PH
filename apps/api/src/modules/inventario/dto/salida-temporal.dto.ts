@@ -6,6 +6,10 @@ export class SalidaTemporalDto {
   @IsString()
   medicamentoId!: string
 
+  @ApiProperty({ description: 'Farmacia desde la que se entrega el stock' })
+  @IsString()
+  farmaciaId!: string
+
   @ApiProperty({ example: 1, description: 'Cantidad de unidades a entregar (FIFO: se toman las más antiguas)' })
   @IsInt()
   @Min(1)

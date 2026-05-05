@@ -329,3 +329,40 @@ Aplica tanto al flujo de operador (`operador/animales/nuevo`) como al de directo
 - Crear un corral "default" por grupo: complica el modelo y duplica datos.
 
 **Razón:** Refleja la operación real: el corral exacto se asigna al momento de la descarga. La pantalla deja al director reasignar después desde la ficha, lo que ya es el flujo natural. La invariante de DB (`corralId NOT NULL`) preserva trazabilidad y queries históricas sin cambios.
+
+---
+
+## DEC-024 — Simplificación de alta de inventario y promoción PRE_INGRESO manual
+**Fecha:** 2026-05-04
+**Estado:** Aprobado e implementado
+
+**Decisión:** Se simplifica la lógica de `determinarEstadoNuevaUnidad`:
+- **Antes (4 casos):** comparaba el costo del nuevo batch con el costo de la cohorte activa para decidir si entra como DISPONIBLE o PRE_INGRESO.
+- **Ahora (2 casos):** si existe cualquier unidad activa del medicamento en esa farmacia (en cualquier estado no terminal) → PRE_INGRESO; si no existe ninguna → DISPONIBLE.
+
+Paralelamente se agrega el endpoint `POST /inventario/promover-preingreso` (DTO: `medicamentoId`, `farmaciaId`, `costoPorMedida`) que permite a un DIRECTOR o SUPERUSUARIO promover manualmente un batch PRE_INGRESO a DISPONIBLE. El endpoint lanza `409 Conflict` si existe una cohorte activa (DISPONIBLE/SALIDA_TEMPORAL) con un precio distinto al del batch que se quiere promover.
+
+La UI en `/farmacia/inventario` pre-valida la condición de bloqueo usando los datos ya cargados (sin round-trip extra), deshabilita el botón y muestra el precio de la cohorte activa como contexto.
+
+**Alternativas consideradas:**
+- Mantener la comparación de costos en el alta (permitir que una alta extienda la cohorte si tiene el mismo precio): descartado porque genera ambigüedad sobre qué constituye "mismo precio" (floating point) y complica el formulario de alta.
+- No ofrecer promoción manual: el director quedaría bloqueado si necesita activar stock urgente de otro proveedor mientras hay remanente mínimo de la cohorte anterior.
+
+**Razón:** El alta simplificada elimina lógica propensa a errores de redondeo y alinea con el flujo real: todo batch nuevo espera su turno. La promoción manual cubre el caso excepcional donde el director necesita activar el nuevo lote antes de que el anterior se agote, con la salvaguarda de bloquear precios incompatibles para preservar la invariante FIFO.
+
+---
+
+## DEC-023 — Catálogo de medicamentos a nivel organización
+**Fecha:** 2026-05-04
+**Estado:** Aprobado e implementado (mig. `20260504100000_medicamento_catalogo_org`)
+
+**Decisión:** El modelo `Medicamento` deja de pertenecer a una `Farmacia` y pasa a ser un **catálogo a nivel de organización** (`organizacionId`, único por nombre). El stock y costo siguen siendo por farmacia: cada `UnidadMedicamento` mantiene `medicamentoId` (catálogo) + `farmaciaId` (dónde está físicamente). Igual cambio en `AjusteInventario`.
+
+La administración del catálogo (alta, edición, presentación, unidad, volumen, stock mínimo) vive en `/admin/medicamentos`. La operación por farmacia (alta de stock con costo, salidas, ajustes) vive en `/farmacia/medicamentos`, `/farmacia/inventario`, `/farmacia/salidas` y se pasa `farmaciaId` explícito en cada DTO.
+
+**Alternativas consideradas:**
+- Mantener `Medicamento` por farmacia y duplicar la ficha en cada una: produce inconsistencias (mismo medicamento con presentaciones distintas por farmacia, kits de tratamiento atados a una farmacia específica).
+- Crear `MedicamentoCatalogo` separado y conservar `Medicamento` como join farmacia↔catálogo: dos modelos con campos casi idénticos, complica los kits y los reportes.
+- Stock mínimo por farmacia (tabla `MedicamentoFarmacia`): se descartó por simplicidad; el mínimo se mantiene a nivel catálogo y aplica igual en todas las farmacias. Si se necesita diferenciado más adelante, se agrega esa tabla sin tocar `Medicamento`.
+
+**Razón:** El medicamento es la misma sustancia química independientemente de dónde esté guardado. Los kits de tratamiento, los reportes por animal y la historia clínica no deberían cambiar al mover stock entre farmacias. Centralizar el catálogo elimina duplicados y permite que un kit se aplique en cualquier farmacia con stock disponible. La distinción "qué medicamento existe" (catálogo, admin) vs. "cuánto tengo y cuánto cuesta aquí" (inventario, farmacia) refleja la operación real y simplifica la UI: catálogo en Administración, stock por farmacia en Farmacia.

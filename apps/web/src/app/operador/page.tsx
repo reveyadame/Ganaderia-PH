@@ -1,7 +1,8 @@
 'use client'
 
 import type { Route } from 'next'
-import { PawPrint, Syringe, UtensilsCrossed, Scale, Sparkles } from 'lucide-react'
+import { Syringe, UtensilsCrossed, Scale, Sparkles } from 'lucide-react'
+import { CattleIcon } from '@/components/icons/cattle-icon'
 import { TaskCard } from '@/components/operador/task-card'
 import { CriticalNotifications } from '@/components/operador/critical-notifications'
 import { useAuthStore } from '@/stores/auth.store'
@@ -21,7 +22,7 @@ const TASKS: TaskDef[] = [
     href: '/operador/animales/nuevo',
     label: 'Registrar animal',
     description: 'Alta de un nuevo animal en el sistema',
-    icon: PawPrint,
+    icon: CattleIcon,
     tone: 'info',
     actividad: ActividadUsuario.REGISTRO,
   },

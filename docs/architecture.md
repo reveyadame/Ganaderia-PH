@@ -4,7 +4,7 @@
 
 Sistema de gestión operativa para engorda de ganado. Arquitectura web full-stack con separación clara entre frontend (Next.js), backend (NestJS) y base de datos (PostgreSQL). Monorepo pnpm workspaces con paquete compartido de tipos. Deploy en VPS Linux con Docker.
 
-**Estado:** Etapas 1–8 completadas. En curso Etapa 9: módulos transversales (Notificaciones internas, Catálogo de Raciones), separación de espacios desktop/mobile y consolidación del rol DIRECTOR.
+**Estado:** Etapas 1–9 completadas. Próximo: Etapa 10 (Testing y Calidad).
 
 ---
 
@@ -39,7 +39,7 @@ ganaderia-ph/
 | TailwindCSS | Estilos con sistema de tokens HSL semánticos |
 | TanStack Query v5 | Fetching y caché de datos del servidor |
 | Zustand + persist | Estado cliente (sesión en localStorage) |
-| Lucide React | Íconos exclusivamente |
+| Lucide React | Íconos (+ `CattleIcon` SVG propio para ícono de ganado) |
 | Recharts | Gráficas (AreaChart en dashboard) |
 | html5-qrcode | Escaneo desde cámara (Code 128, QR) |
 | date-fns | Formateo de fechas |
@@ -95,6 +95,10 @@ apps/web/src/app/
 
 `Button` · `Input` · `Select` · `Badge` · `ActiveBadge` · `Dialog` · `ConfirmDialog` · `EmptyState` · `PageHeader` · `Skeleton` · `TableSkeleton` · `Toast` · `ToastProvider`
 
+### Íconos personalizados (`components/icons/`)
+
+- **`CattleIcon`** — SVG propio de silueta de cabeza de vaca. Interfaz compatible con Lucide (`className`, `strokeWidth`, `SVGProps`). Reemplaza `PawPrint` en todo el proyecto.
+
 ### Componentes de escaneo (`components/scanner/`)
 
 - **`BarcodeInput`** — input unificado para escáner Bluetooth/USB + manual + cámara
@@ -104,6 +108,10 @@ apps/web/src/app/
 ### Sistema de diseño
 
 Tokens HSL en `globals.css` con variantes light/dark. Colores semánticos: `brand`, `accent`, `success`, `warning`, `danger`, `info` — cada uno con variantes `DEFAULT`, `subtle`, `foreground`. Ver `docs/ui-system.md` para referencia completa.
+
+### Overlays en mobile (`operador/`)
+
+Los overlays tipo drawer (ej: `NotificationBell`) deben montarse en `document.body` mediante `createPortal` para evitar que iOS Safari los recorte dentro de contenedores `overflow:hidden` o `position:sticky`. Se usa un flag `mounted` (activado en `useEffect`) para garantizar compatibilidad SSR antes de llamar `createPortal`.
 
 ### Auth Guard (`(app)/layout.tsx`)
 
@@ -153,8 +161,8 @@ apps/api/src/modules/
 ├── animales/              ✅ CRUD + egreso + liberarArete + lotes
 ├── aretes/                ✅ Pool, alta individual/lote, disponibles
 ├── scan/                  ✅ POST /scan/resolve (con racionActiva + ultimaLectura)
-├── medicamentos/          ✅ Catálogo por farmacia, soft delete
-├── inventario/            ✅ Alta FIFO, salidas temporales, regresos, bajas
+├── medicamentos/          ✅ Catálogo a nivel organización, soft delete (DEC-023)
+├── inventario/            ✅ Alta FIFO, salidas temporales, regresos, bajas, POST /promover-preingreso (DEC-024)
 ├── tratamiento-templates/ ✅ CRUD de kits con ítems
 ├── tratamientos/          ✅ Aplicaciones, preview costo
 ├── comederos/             ✅ Lecturas, estado actual por grupo, configuración de estados
@@ -162,7 +170,7 @@ apps/api/src/modules/
 ├── raciones-catalogo/     ✅ Catálogo de raciones por organización (CRUD)
 ├── dashboard/             ✅ KPIs con caché in-memory (TTL 5 min), resumen grupos, tratamientos/día
 ├── reportes/              ✅ Costo por animal, stock crítico, tratamientos por período
-└── notificaciones/        ✅ Notificaciones internas DIRECTOR → OPERADOR
+└── notificaciones/        ✅ Notificaciones internas DIRECTOR → OPERADOR (lectura/confirmación, bug marcarLeida corregido)
 ```
 
 ### Infraestructura de autorización (3 capas globales en `APP_GUARD`)

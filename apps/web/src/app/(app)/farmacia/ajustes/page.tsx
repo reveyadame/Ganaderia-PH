@@ -21,9 +21,8 @@ export default function HistorialAjustesPage() {
   const [page, setPage] = useState(1)
 
   const { data: medicamentos } = useQuery({
-    queryKey: ['medicamentos', farmaciaId],
-    queryFn: () => medicamentosApi.findAll(farmaciaId),
-    enabled: !!farmaciaId,
+    queryKey: ['medicamentos'],
+    queryFn: medicamentosApi.findAll,
   })
 
   const { data, isLoading } = useQuery({

@@ -19,8 +19,7 @@ export class RacionesController {
   @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   @RequiereActividad(ActividadUsuario.RACIONES, ActividadUsuario.REPORTES)
   listarActivas(@CurrentUser() user: UsuarioSesion) {
-    const filtro = user.tipo === TipoUsuario.SUPERUSUARIO ? undefined : user.gruposCorralesIds
-    return this.service.listarActivas(user.organizacionId, filtro)
+    return this.service.listarActivas(user)
   }
 
   @Get('historial')
@@ -29,9 +28,8 @@ export class RacionesController {
   @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   @RequiereActividad(ActividadUsuario.RACIONES, ActividadUsuario.REPORTES)
   listarHistorial(@Query('limit') limit: string | undefined, @CurrentUser() user: UsuarioSesion) {
-    const filtro = user.tipo === TipoUsuario.SUPERUSUARIO ? undefined : user.gruposCorralesIds
     const parsed = limit ? Math.min(Math.max(parseInt(limit), 1), 500) : 100
-    return this.service.listarHistorial(user.organizacionId, filtro, parsed)
+    return this.service.listarHistorial(user, parsed)
   }
 
   @Patch(':id/cantidades')
@@ -43,7 +41,7 @@ export class RacionesController {
     @Body() body: { cantidadKgManana: number; cantidadKgTarde: number },
     @CurrentUser() user: UsuarioSesion,
   ) {
-    return this.service.actualizarCantidades(id, body.cantidadKgManana, body.cantidadKgTarde, user.organizacionId)
+    return this.service.actualizarCantidades(id, body.cantidadKgManana, body.cantidadKgTarde, user)
   }
 
   @Get('activa')
@@ -52,7 +50,7 @@ export class RacionesController {
   @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
   @RequiereActividad(ActividadUsuario.RACIONES, ActividadUsuario.REPORTES)
   getRacionActiva(@Query('corralId') corralId: string, @CurrentUser() user: UsuarioSesion) {
-    return this.service.getRacionActiva(corralId, user.organizacionId)
+    return this.service.getRacionActiva(corralId, user)
   }
 
   @Get('corral/:corralId')
@@ -60,7 +58,7 @@ export class RacionesController {
   @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
   @RequiereActividad(ActividadUsuario.RACIONES, ActividadUsuario.REPORTES)
   getRacionesCorral(@Param('corralId') corralId: string, @CurrentUser() user: UsuarioSesion) {
-    return this.service.getRacionesCorral(corralId, user.organizacionId)
+    return this.service.getRacionesCorral(corralId, user)
   }
 
   @Post('definir')
@@ -68,7 +66,7 @@ export class RacionesController {
   @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
   @RequiereActividad(ActividadUsuario.RACIONES)
   crearRacion(@Body() dto: CreateRacionDto, @CurrentUser() user: UsuarioSesion) {
-    return this.service.crearRacion(dto, user.id, user.organizacionId)
+    return this.service.crearRacion(dto, user)
   }
 
   @Get('surtidos')
@@ -82,7 +80,7 @@ export class RacionesController {
     @Query('limite') limite: string,
     @CurrentUser() user: UsuarioSesion,
   ) {
-    return this.service.getSurtidosRecientes(corralId, user.organizacionId, limite ? parseInt(limite) : 10)
+    return this.service.getSurtidosRecientes(corralId, user, limite ? parseInt(limite) : 10)
   }
 
   @Post('surtir')
@@ -90,6 +88,6 @@ export class RacionesController {
   @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
   @RequiereActividad(ActividadUsuario.RACIONES)
   registrarSurtido(@Body() dto: CreateSurtidoDto, @CurrentUser() user: UsuarioSesion) {
-    return this.service.registrarSurtido(dto, user.id, user.organizacionId)
+    return this.service.registrarSurtido(dto, user)
   }
 }

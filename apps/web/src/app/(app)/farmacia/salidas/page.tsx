@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, ArrowUpFromLine, ChevronLeft, ChevronRight, CheckCircle, Package } from 'lucide-react'
 import { inventarioApi } from '@/lib/api/inventario.api'
-import { medicamentosApi } from '@/lib/api/medicamentos.api'
 import { usuariosApi } from '@/lib/api/usuarios.api'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
@@ -38,11 +37,11 @@ export default function SalidasPage() {
   const [regresoForm, setRegresoForm] = useState({ estadoRegreso: EstadoRegreso.REGRESO_VACIO, notas: '' })
 
   const { data: medicamentos } = useQuery({
-    queryKey: ['medicamentos', farmaciaId],
-    queryFn: () => medicamentosApi.findAll(farmaciaId),
+    queryKey: ['inventario-stock', farmaciaId],
+    queryFn: () => inventarioApi.getStock(farmaciaId),
     enabled: !!farmaciaId,
     // Para salida bulk: cualquier medicamento con DISPONIBLE o PRE_INGRESO sirve
-    select: meds => meds.filter(m => (m.stock.disponibles + m.stock.preIngreso) > 0),
+    select: res => res.medicamentos.filter(m => (m.stock.disponibles + m.stock.preIngreso) > 0),
   })
 
   const { data: salidas, isLoading } = useQuery({
@@ -64,6 +63,7 @@ export default function SalidasPage() {
   const crearSalidaMutation = useMutation({
     mutationFn: () => inventarioApi.crearSalida({
       medicamentoId: salidaForm.medicamentoId,
+      farmaciaId,
       cantidad: parseInt(salidaForm.cantidad) || 1,
       medicoId: salidaForm.medicoId,
       notas: salidaForm.notas || undefined,

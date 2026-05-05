@@ -1,7 +1,9 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common'
+import { UsuarioSesion } from '@ganaderia/shared'
 import { PrismaService } from '../../prisma/prisma.service'
 import { CreateRacionDto } from './dto/create-racion.dto'
 import { CreateSurtidoDto } from './dto/create-surtido.dto'
+import { getGruposCorralesAccesibles } from '../../common/utils/grupos-corrales-access.util'
 
 @Injectable()
 export class RacionesService {
@@ -9,8 +11,8 @@ export class RacionesService {
 
   // ── RacionDefinicion ──────────────────────────────────────────────────────
 
-  async getRacionActiva(corralId: string, organizacionId: string) {
-    await this.validateCorral(corralId, organizacionId)
+  async getRacionActiva(corralId: string, user: UsuarioSesion) {
+    await this.validateCorral(corralId, user)
     return this.prisma.racionDefinicion.findFirst({
       where: { corralId, activa: true },
       include: {
@@ -21,15 +23,16 @@ export class RacionesService {
     })
   }
 
-  async listarActivas(organizacionId: string, gruposPermitidosIds?: string[]) {
+  async listarActivas(user: UsuarioSesion) {
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) return []
+
     return this.prisma.racionDefinicion.findMany({
       where: {
         activa: true,
         corral: {
-          grupoCorrales: {
-            organizacionId,
-            ...(gruposPermitidosIds ? { id: { in: gruposPermitidosIds } } : {}),
-          },
+          grupoCorrales: { organizacionId: user.organizacionId },
+          grupoCorralesId: { in: accesibles },
         },
       },
       orderBy: [{ corral: { grupoCorrales: { nombre: 'asc' } } }, { corral: { nombre: 'asc' } }],
@@ -46,14 +49,15 @@ export class RacionesService {
     })
   }
 
-  async listarHistorial(organizacionId: string, gruposPermitidosIds?: string[], limit = 100) {
+  async listarHistorial(user: UsuarioSesion, limit = 100) {
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) return []
+
     return this.prisma.racionDefinicion.findMany({
       where: {
         corral: {
-          grupoCorrales: {
-            organizacionId,
-            ...(gruposPermitidosIds ? { id: { in: gruposPermitidosIds } } : {}),
-          },
+          grupoCorrales: { organizacionId: user.organizacionId },
+          grupoCorralesId: { in: accesibles },
         },
       },
       orderBy: { fechaInicio: 'desc' },
@@ -71,9 +75,18 @@ export class RacionesService {
     })
   }
 
-  async actualizarCantidades(id: string, cantidadKgManana: number, cantidadKgTarde: number, organizacionId: string) {
+  async actualizarCantidades(id: string, cantidadKgManana: number, cantidadKgTarde: number, user: UsuarioSesion) {
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) throw new NotFoundException('Ración no encontrada')
+
     const racion = await this.prisma.racionDefinicion.findFirst({
-      where: { id, corral: { grupoCorrales: { organizacionId } } },
+      where: {
+        id,
+        corral: {
+          grupoCorrales: { organizacionId: user.organizacionId },
+          grupoCorralesId: { in: accesibles },
+        },
+      },
     })
     if (!racion) throw new NotFoundException('Ración no encontrada')
     if (!racion.activa) throw new BadRequestException('Solo se pueden ajustar cantidades de raciones activas')
@@ -90,8 +103,8 @@ export class RacionesService {
     })
   }
 
-  async getRacionesCorral(corralId: string, organizacionId: string) {
-    await this.validateCorral(corralId, organizacionId)
+  async getRacionesCorral(corralId: string, user: UsuarioSesion) {
+    await this.validateCorral(corralId, user)
     return this.prisma.racionDefinicion.findMany({
       where: { corralId },
       orderBy: { fechaInicio: 'desc' },
@@ -102,13 +115,13 @@ export class RacionesService {
     })
   }
 
-  async crearRacion(dto: CreateRacionDto, definidaPorId: string, organizacionId: string) {
-    await this.validateCorral(dto.corralId, organizacionId)
+  async crearRacion(dto: CreateRacionDto, user: UsuarioSesion) {
+    await this.validateCorral(dto.corralId, user)
 
     let nombre = dto.nombre?.trim()
     if (dto.catalogoId) {
       const cat = await this.prisma.racionCatalogo.findFirst({
-        where: { id: dto.catalogoId, organizacionId, activo: true },
+        where: { id: dto.catalogoId, organizacionId: user.organizacionId, activo: true },
       })
       if (!cat) throw new BadRequestException('Ración del catálogo no encontrada o inactiva')
       nombre = cat.nombre
@@ -127,7 +140,7 @@ export class RacionesService {
       return tx.racionDefinicion.create({
         data: {
           corralId: dto.corralId,
-          definidaPorId,
+          definidaPorId: user.id,
           catalogoId: dto.catalogoId ?? null,
           nombre: nombre!,
           cantidadKgManana: dto.cantidadKgManana,
@@ -145,8 +158,8 @@ export class RacionesService {
 
   // ── SurtidoRacion ─────────────────────────────────────────────────────────
 
-  async getSurtidosRecientes(corralId: string, organizacionId: string, limite = 10) {
-    await this.validateCorral(corralId, organizacionId)
+  async getSurtidosRecientes(corralId: string, user: UsuarioSesion, limite = 10) {
+    await this.validateCorral(corralId, user)
     return this.prisma.surtidoRacion.findMany({
       where: { corralId },
       orderBy: { fechaSurtido: 'desc' },
@@ -158,8 +171,9 @@ export class RacionesService {
     })
   }
 
-  async registrarSurtido(dto: CreateSurtidoDto, surtidoPorId: string, organizacionId: string) {
-    await this.validateCorral(dto.corralId, organizacionId)
+  async registrarSurtido(dto: CreateSurtidoDto, user: UsuarioSesion) {
+    await this.validateCorral(dto.corralId, user)
+    const surtidoPorId = user.id
 
     // Resolver ración activa si no se proveyó
     let racionDefinicionId = dto.racionDefinicionId
@@ -213,9 +227,16 @@ export class RacionesService {
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
-  private async validateCorral(corralId: string, organizacionId: string) {
+  private async validateCorral(corralId: string, user: UsuarioSesion) {
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) throw new NotFoundException('Corral no encontrado')
+
     const corral = await this.prisma.corral.findFirst({
-      where: { id: corralId, grupoCorrales: { organizacionId } },
+      where: {
+        id: corralId,
+        grupoCorrales: { organizacionId: user.organizacionId },
+        grupoCorralesId: { in: accesibles },
+      },
     })
     if (!corral) throw new NotFoundException('Corral no encontrado')
     return corral

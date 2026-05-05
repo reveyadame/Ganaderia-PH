@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react'
 import type { Route } from 'next'
 import { useRouter } from 'next/navigation'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { PawPrint } from 'lucide-react'
+import { CattleIcon } from '@/components/icons/cattle-icon'
 import { animalesApi, CreateAnimalInput } from '@/lib/api/animales.api'
 import { aretesApi } from '@/lib/api/aretes.api'
 import { corralesApi } from '@/lib/api/corrales.api'
@@ -262,7 +262,7 @@ export default function NuevoAnimalDesktopPage() {
 
             <div className="space-y-2">
               <Button type="submit" size="lg" loading={createMutation.isPending} className="w-full">
-                <PawPrint className="h-4 w-4" />
+                <CattleIcon className="h-4 w-4" />
                 Registrar animal
               </Button>
               <Button

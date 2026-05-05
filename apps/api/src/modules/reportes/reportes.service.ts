@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common'
+import { UsuarioSesion } from '@ganaderia/shared'
 import { PrismaService } from '../../prisma/prisma.service'
+import { resolverFiltroGrupos } from '../../common/utils/grupos-corrales-access.util'
 
 @Injectable()
 export class ReportesService {
   constructor(private prisma: PrismaService) {}
 
   async getCostoAnimal(
-    organizacionId: string,
+    user: UsuarioSesion,
     page = 1,
     limit = 20,
     grupoCorralesId?: string,
@@ -15,10 +17,13 @@ export class ReportesService {
   ) {
     const skip = (page - 1) * limit
 
+    const filtro = await resolverFiltroGrupos(this.prisma, user, grupoCorralesId)
+    if (!filtro) return { items: [], total: 0, page, limit, totalPages: 0 }
+
     const animalWhere = {
-      organizacionId,
+      organizacionId: user.organizacionId,
       estado: 'ACTIVO' as const,
-      ...(grupoCorralesId && { corral: { grupoCorralesId } }),
+      corral: { grupoCorralesId: filtro.filter },
       ...(corralId && { corralId }),
       ...(busqueda && {
         OR: [
@@ -77,50 +82,70 @@ export class ReportesService {
     return { items, total, page, limit, totalPages: Math.ceil(total / limit) }
   }
 
-  async getStockCritico(organizacionId: string, grupoCorralesId?: string) {
-    const medicamentos = await this.prisma.medicamento.findMany({
+  async getStockCritico(user: UsuarioSesion, grupoCorralesId?: string) {
+    const filtro = await resolverFiltroGrupos(this.prisma, user, grupoCorralesId)
+    if (!filtro) return []
+
+    const farmacias = await this.prisma.farmacia.findMany({
       where: {
-        activo: true,
-        farmacia: {
-          organizacionId,
-          ...(grupoCorralesId && { gruposCorrales: { some: { id: grupoCorralesId } } }),
-        },
+        organizacionId: user.organizacionId,
+        activa: true,
+        gruposCorrales: { some: { id: filtro.filter } },
       },
-      select: {
-        id: true,
-        nombre: true,
-        presentacion: true,
-        stockMinimo: true,
-        farmacia: { select: { id: true, nombre: true } },
-      },
+      select: { id: true, nombre: true },
     })
+    if (farmacias.length === 0) return []
+
+    const medicamentos = await this.prisma.medicamento.findMany({
+      where: { organizacionId: user.organizacionId, activo: true },
+      select: { id: true, nombre: true, presentacion: true, stockMinimo: true },
+    })
+    if (medicamentos.length === 0) return []
 
     const stockRows = await this.prisma.unidadMedicamento.groupBy({
-      by: ['medicamentoId', 'estado'],
+      by: ['medicamentoId', 'farmaciaId'],
       where: {
         medicamentoId: { in: medicamentos.map(m => m.id) },
+        farmaciaId: { in: farmacias.map(f => f.id) },
         estado: { in: ['DISPONIBLE', 'SALIDA_TEMPORAL'] },
       },
       _count: { id: true },
     })
 
-    return medicamentos
-      .map(med => {
-        const total = stockRows
-          .filter(r => r.medicamentoId === med.id)
+    const items: Array<{
+      id: string
+      nombre: string
+      presentacion: string
+      stockMinimo: number
+      stockOperativo: number
+      enAlerta: boolean
+      farmacia: { id: string; nombre: string }
+    }> = []
+
+    for (const med of medicamentos) {
+      for (const farm of farmacias) {
+        const stockOperativo = stockRows
+          .filter(r => r.medicamentoId === med.id && r.farmaciaId === farm.id)
           .reduce((s, r) => s + r._count.id, 0)
-        return {
-          ...med,
-          stockOperativo: total,
-          enAlerta: total <= med.stockMinimo,
+        if (stockOperativo <= med.stockMinimo) {
+          items.push({
+            id: med.id,
+            nombre: med.nombre,
+            presentacion: med.presentacion,
+            stockMinimo: med.stockMinimo,
+            stockOperativo,
+            enAlerta: true,
+            farmacia: { id: farm.id, nombre: farm.nombre },
+          })
         }
-      })
-      .filter(m => m.enAlerta)
-      .sort((a, b) => a.stockOperativo - b.stockOperativo)
+      }
+    }
+
+    return items.sort((a, b) => a.stockOperativo - b.stockOperativo)
   }
 
   async getTratamientosPorPeriodo(
-    organizacionId: string,
+    user: UsuarioSesion,
     desde: Date,
     hasta: Date,
     grupoCorralesId?: string,
@@ -130,10 +155,13 @@ export class ReportesService {
   ) {
     const skip = (page - 1) * limit
 
+    const filtro = await resolverFiltroGrupos(this.prisma, user, grupoCorralesId)
+    if (!filtro) return { items: [], total: 0, page, limit, totalPages: 0 }
+
     const where = {
       animal: {
-        organizacionId,
-        ...(grupoCorralesId && { corral: { grupoCorralesId } }),
+        organizacionId: user.organizacionId,
+        corral: { grupoCorralesId: filtro.filter },
         ...(corralId && { corralId }),
       },
       fechaAplicacion: { gte: desde, lte: hasta },

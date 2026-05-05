@@ -211,7 +211,7 @@ exports.Prisma.AsignacionAreteBlancoScalarFieldEnum = {
 
 exports.Prisma.MedicamentoScalarFieldEnum = {
   id: 'id',
-  farmaciaId: 'farmaciaId',
+  organizacionId: 'organizacionId',
   nombre: 'nombre',
   nombreGenerico: 'nombreGenerico',
   presentacion: 'presentacion',

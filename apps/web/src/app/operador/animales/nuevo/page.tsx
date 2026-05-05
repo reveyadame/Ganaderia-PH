@@ -4,7 +4,8 @@ import { useState, useMemo, useEffect } from 'react'
 import type { Route } from 'next'
 import { useRouter } from 'next/navigation'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { PawPrint, MapPin, ChevronRight, Check } from 'lucide-react'
+import { MapPin, ChevronRight, Check } from 'lucide-react'
+import { CattleIcon } from '@/components/icons/cattle-icon'
 import { MobilePageHeader } from '@/components/operador/mobile-page-header'
 import { animalesApi, CreateAnimalInput } from '@/lib/api/animales.api'
 import { aretesApi } from '@/lib/api/aretes.api'
@@ -337,7 +338,7 @@ export default function NuevoAnimalPage() {
           {/* Acciones */}
           <div className="p-4 space-y-2">
             <Button type="submit" size="xl" loading={createMutation.isPending} className="w-full">
-              <PawPrint className="h-5 w-5" />
+              <CattleIcon className="h-5 w-5" />
               Registrar animal
             </Button>
             <Button variant="ghost" type="button" size="lg" onClick={() => setStep('ubicacion')} className="w-full">

@@ -67,13 +67,7 @@ export default function FarmaciaPage() {
           </div>
 
           {/* Acciones rápidas */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <QuickAction
-              icon={<FlaskConical className="h-5 w-5" />}
-              label="Medicamentos"
-              description="Catálogo y configuración"
-              onClick={() => router.push(`/farmacia/medicamentos?farmaciaId=${farmaciaId}`)}
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <QuickAction
               icon={<ArrowDownToLine className="h-5 w-5" />}
               label="Inventario"
@@ -95,12 +89,12 @@ export default function FarmaciaPage() {
             </div>
           ) : stock?.medicamentos.length === 0 ? (
             <div className="rounded-lg border border-border bg-surface p-8 text-center text-muted-foreground">
-              No hay medicamentos en esta farmacia.{' '}
+              No hay medicamentos en el catálogo.{' '}
               <button
-                onClick={() => router.push(`/farmacia/medicamentos?farmaciaId=${farmaciaId}`)}
+                onClick={() => router.push('/admin/medicamentos')}
                 className="text-brand hover:underline"
               >
-                Agregar medicamento
+                Ir al catálogo
               </button>
             </div>
           ) : (

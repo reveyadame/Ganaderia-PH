@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Bell, X, AlertTriangle, Info, Megaphone, CheckCheck, Inbox } from 'lucide-react'
 import { notificacionesApi } from '@/lib/api/notificaciones.api'
@@ -56,25 +57,28 @@ function NotificacionItem({
     <div
       onClick={() => noLeida && onLeer(notif.id)}
       className={cn(
-        'p-4 transition-colors cursor-pointer',
-        noLeida ? 'bg-brand/5 hover:bg-brand/10 active:bg-brand/15' : 'hover:bg-muted/40 active:bg-muted',
+        'p-4 transition-colors',
+        noLeida
+          ? 'bg-brand/5 active:bg-brand/15 cursor-pointer'
+          : 'cursor-default',
       )}
     >
       <div className="flex items-start gap-3">
         <PrioridadIcon p={notif.prioridad} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2 mb-0.5">
-            <p className={cn('text-[14px] truncate leading-tight', noLeida ? 'font-bold text-foreground' : 'font-medium text-foreground/80')}>
+            <p className={cn(
+              'text-[14px] leading-tight',
+              noLeida ? 'font-bold text-foreground' : 'font-medium text-foreground/70',
+            )}>
               {notif.titulo}
             </p>
             {noLeida && <span className="w-2 h-2 rounded-full bg-brand shrink-0" />}
           </div>
-          <p className="text-[12px] text-muted-foreground line-clamp-2 leading-snug">{notif.mensaje}</p>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="text-[11px] text-muted-foreground">
-              {notif.autor.nombre} {notif.autor.apellido} · {formatRelativo(notif.createdAt)}
-            </span>
-          </div>
+          <p className="text-[13px] text-muted-foreground leading-snug">{notif.mensaje}</p>
+          <p className="text-[11px] text-muted-foreground mt-1.5">
+            {notif.autor.nombre} {notif.autor.apellido} · {formatRelativo(notif.createdAt)}
+          </p>
 
           {noConfirmada && (
             <Button
@@ -105,9 +109,25 @@ function NotificacionItem({
 export function NotificationBell() {
   const qc = useQueryClient()
   const [open, setOpen] = useState(false)
+  // Needed to avoid SSR mismatch when using createPortal
+  const [mounted, setMounted] = useState(false)
   const { data: notifs } = useMisNotificaciones()
 
   const noLeidas = useMemo(() => (notifs ?? []).filter((n) => !n.leidaEn).length, [notifs])
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Lock body scroll when drawer is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [open])
 
   const leerMutation = useMutation({
     mutationFn: notificacionesApi.marcarLeida,
@@ -117,6 +137,60 @@ export function NotificationBell() {
     mutationFn: notificacionesApi.confirmar,
     onSuccess: () => qc.invalidateQueries({ queryKey: ['mis-notificaciones'] }),
   })
+
+  const drawer = (
+    <div className="fixed inset-0 z-[200] flex">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/50"
+        onClick={() => setOpen(false)}
+      />
+
+      {/* Panel — slides in from right, full-height */}
+      <div className="relative ml-auto w-full max-w-[480px] h-full bg-surface flex flex-col shadow-2xl">
+        {/* Header */}
+        <div className="h-14 border-b border-border flex items-center justify-between px-4 shrink-0">
+          <div className="flex items-center gap-2">
+            <Bell className="h-4 w-4 text-foreground" />
+            <p className="text-[15px] font-semibold text-foreground">Notificaciones</p>
+            {noLeidas > 0 && (
+              <Badge variant="danger" className="text-[10px]">{noLeidas} sin leer</Badge>
+            )}
+          </div>
+          <button
+            onClick={() => setOpen(false)}
+            aria-label="Cerrar"
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground active:bg-muted transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Lista */}
+        <div className="flex-1 overflow-y-auto divide-y divide-border">
+          {!notifs || notifs.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-center p-8 gap-2">
+              <Inbox className="h-10 w-10 text-muted-foreground/50" />
+              <p className="text-[14px] font-medium text-foreground">Sin notificaciones</p>
+              <p className="text-[12px] text-muted-foreground">
+                Te avisaremos cuando tu director te envíe un mensaje.
+              </p>
+            </div>
+          ) : (
+            notifs.map((n) => (
+              <NotificacionItem
+                key={n.id}
+                notif={n}
+                onLeer={(id) => leerMutation.mutate(id)}
+                onConfirmar={(id) => confirmarMutation.mutate(id)}
+                isPending={confirmarMutation.isPending}
+              />
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <>
@@ -133,47 +207,7 @@ export function NotificationBell() {
         )}
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex flex-col">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={() => setOpen(false)} />
-          <div className="relative ml-auto w-full max-w-[480px] h-full bg-surface flex flex-col shadow-2xl animate-in slide-up">
-            <div className="h-14 border-b border-border flex items-center justify-between px-4 shrink-0">
-              <div className="flex items-center gap-2">
-                <Bell className="h-4 w-4 text-foreground" />
-                <p className="text-[15px] font-semibold text-foreground">Notificaciones</p>
-                {noLeidas > 0 && <Badge variant="danger" className="text-[10px]">{noLeidas} sin leer</Badge>}
-              </div>
-              <button
-                onClick={() => setOpen(false)}
-                aria-label="Cerrar"
-                className="w-9 h-9 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground active:bg-muted transition-colors"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto divide-y divide-border">
-              {!notifs || notifs.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center p-8 gap-2">
-                  <Inbox className="h-10 w-10 text-muted-foreground/60" />
-                  <p className="text-[14px] font-medium text-foreground">Sin notificaciones</p>
-                  <p className="text-[12px] text-muted-foreground">Te avisaremos cuando tu director te envíe un mensaje.</p>
-                </div>
-              ) : (
-                notifs.map((n) => (
-                  <NotificacionItem
-                    key={n.id}
-                    notif={n}
-                    onLeer={(id) => leerMutation.mutate(id)}
-                    onConfirmar={(id) => confirmarMutation.mutate(id)}
-                    isPending={confirmarMutation.isPending}
-                  />
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {mounted && open && createPortal(drawer, document.body)}
     </>
   )
 }

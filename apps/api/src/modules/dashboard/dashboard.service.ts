@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common'
+import { UsuarioSesion } from '@ganaderia/shared'
 import { PrismaService } from '../../prisma/prisma.service'
+import { getGruposCorralesAccesibles } from '../../common/utils/grupos-corrales-access.util'
 
 interface CacheEntry<T> { data: T; expiresAt: number }
 const TTL_MS = 5 * 60 * 1000 // 5 min
@@ -24,96 +26,89 @@ export class DashboardService {
 
   // ── KPIs ─────────────────────────────────────────────────────────────────
 
-  async getKpis(organizacionId: string, grupoCorralesId?: string) {
-    const cacheKey = `kpis:${organizacionId}:${grupoCorralesId ?? 'all'}`
+  async getKpis(user: UsuarioSesion, grupoCorralesId?: string) {
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) {
+      return {
+        animalesActivos: 0, costoPromedioAnimal: 0, costoTotalAcumulado: 0,
+        stockCritico: 0, tratamientosUltimos7dias: 0, tratamientosHoy: 0,
+        cachedAt: new Date().toISOString(),
+      }
+    }
+
+    const gruposFilter = grupoCorralesId && accesibles.includes(grupoCorralesId)
+      ? [grupoCorralesId]
+      : accesibles
+
+    const cacheKey = `kpis:${user.organizacionId}:${gruposFilter.join(',')}`
     const cached = this.getCache<object>(cacheKey)
     if (cached) return cached
 
     const animalWhere = {
-      organizacionId,
+      organizacionId: user.organizacionId,
       estado: 'ACTIVO' as const,
-      ...(grupoCorralesId && { corral: { grupoCorralesId } }),
+      corral: { grupoCorralesId: { in: gruposFilter } },
     }
 
-    const [
-      animalesActivos,
-      costoResult,
-      stockCritico,
-      tratamientos7dias,
-      tratamientosHoy,
-    ] = await Promise.all([
+    const [animalesActivos, costoResult, tratamientos7dias, tratamientosHoy] = await Promise.all([
       this.prisma.animal.count({ where: animalWhere }),
-
       this.prisma.aplicacionTratamiento.aggregate({
-        where: {
-          animal: animalWhere,
-        },
+        where: { animal: animalWhere },
         _sum: { costoTotalCalculado: true },
         _count: { id: true },
       }),
-
-      this.prisma.medicamento.count({
-        where: {
-          activo: true,
-          farmacia: { organizacionId },
-          ...(grupoCorralesId && {
-            farmacia: {
-              organizacionId,
-              gruposCorrales: { some: { id: grupoCorralesId } },
-            },
-          }),
-        },
-      }),
-
       this.prisma.aplicacionTratamiento.count({
         where: {
           animal: animalWhere,
           fechaAplicacion: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
         },
       }),
-
       this.prisma.aplicacionTratamiento.count({
         where: {
           animal: animalWhere,
-          fechaAplicacion: {
-            gte: new Date(new Date().setHours(0, 0, 0, 0)),
-          },
+          fechaAplicacion: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
         },
       }),
     ])
 
-    // Stock crítico real: medicamentos donde unidades DISPONIBLE+SALIDA_TEMPORAL <= stockMinimo
-    const medicamentosOrg = await this.prisma.medicamento.findMany({
+    // Stock crítico: combinaciones (medicamento, farmacia) bajo el mínimo
+    const farmaciasOrg = await this.prisma.farmacia.findMany({
       where: {
-        activo: true,
-        farmacia: {
-          organizacionId,
-          ...(grupoCorralesId && { gruposCorrales: { some: { id: grupoCorralesId } } }),
-        },
+        organizacionId: user.organizacionId,
+        activa: true,
+        gruposCorrales: { some: { id: { in: gruposFilter } } },
       },
+      select: { id: true },
+    })
+    const medicamentosOrg = await this.prisma.medicamento.findMany({
+      where: { organizacionId: user.organizacionId, activo: true },
       select: { id: true, stockMinimo: true },
     })
 
-    const stockRows = await this.prisma.unidadMedicamento.groupBy({
-      by: ['medicamentoId', 'estado'],
-      where: {
-        medicamentoId: { in: medicamentosOrg.map(m => m.id) },
-        estado: { in: ['DISPONIBLE', 'SALIDA_TEMPORAL'] },
-      },
-      _count: { id: true },
-    })
+    const stockRows = farmaciasOrg.length === 0 || medicamentosOrg.length === 0
+      ? []
+      : await this.prisma.unidadMedicamento.groupBy({
+          by: ['medicamentoId', 'farmaciaId'],
+          where: {
+            medicamentoId: { in: medicamentosOrg.map(m => m.id) },
+            farmaciaId: { in: farmaciasOrg.map(f => f.id) },
+            estado: { in: ['DISPONIBLE', 'SALIDA_TEMPORAL'] },
+          },
+          _count: { id: true },
+        })
 
-    const stockCriticoCount = medicamentosOrg.filter(med => {
-      const total = stockRows
-        .filter(r => r.medicamentoId === med.id)
-        .reduce((s, r) => s + r._count.id, 0)
-      return total <= med.stockMinimo
-    }).length
+    let stockCriticoCount = 0
+    for (const med of medicamentosOrg) {
+      for (const farm of farmaciasOrg) {
+        const total = stockRows
+          .filter(r => r.medicamentoId === med.id && r.farmaciaId === farm.id)
+          .reduce((s, r) => s + r._count.id, 0)
+        if (total <= med.stockMinimo) stockCriticoCount++
+      }
+    }
 
     const costoTotal = Number(costoResult._sum.costoTotalCalculado ?? 0)
-    const costoPromedio = costoResult._count.id > 0
-      ? costoTotal / animalesActivos
-      : 0
+    const costoPromedio = animalesActivos > 0 ? costoTotal / animalesActivos : 0
 
     const data = {
       animalesActivos,
@@ -130,8 +125,15 @@ export class DashboardService {
 
   // ── Gráfica de tratamientos por día ──────────────────────────────────────
 
-  async getTratamientosPorDia(organizacionId: string, dias = 30, grupoCorralesId?: string) {
-    const cacheKey = `trat-por-dia:${organizacionId}:${grupoCorralesId ?? 'all'}:${dias}`
+  async getTratamientosPorDia(user: UsuarioSesion, dias = 30, grupoCorralesId?: string) {
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) return []
+
+    const gruposFilter = grupoCorralesId && accesibles.includes(grupoCorralesId)
+      ? [grupoCorralesId]
+      : accesibles
+
+    const cacheKey = `trat-por-dia:${user.organizacionId}:${gruposFilter.join(',')}.${dias}`
     const cached = this.getCache<object[]>(cacheKey)
     if (cached) return cached
 
@@ -140,8 +142,8 @@ export class DashboardService {
     const aplicaciones = await this.prisma.aplicacionTratamiento.findMany({
       where: {
         animal: {
-          organizacionId,
-          ...(grupoCorralesId && { corral: { grupoCorralesId } }),
+          organizacionId: user.organizacionId,
+          corral: { grupoCorralesId: { in: gruposFilter } },
         },
         fechaAplicacion: { gte: desde },
       },
@@ -149,18 +151,13 @@ export class DashboardService {
       orderBy: { fechaAplicacion: 'asc' },
     })
 
-    // Agrupar por fecha (YYYY-MM-DD)
     const agrupado = new Map<string, { count: number; costo: number }>()
     for (const ap of aplicaciones) {
       const fecha = ap.fechaAplicacion.toISOString().slice(0, 10)
       const actual = agrupado.get(fecha) ?? { count: 0, costo: 0 }
-      agrupado.set(fecha, {
-        count: actual.count + 1,
-        costo: actual.costo + Number(ap.costoTotalCalculado),
-      })
+      agrupado.set(fecha, { count: actual.count + 1, costo: actual.costo + Number(ap.costoTotalCalculado) })
     }
 
-    // Rellenar días sin datos
     const resultado: { fecha: string; tratamientos: number; costo: number }[] = []
     for (let i = dias - 1; i >= 0; i--) {
       const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
@@ -174,13 +171,16 @@ export class DashboardService {
 
   // ── KPIs por grupo ────────────────────────────────────────────────────────
 
-  async getResumenGrupos(organizacionId: string) {
-    const cacheKey = `grupos:${organizacionId}`
+  async getResumenGrupos(user: UsuarioSesion) {
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) return []
+
+    const cacheKey = `grupos:${user.organizacionId}:${accesibles.join(',')}`
     const cached = this.getCache<object[]>(cacheKey)
     if (cached) return cached
 
     const grupos = await this.prisma.grupoCorrales.findMany({
-      where: { organizacionId, activo: true },
+      where: { organizacionId: user.organizacionId, activo: true, id: { in: accesibles } },
       include: {
         corrales: {
           where: { activo: true },

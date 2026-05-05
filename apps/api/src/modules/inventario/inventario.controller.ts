@@ -1,6 +1,8 @@
-import { Controller, Get, Post, Patch, Body, Param, Query } from '@nestjs/common'
+import { Controller, Get, Post, Patch, Body, Param, Query, ParseFloatPipe } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger'
 import { InventarioService } from './inventario.service'
+import { IsNumber, IsString } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger'
 import { AltaUnidadDto } from './dto/alta-unidad.dto'
 import { SalidaTemporalDto } from './dto/salida-temporal.dto'
 import { RegresoUnidadDto } from './dto/regreso-unidad.dto'
@@ -10,6 +12,20 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator'
 import { RequiereRoles } from '../../common/decorators/requiere-roles.decorator'
 import { RequiereActividad } from '../../common/decorators/requiere-actividad.decorator'
 import { UsuarioSesion, TipoUsuario, ActividadUsuario } from '@ganaderia/shared'
+
+class PromoverPreIngresoDto {
+  @ApiProperty()
+  @IsString()
+  medicamentoId!: string
+
+  @ApiProperty()
+  @IsString()
+  farmaciaId!: string
+
+  @ApiProperty()
+  @IsNumber()
+  costoPorMedida!: number
+}
 
 @ApiTags('Inventario')
 @ApiBearerAuth()
@@ -105,6 +121,17 @@ export class InventarioController {
   @RequiereActividad(ActividadUsuario.FARMACIA)
   registrarBaja(@Body() dto: BajaUnidadDto, @CurrentUser() user: UsuarioSesion) {
     return this.service.registrarBaja(dto, user)
+  }
+
+  @Post('promover-preingreso')
+  @ApiOperation({ summary: 'Promover manualmente un batch de PRE_INGRESO a DISPONIBLE (mismo precio)' })
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
+  @RequiereActividad(ActividadUsuario.FARMACIA)
+  promoverPreIngreso(
+    @Body() body: PromoverPreIngresoDto,
+    @CurrentUser() user: UsuarioSesion,
+  ) {
+    return this.service.promoverPreIngresoManual(body.medicamentoId, body.farmaciaId, body.costoPorMedida, user)
   }
 
   // ── Ajustes de inventario (SUPERUSUARIO) ─────────────────────────────────

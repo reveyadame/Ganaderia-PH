@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Tag, Trash2, PawPrint } from 'lucide-react'
+import { Plus, Tag, Trash2 } from 'lucide-react'
+import { CattleIcon } from '@/components/icons/cattle-icon'
 import { aretesApi } from '@/lib/api/aretes.api'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
@@ -148,7 +149,7 @@ export default function AretesPage() {
                     <td className="px-4 py-3.5">
                       {animalActual ? (
                         <div className="flex items-center gap-2 text-sm">
-                          <PawPrint className="h-3.5 w-3.5 text-muted-foreground" />
+                          <CattleIcon className="h-3.5 w-3.5 text-muted-foreground" />
                           <span className="text-foreground">
                             {animalActual.areteSiniiga ?? '(sin SINIIGA)'}
                           </span>

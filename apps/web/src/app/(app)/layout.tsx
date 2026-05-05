@@ -2,17 +2,26 @@
 
 import { useEffect, useState } from 'react'
 import type { Route } from 'next'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Menu } from 'lucide-react'
 import { PageTransition } from '@/components/animations/PageTransition'
 import { LoadingScreen } from '@/components/animations/LoadingScreen'
 import { Sidebar } from '@/components/layout/sidebar'
 import { MobileOperatorBanner } from '@/components/layout/mobile-operator-banner'
 import { useAuthStore } from '@/stores/auth.store'
-import { TipoUsuario } from '@ganaderia/shared'
+import { ActividadUsuario, TipoUsuario } from '@ganaderia/shared'
+
+const RUTAS_POR_ACTIVIDAD: [string, ActividadUsuario][] = [
+  ['/animales', ActividadUsuario.REGISTRO],
+  ['/farmacia', ActividadUsuario.FARMACIA],
+  ['/comederos', ActividadUsuario.COMEDEROS],
+  ['/raciones', ActividadUsuario.RACIONES],
+  ['/reportes', ActividadUsuario.REPORTES],
+]
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
+  const pathname = usePathname()
   const [hydrated, setHydrated] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -33,8 +42,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
     if (usuario?.tipo === TipoUsuario.OPERADOR) {
       router.replace('/operador' as Route)
+      return
     }
-  }, [hydrated, accessToken, usuario, router])
+    if (usuario?.tipo === TipoUsuario.DIRECTOR) {
+      // Administración solo para SUPERUSUARIO
+      if (pathname.startsWith('/admin')) {
+        router.replace('/dashboard' as Route)
+        return
+      }
+      // Redirigir a dashboard si no tiene actividad para la sección actual
+      for (const [prefix, actividad] of RUTAS_POR_ACTIVIDAD) {
+        if (pathname.startsWith(prefix) && !usuario.actividades.includes(actividad)) {
+          router.replace('/dashboard' as Route)
+          return
+        }
+      }
+    }
+  }, [hydrated, accessToken, usuario, router, pathname])
 
   const handleToggle = () => {
     setCollapsed((prev) => {

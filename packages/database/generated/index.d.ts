@@ -3460,6 +3460,7 @@ export namespace Prisma {
     estadosComedero: number
     notificaciones: number
     racionesCatalogo: number
+    medicamentos: number
   }
 
   export type OrganizacionCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3472,6 +3473,7 @@ export namespace Prisma {
     estadosComedero?: boolean | OrganizacionCountOutputTypeCountEstadosComederoArgs
     notificaciones?: boolean | OrganizacionCountOutputTypeCountNotificacionesArgs
     racionesCatalogo?: boolean | OrganizacionCountOutputTypeCountRacionesCatalogoArgs
+    medicamentos?: boolean | OrganizacionCountOutputTypeCountMedicamentosArgs
   }
 
   // Custom InputTypes
@@ -3548,6 +3550,13 @@ export namespace Prisma {
     where?: RacionCatalogoWhereInput
   }
 
+  /**
+   * OrganizacionCountOutputType without action
+   */
+  export type OrganizacionCountOutputTypeCountMedicamentosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MedicamentoWhereInput
+  }
+
 
   /**
    * Count Type FarmaciaCountOutputType
@@ -3555,14 +3564,12 @@ export namespace Prisma {
 
   export type FarmaciaCountOutputType = {
     gruposCorrales: number
-    medicamentos: number
     unidades: number
     ajustes: number
   }
 
   export type FarmaciaCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     gruposCorrales?: boolean | FarmaciaCountOutputTypeCountGruposCorralesArgs
-    medicamentos?: boolean | FarmaciaCountOutputTypeCountMedicamentosArgs
     unidades?: boolean | FarmaciaCountOutputTypeCountUnidadesArgs
     ajustes?: boolean | FarmaciaCountOutputTypeCountAjustesArgs
   }
@@ -3583,13 +3590,6 @@ export namespace Prisma {
    */
   export type FarmaciaCountOutputTypeCountGruposCorralesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: GrupoCorralesWhereInput
-  }
-
-  /**
-   * FarmaciaCountOutputType without action
-   */
-  export type FarmaciaCountOutputTypeCountMedicamentosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: MedicamentoWhereInput
   }
 
   /**
@@ -4471,6 +4471,7 @@ export namespace Prisma {
     estadosComedero?: boolean | Organizacion$estadosComederoArgs<ExtArgs>
     notificaciones?: boolean | Organizacion$notificacionesArgs<ExtArgs>
     racionesCatalogo?: boolean | Organizacion$racionesCatalogoArgs<ExtArgs>
+    medicamentos?: boolean | Organizacion$medicamentosArgs<ExtArgs>
     _count?: boolean | OrganizacionCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["organizacion"]>
 
@@ -4498,6 +4499,7 @@ export namespace Prisma {
     estadosComedero?: boolean | Organizacion$estadosComederoArgs<ExtArgs>
     notificaciones?: boolean | Organizacion$notificacionesArgs<ExtArgs>
     racionesCatalogo?: boolean | Organizacion$racionesCatalogoArgs<ExtArgs>
+    medicamentos?: boolean | Organizacion$medicamentosArgs<ExtArgs>
     _count?: boolean | OrganizacionCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type OrganizacionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -4514,6 +4516,7 @@ export namespace Prisma {
       estadosComedero: Prisma.$EstadoComederoConfigPayload<ExtArgs>[]
       notificaciones: Prisma.$NotificacionPayload<ExtArgs>[]
       racionesCatalogo: Prisma.$RacionCatalogoPayload<ExtArgs>[]
+      medicamentos: Prisma.$MedicamentoPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -4893,6 +4896,7 @@ export namespace Prisma {
     estadosComedero<T extends Organizacion$estadosComederoArgs<ExtArgs> = {}>(args?: Subset<T, Organizacion$estadosComederoArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EstadoComederoConfigPayload<ExtArgs>, T, "findMany"> | Null>
     notificaciones<T extends Organizacion$notificacionesArgs<ExtArgs> = {}>(args?: Subset<T, Organizacion$notificacionesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificacionPayload<ExtArgs>, T, "findMany"> | Null>
     racionesCatalogo<T extends Organizacion$racionesCatalogoArgs<ExtArgs> = {}>(args?: Subset<T, Organizacion$racionesCatalogoArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RacionCatalogoPayload<ExtArgs>, T, "findMany"> | Null>
+    medicamentos<T extends Organizacion$medicamentosArgs<ExtArgs> = {}>(args?: Subset<T, Organizacion$medicamentosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MedicamentoPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5420,6 +5424,26 @@ export namespace Prisma {
   }
 
   /**
+   * Organizacion.medicamentos
+   */
+  export type Organizacion$medicamentosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Medicamento
+     */
+    select?: MedicamentoSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MedicamentoInclude<ExtArgs> | null
+    where?: MedicamentoWhereInput
+    orderBy?: MedicamentoOrderByWithRelationInput | MedicamentoOrderByWithRelationInput[]
+    cursor?: MedicamentoWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: MedicamentoScalarFieldEnum | MedicamentoScalarFieldEnum[]
+  }
+
+  /**
    * Organizacion without action
    */
   export type OrganizacionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5616,7 +5640,6 @@ export namespace Prisma {
     updatedAt?: boolean
     organizacion?: boolean | OrganizacionDefaultArgs<ExtArgs>
     gruposCorrales?: boolean | Farmacia$gruposCorralesArgs<ExtArgs>
-    medicamentos?: boolean | Farmacia$medicamentosArgs<ExtArgs>
     unidades?: boolean | Farmacia$unidadesArgs<ExtArgs>
     ajustes?: boolean | Farmacia$ajustesArgs<ExtArgs>
     _count?: boolean | FarmaciaCountOutputTypeDefaultArgs<ExtArgs>
@@ -5646,7 +5669,6 @@ export namespace Prisma {
   export type FarmaciaInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     organizacion?: boolean | OrganizacionDefaultArgs<ExtArgs>
     gruposCorrales?: boolean | Farmacia$gruposCorralesArgs<ExtArgs>
-    medicamentos?: boolean | Farmacia$medicamentosArgs<ExtArgs>
     unidades?: boolean | Farmacia$unidadesArgs<ExtArgs>
     ajustes?: boolean | Farmacia$ajustesArgs<ExtArgs>
     _count?: boolean | FarmaciaCountOutputTypeDefaultArgs<ExtArgs>
@@ -5660,7 +5682,6 @@ export namespace Prisma {
     objects: {
       organizacion: Prisma.$OrganizacionPayload<ExtArgs>
       gruposCorrales: Prisma.$GrupoCorralesPayload<ExtArgs>[]
-      medicamentos: Prisma.$MedicamentoPayload<ExtArgs>[]
       unidades: Prisma.$UnidadMedicamentoPayload<ExtArgs>[]
       ajustes: Prisma.$AjusteInventarioPayload<ExtArgs>[]
     }
@@ -6038,7 +6059,6 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     organizacion<T extends OrganizacionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrganizacionDefaultArgs<ExtArgs>>): Prisma__OrganizacionClient<$Result.GetResult<Prisma.$OrganizacionPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     gruposCorrales<T extends Farmacia$gruposCorralesArgs<ExtArgs> = {}>(args?: Subset<T, Farmacia$gruposCorralesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GrupoCorralesPayload<ExtArgs>, T, "findMany"> | Null>
-    medicamentos<T extends Farmacia$medicamentosArgs<ExtArgs> = {}>(args?: Subset<T, Farmacia$medicamentosArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MedicamentoPayload<ExtArgs>, T, "findMany"> | Null>
     unidades<T extends Farmacia$unidadesArgs<ExtArgs> = {}>(args?: Subset<T, Farmacia$unidadesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnidadMedicamentoPayload<ExtArgs>, T, "findMany"> | Null>
     ajustes<T extends Farmacia$ajustesArgs<ExtArgs> = {}>(args?: Subset<T, Farmacia$ajustesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AjusteInventarioPayload<ExtArgs>, T, "findMany"> | Null>
     /**
@@ -6412,26 +6432,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: GrupoCorralesScalarFieldEnum | GrupoCorralesScalarFieldEnum[]
-  }
-
-  /**
-   * Farmacia.medicamentos
-   */
-  export type Farmacia$medicamentosArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Medicamento
-     */
-    select?: MedicamentoSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicamentoInclude<ExtArgs> | null
-    where?: MedicamentoWhereInput
-    orderBy?: MedicamentoOrderByWithRelationInput | MedicamentoOrderByWithRelationInput[]
-    cursor?: MedicamentoWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: MedicamentoScalarFieldEnum | MedicamentoScalarFieldEnum[]
   }
 
   /**
@@ -12833,7 +12833,7 @@ export namespace Prisma {
 
   export type MedicamentoMinAggregateOutputType = {
     id: string | null
-    farmaciaId: string | null
+    organizacionId: string | null
     nombre: string | null
     nombreGenerico: string | null
     presentacion: $Enums.PresentacionMedicamento | null
@@ -12847,7 +12847,7 @@ export namespace Prisma {
 
   export type MedicamentoMaxAggregateOutputType = {
     id: string | null
-    farmaciaId: string | null
+    organizacionId: string | null
     nombre: string | null
     nombreGenerico: string | null
     presentacion: $Enums.PresentacionMedicamento | null
@@ -12861,7 +12861,7 @@ export namespace Prisma {
 
   export type MedicamentoCountAggregateOutputType = {
     id: number
-    farmaciaId: number
+    organizacionId: number
     nombre: number
     nombreGenerico: number
     presentacion: number
@@ -12887,7 +12887,7 @@ export namespace Prisma {
 
   export type MedicamentoMinAggregateInputType = {
     id?: true
-    farmaciaId?: true
+    organizacionId?: true
     nombre?: true
     nombreGenerico?: true
     presentacion?: true
@@ -12901,7 +12901,7 @@ export namespace Prisma {
 
   export type MedicamentoMaxAggregateInputType = {
     id?: true
-    farmaciaId?: true
+    organizacionId?: true
     nombre?: true
     nombreGenerico?: true
     presentacion?: true
@@ -12915,7 +12915,7 @@ export namespace Prisma {
 
   export type MedicamentoCountAggregateInputType = {
     id?: true
-    farmaciaId?: true
+    organizacionId?: true
     nombre?: true
     nombreGenerico?: true
     presentacion?: true
@@ -13016,7 +13016,7 @@ export namespace Prisma {
 
   export type MedicamentoGroupByOutputType = {
     id: string
-    farmaciaId: string
+    organizacionId: string
     nombre: string
     nombreGenerico: string | null
     presentacion: $Enums.PresentacionMedicamento
@@ -13049,7 +13049,7 @@ export namespace Prisma {
 
   export type MedicamentoSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    farmaciaId?: boolean
+    organizacionId?: boolean
     nombre?: boolean
     nombreGenerico?: boolean
     presentacion?: boolean
@@ -13059,7 +13059,7 @@ export namespace Prisma {
     activo?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    farmacia?: boolean | FarmaciaDefaultArgs<ExtArgs>
+    organizacion?: boolean | OrganizacionDefaultArgs<ExtArgs>
     unidades?: boolean | Medicamento$unidadesArgs<ExtArgs>
     templateItems?: boolean | Medicamento$templateItemsArgs<ExtArgs>
     aplicacionItems?: boolean | Medicamento$aplicacionItemsArgs<ExtArgs>
@@ -13069,7 +13069,7 @@ export namespace Prisma {
 
   export type MedicamentoSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    farmaciaId?: boolean
+    organizacionId?: boolean
     nombre?: boolean
     nombreGenerico?: boolean
     presentacion?: boolean
@@ -13079,12 +13079,12 @@ export namespace Prisma {
     activo?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    farmacia?: boolean | FarmaciaDefaultArgs<ExtArgs>
+    organizacion?: boolean | OrganizacionDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["medicamento"]>
 
   export type MedicamentoSelectScalar = {
     id?: boolean
-    farmaciaId?: boolean
+    organizacionId?: boolean
     nombre?: boolean
     nombreGenerico?: boolean
     presentacion?: boolean
@@ -13097,7 +13097,7 @@ export namespace Prisma {
   }
 
   export type MedicamentoInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    farmacia?: boolean | FarmaciaDefaultArgs<ExtArgs>
+    organizacion?: boolean | OrganizacionDefaultArgs<ExtArgs>
     unidades?: boolean | Medicamento$unidadesArgs<ExtArgs>
     templateItems?: boolean | Medicamento$templateItemsArgs<ExtArgs>
     aplicacionItems?: boolean | Medicamento$aplicacionItemsArgs<ExtArgs>
@@ -13105,13 +13105,13 @@ export namespace Prisma {
     _count?: boolean | MedicamentoCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type MedicamentoIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    farmacia?: boolean | FarmaciaDefaultArgs<ExtArgs>
+    organizacion?: boolean | OrganizacionDefaultArgs<ExtArgs>
   }
 
   export type $MedicamentoPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Medicamento"
     objects: {
-      farmacia: Prisma.$FarmaciaPayload<ExtArgs>
+      organizacion: Prisma.$OrganizacionPayload<ExtArgs>
       unidades: Prisma.$UnidadMedicamentoPayload<ExtArgs>[]
       templateItems: Prisma.$TratamientoTemplateItemPayload<ExtArgs>[]
       aplicacionItems: Prisma.$AplicacionTratamientoItemPayload<ExtArgs>[]
@@ -13119,7 +13119,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      farmaciaId: string
+      organizacionId: string
       nombre: string
       nombreGenerico: string | null
       presentacion: $Enums.PresentacionMedicamento
@@ -13493,7 +13493,7 @@ export namespace Prisma {
    */
   export interface Prisma__MedicamentoClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    farmacia<T extends FarmaciaDefaultArgs<ExtArgs> = {}>(args?: Subset<T, FarmaciaDefaultArgs<ExtArgs>>): Prisma__FarmaciaClient<$Result.GetResult<Prisma.$FarmaciaPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    organizacion<T extends OrganizacionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrganizacionDefaultArgs<ExtArgs>>): Prisma__OrganizacionClient<$Result.GetResult<Prisma.$OrganizacionPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     unidades<T extends Medicamento$unidadesArgs<ExtArgs> = {}>(args?: Subset<T, Medicamento$unidadesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UnidadMedicamentoPayload<ExtArgs>, T, "findMany"> | Null>
     templateItems<T extends Medicamento$templateItemsArgs<ExtArgs> = {}>(args?: Subset<T, Medicamento$templateItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TratamientoTemplateItemPayload<ExtArgs>, T, "findMany"> | Null>
     aplicacionItems<T extends Medicamento$aplicacionItemsArgs<ExtArgs> = {}>(args?: Subset<T, Medicamento$aplicacionItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AplicacionTratamientoItemPayload<ExtArgs>, T, "findMany"> | Null>
@@ -13528,7 +13528,7 @@ export namespace Prisma {
    */ 
   interface MedicamentoFieldRefs {
     readonly id: FieldRef<"Medicamento", 'String'>
-    readonly farmaciaId: FieldRef<"Medicamento", 'String'>
+    readonly organizacionId: FieldRef<"Medicamento", 'String'>
     readonly nombre: FieldRef<"Medicamento", 'String'>
     readonly nombreGenerico: FieldRef<"Medicamento", 'String'>
     readonly presentacion: FieldRef<"Medicamento", 'PresentacionMedicamento'>
@@ -34538,7 +34538,7 @@ export namespace Prisma {
 
   export const MedicamentoScalarFieldEnum: {
     id: 'id',
-    farmaciaId: 'farmaciaId',
+    organizacionId: 'organizacionId',
     nombre: 'nombre',
     nombreGenerico: 'nombreGenerico',
     presentacion: 'presentacion',
@@ -35175,6 +35175,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigListRelationFilter
     notificaciones?: NotificacionListRelationFilter
     racionesCatalogo?: RacionCatalogoListRelationFilter
+    medicamentos?: MedicamentoListRelationFilter
   }
 
   export type OrganizacionOrderByWithRelationInput = {
@@ -35191,6 +35192,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigOrderByRelationAggregateInput
     notificaciones?: NotificacionOrderByRelationAggregateInput
     racionesCatalogo?: RacionCatalogoOrderByRelationAggregateInput
+    medicamentos?: MedicamentoOrderByRelationAggregateInput
   }
 
   export type OrganizacionWhereUniqueInput = Prisma.AtLeast<{
@@ -35210,6 +35212,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigListRelationFilter
     notificaciones?: NotificacionListRelationFilter
     racionesCatalogo?: RacionCatalogoListRelationFilter
+    medicamentos?: MedicamentoListRelationFilter
   }, "id">
 
   export type OrganizacionOrderByWithAggregationInput = {
@@ -35245,7 +35248,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Farmacia"> | Date | string
     organizacion?: XOR<OrganizacionRelationFilter, OrganizacionWhereInput>
     gruposCorrales?: GrupoCorralesListRelationFilter
-    medicamentos?: MedicamentoListRelationFilter
     unidades?: UnidadMedicamentoListRelationFilter
     ajustes?: AjusteInventarioListRelationFilter
   }
@@ -35260,7 +35262,6 @@ export namespace Prisma {
     updatedAt?: SortOrder
     organizacion?: OrganizacionOrderByWithRelationInput
     gruposCorrales?: GrupoCorralesOrderByRelationAggregateInput
-    medicamentos?: MedicamentoOrderByRelationAggregateInput
     unidades?: UnidadMedicamentoOrderByRelationAggregateInput
     ajustes?: AjusteInventarioOrderByRelationAggregateInput
   }
@@ -35278,7 +35279,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Farmacia"> | Date | string
     organizacion?: XOR<OrganizacionRelationFilter, OrganizacionWhereInput>
     gruposCorrales?: GrupoCorralesListRelationFilter
-    medicamentos?: MedicamentoListRelationFilter
     unidades?: UnidadMedicamentoListRelationFilter
     ajustes?: AjusteInventarioListRelationFilter
   }, "id">
@@ -35820,7 +35820,7 @@ export namespace Prisma {
     OR?: MedicamentoWhereInput[]
     NOT?: MedicamentoWhereInput | MedicamentoWhereInput[]
     id?: StringFilter<"Medicamento"> | string
-    farmaciaId?: StringFilter<"Medicamento"> | string
+    organizacionId?: StringFilter<"Medicamento"> | string
     nombre?: StringFilter<"Medicamento"> | string
     nombreGenerico?: StringNullableFilter<"Medicamento"> | string | null
     presentacion?: EnumPresentacionMedicamentoFilter<"Medicamento"> | $Enums.PresentacionMedicamento
@@ -35830,7 +35830,7 @@ export namespace Prisma {
     activo?: BoolFilter<"Medicamento"> | boolean
     createdAt?: DateTimeFilter<"Medicamento"> | Date | string
     updatedAt?: DateTimeFilter<"Medicamento"> | Date | string
-    farmacia?: XOR<FarmaciaRelationFilter, FarmaciaWhereInput>
+    organizacion?: XOR<OrganizacionRelationFilter, OrganizacionWhereInput>
     unidades?: UnidadMedicamentoListRelationFilter
     templateItems?: TratamientoTemplateItemListRelationFilter
     aplicacionItems?: AplicacionTratamientoItemListRelationFilter
@@ -35839,7 +35839,7 @@ export namespace Prisma {
 
   export type MedicamentoOrderByWithRelationInput = {
     id?: SortOrder
-    farmaciaId?: SortOrder
+    organizacionId?: SortOrder
     nombre?: SortOrder
     nombreGenerico?: SortOrderInput | SortOrder
     presentacion?: SortOrder
@@ -35849,7 +35849,7 @@ export namespace Prisma {
     activo?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    farmacia?: FarmaciaOrderByWithRelationInput
+    organizacion?: OrganizacionOrderByWithRelationInput
     unidades?: UnidadMedicamentoOrderByRelationAggregateInput
     templateItems?: TratamientoTemplateItemOrderByRelationAggregateInput
     aplicacionItems?: AplicacionTratamientoItemOrderByRelationAggregateInput
@@ -35858,10 +35858,11 @@ export namespace Prisma {
 
   export type MedicamentoWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    organizacionId_nombre?: MedicamentoOrganizacionIdNombreCompoundUniqueInput
     AND?: MedicamentoWhereInput | MedicamentoWhereInput[]
     OR?: MedicamentoWhereInput[]
     NOT?: MedicamentoWhereInput | MedicamentoWhereInput[]
-    farmaciaId?: StringFilter<"Medicamento"> | string
+    organizacionId?: StringFilter<"Medicamento"> | string
     nombre?: StringFilter<"Medicamento"> | string
     nombreGenerico?: StringNullableFilter<"Medicamento"> | string | null
     presentacion?: EnumPresentacionMedicamentoFilter<"Medicamento"> | $Enums.PresentacionMedicamento
@@ -35871,16 +35872,16 @@ export namespace Prisma {
     activo?: BoolFilter<"Medicamento"> | boolean
     createdAt?: DateTimeFilter<"Medicamento"> | Date | string
     updatedAt?: DateTimeFilter<"Medicamento"> | Date | string
-    farmacia?: XOR<FarmaciaRelationFilter, FarmaciaWhereInput>
+    organizacion?: XOR<OrganizacionRelationFilter, OrganizacionWhereInput>
     unidades?: UnidadMedicamentoListRelationFilter
     templateItems?: TratamientoTemplateItemListRelationFilter
     aplicacionItems?: AplicacionTratamientoItemListRelationFilter
     ajustes?: AjusteInventarioListRelationFilter
-  }, "id">
+  }, "id" | "organizacionId_nombre">
 
   export type MedicamentoOrderByWithAggregationInput = {
     id?: SortOrder
-    farmaciaId?: SortOrder
+    organizacionId?: SortOrder
     nombre?: SortOrder
     nombreGenerico?: SortOrderInput | SortOrder
     presentacion?: SortOrder
@@ -35902,7 +35903,7 @@ export namespace Prisma {
     OR?: MedicamentoScalarWhereWithAggregatesInput[]
     NOT?: MedicamentoScalarWhereWithAggregatesInput | MedicamentoScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Medicamento"> | string
-    farmaciaId?: StringWithAggregatesFilter<"Medicamento"> | string
+    organizacionId?: StringWithAggregatesFilter<"Medicamento"> | string
     nombre?: StringWithAggregatesFilter<"Medicamento"> | string
     nombreGenerico?: StringNullableWithAggregatesFilter<"Medicamento"> | string | null
     presentacion?: EnumPresentacionMedicamentoWithAggregatesFilter<"Medicamento"> | $Enums.PresentacionMedicamento
@@ -37480,6 +37481,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigCreateNestedManyWithoutOrganizacionInput
     notificaciones?: NotificacionCreateNestedManyWithoutOrganizacionInput
     racionesCatalogo?: RacionCatalogoCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionUncheckedCreateInput = {
@@ -37496,6 +37498,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUncheckedCreateNestedManyWithoutOrganizacionInput
     notificaciones?: NotificacionUncheckedCreateNestedManyWithoutOrganizacionInput
     racionesCatalogo?: RacionCatalogoUncheckedCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoUncheckedCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionUpdateInput = {
@@ -37512,6 +37515,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUpdateManyWithoutOrganizacionNestedInput
     notificaciones?: NotificacionUpdateManyWithoutOrganizacionNestedInput
     racionesCatalogo?: RacionCatalogoUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type OrganizacionUncheckedUpdateInput = {
@@ -37528,6 +37532,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUncheckedUpdateManyWithoutOrganizacionNestedInput
     notificaciones?: NotificacionUncheckedUpdateManyWithoutOrganizacionNestedInput
     racionesCatalogo?: RacionCatalogoUncheckedUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUncheckedUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type OrganizacionCreateManyInput = {
@@ -37560,7 +37565,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     organizacion: OrganizacionCreateNestedOneWithoutFarmaciasInput
     gruposCorrales?: GrupoCorralesCreateNestedManyWithoutFarmaciaInput
-    medicamentos?: MedicamentoCreateNestedManyWithoutFarmaciaInput
     unidades?: UnidadMedicamentoCreateNestedManyWithoutFarmaciaInput
     ajustes?: AjusteInventarioCreateNestedManyWithoutFarmaciaInput
   }
@@ -37574,7 +37578,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     gruposCorrales?: GrupoCorralesUncheckedCreateNestedManyWithoutFarmaciaInput
-    medicamentos?: MedicamentoUncheckedCreateNestedManyWithoutFarmaciaInput
     unidades?: UnidadMedicamentoUncheckedCreateNestedManyWithoutFarmaciaInput
     ajustes?: AjusteInventarioUncheckedCreateNestedManyWithoutFarmaciaInput
   }
@@ -37588,7 +37591,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organizacion?: OrganizacionUpdateOneRequiredWithoutFarmaciasNestedInput
     gruposCorrales?: GrupoCorralesUpdateManyWithoutFarmaciaNestedInput
-    medicamentos?: MedicamentoUpdateManyWithoutFarmaciaNestedInput
     unidades?: UnidadMedicamentoUpdateManyWithoutFarmaciaNestedInput
     ajustes?: AjusteInventarioUpdateManyWithoutFarmaciaNestedInput
   }
@@ -37602,7 +37604,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     gruposCorrales?: GrupoCorralesUncheckedUpdateManyWithoutFarmaciaNestedInput
-    medicamentos?: MedicamentoUncheckedUpdateManyWithoutFarmaciaNestedInput
     unidades?: UnidadMedicamentoUncheckedUpdateManyWithoutFarmaciaNestedInput
     ajustes?: AjusteInventarioUncheckedUpdateManyWithoutFarmaciaNestedInput
   }
@@ -38167,7 +38168,7 @@ export namespace Prisma {
     activo?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    farmacia: FarmaciaCreateNestedOneWithoutMedicamentosInput
+    organizacion: OrganizacionCreateNestedOneWithoutMedicamentosInput
     unidades?: UnidadMedicamentoCreateNestedManyWithoutMedicamentoInput
     templateItems?: TratamientoTemplateItemCreateNestedManyWithoutMedicamentoInput
     aplicacionItems?: AplicacionTratamientoItemCreateNestedManyWithoutMedicamentoInput
@@ -38176,7 +38177,7 @@ export namespace Prisma {
 
   export type MedicamentoUncheckedCreateInput = {
     id?: string
-    farmaciaId: string
+    organizacionId: string
     nombre: string
     nombreGenerico?: string | null
     presentacion: $Enums.PresentacionMedicamento
@@ -38203,7 +38204,7 @@ export namespace Prisma {
     activo?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    farmacia?: FarmaciaUpdateOneRequiredWithoutMedicamentosNestedInput
+    organizacion?: OrganizacionUpdateOneRequiredWithoutMedicamentosNestedInput
     unidades?: UnidadMedicamentoUpdateManyWithoutMedicamentoNestedInput
     templateItems?: TratamientoTemplateItemUpdateManyWithoutMedicamentoNestedInput
     aplicacionItems?: AplicacionTratamientoItemUpdateManyWithoutMedicamentoNestedInput
@@ -38212,7 +38213,7 @@ export namespace Prisma {
 
   export type MedicamentoUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    farmaciaId?: StringFieldUpdateOperationsInput | string
+    organizacionId?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
     nombreGenerico?: NullableStringFieldUpdateOperationsInput | string | null
     presentacion?: EnumPresentacionMedicamentoFieldUpdateOperationsInput | $Enums.PresentacionMedicamento
@@ -38230,7 +38231,7 @@ export namespace Prisma {
 
   export type MedicamentoCreateManyInput = {
     id?: string
-    farmaciaId: string
+    organizacionId: string
     nombre: string
     nombreGenerico?: string | null
     presentacion: $Enums.PresentacionMedicamento
@@ -38257,7 +38258,7 @@ export namespace Prisma {
 
   export type MedicamentoUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    farmaciaId?: StringFieldUpdateOperationsInput | string
+    organizacionId?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
     nombreGenerico?: NullableStringFieldUpdateOperationsInput | string | null
     presentacion?: EnumPresentacionMedicamentoFieldUpdateOperationsInput | $Enums.PresentacionMedicamento
@@ -39936,6 +39937,12 @@ export namespace Prisma {
     none?: RacionCatalogoWhereInput
   }
 
+  export type MedicamentoListRelationFilter = {
+    every?: MedicamentoWhereInput
+    some?: MedicamentoWhereInput
+    none?: MedicamentoWhereInput
+  }
+
   export type FarmaciaOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -39969,6 +39976,10 @@ export namespace Prisma {
   }
 
   export type RacionCatalogoOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type MedicamentoOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -40050,12 +40061,6 @@ export namespace Prisma {
     isNot?: OrganizacionWhereInput
   }
 
-  export type MedicamentoListRelationFilter = {
-    every?: MedicamentoWhereInput
-    some?: MedicamentoWhereInput
-    none?: MedicamentoWhereInput
-  }
-
   export type UnidadMedicamentoListRelationFilter = {
     every?: UnidadMedicamentoWhereInput
     some?: UnidadMedicamentoWhereInput
@@ -40071,10 +40076,6 @@ export namespace Prisma {
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
-  }
-
-  export type MedicamentoOrderByRelationAggregateInput = {
-    _count?: SortOrder
   }
 
   export type UnidadMedicamentoOrderByRelationAggregateInput = {
@@ -40731,9 +40732,14 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type MedicamentoOrganizacionIdNombreCompoundUniqueInput = {
+    organizacionId: string
+    nombre: string
+  }
+
   export type MedicamentoCountOrderByAggregateInput = {
     id?: SortOrder
-    farmaciaId?: SortOrder
+    organizacionId?: SortOrder
     nombre?: SortOrder
     nombreGenerico?: SortOrder
     presentacion?: SortOrder
@@ -40752,7 +40758,7 @@ export namespace Prisma {
 
   export type MedicamentoMaxOrderByAggregateInput = {
     id?: SortOrder
-    farmaciaId?: SortOrder
+    organizacionId?: SortOrder
     nombre?: SortOrder
     nombreGenerico?: SortOrder
     presentacion?: SortOrder
@@ -40766,7 +40772,7 @@ export namespace Prisma {
 
   export type MedicamentoMinOrderByAggregateInput = {
     id?: SortOrder
-    farmaciaId?: SortOrder
+    organizacionId?: SortOrder
     nombre?: SortOrder
     nombreGenerico?: SortOrder
     presentacion?: SortOrder
@@ -41921,6 +41927,13 @@ export namespace Prisma {
     connect?: RacionCatalogoWhereUniqueInput | RacionCatalogoWhereUniqueInput[]
   }
 
+  export type MedicamentoCreateNestedManyWithoutOrganizacionInput = {
+    create?: XOR<MedicamentoCreateWithoutOrganizacionInput, MedicamentoUncheckedCreateWithoutOrganizacionInput> | MedicamentoCreateWithoutOrganizacionInput[] | MedicamentoUncheckedCreateWithoutOrganizacionInput[]
+    connectOrCreate?: MedicamentoCreateOrConnectWithoutOrganizacionInput | MedicamentoCreateOrConnectWithoutOrganizacionInput[]
+    createMany?: MedicamentoCreateManyOrganizacionInputEnvelope
+    connect?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
+  }
+
   export type FarmaciaUncheckedCreateNestedManyWithoutOrganizacionInput = {
     create?: XOR<FarmaciaCreateWithoutOrganizacionInput, FarmaciaUncheckedCreateWithoutOrganizacionInput> | FarmaciaCreateWithoutOrganizacionInput[] | FarmaciaUncheckedCreateWithoutOrganizacionInput[]
     connectOrCreate?: FarmaciaCreateOrConnectWithoutOrganizacionInput | FarmaciaCreateOrConnectWithoutOrganizacionInput[]
@@ -41982,6 +41995,13 @@ export namespace Prisma {
     connectOrCreate?: RacionCatalogoCreateOrConnectWithoutOrganizacionInput | RacionCatalogoCreateOrConnectWithoutOrganizacionInput[]
     createMany?: RacionCatalogoCreateManyOrganizacionInputEnvelope
     connect?: RacionCatalogoWhereUniqueInput | RacionCatalogoWhereUniqueInput[]
+  }
+
+  export type MedicamentoUncheckedCreateNestedManyWithoutOrganizacionInput = {
+    create?: XOR<MedicamentoCreateWithoutOrganizacionInput, MedicamentoUncheckedCreateWithoutOrganizacionInput> | MedicamentoCreateWithoutOrganizacionInput[] | MedicamentoUncheckedCreateWithoutOrganizacionInput[]
+    connectOrCreate?: MedicamentoCreateOrConnectWithoutOrganizacionInput | MedicamentoCreateOrConnectWithoutOrganizacionInput[]
+    createMany?: MedicamentoCreateManyOrganizacionInputEnvelope
+    connect?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -42118,6 +42138,20 @@ export namespace Prisma {
     deleteMany?: RacionCatalogoScalarWhereInput | RacionCatalogoScalarWhereInput[]
   }
 
+  export type MedicamentoUpdateManyWithoutOrganizacionNestedInput = {
+    create?: XOR<MedicamentoCreateWithoutOrganizacionInput, MedicamentoUncheckedCreateWithoutOrganizacionInput> | MedicamentoCreateWithoutOrganizacionInput[] | MedicamentoUncheckedCreateWithoutOrganizacionInput[]
+    connectOrCreate?: MedicamentoCreateOrConnectWithoutOrganizacionInput | MedicamentoCreateOrConnectWithoutOrganizacionInput[]
+    upsert?: MedicamentoUpsertWithWhereUniqueWithoutOrganizacionInput | MedicamentoUpsertWithWhereUniqueWithoutOrganizacionInput[]
+    createMany?: MedicamentoCreateManyOrganizacionInputEnvelope
+    set?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
+    disconnect?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
+    delete?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
+    connect?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
+    update?: MedicamentoUpdateWithWhereUniqueWithoutOrganizacionInput | MedicamentoUpdateWithWhereUniqueWithoutOrganizacionInput[]
+    updateMany?: MedicamentoUpdateManyWithWhereWithoutOrganizacionInput | MedicamentoUpdateManyWithWhereWithoutOrganizacionInput[]
+    deleteMany?: MedicamentoScalarWhereInput | MedicamentoScalarWhereInput[]
+  }
+
   export type FarmaciaUncheckedUpdateManyWithoutOrganizacionNestedInput = {
     create?: XOR<FarmaciaCreateWithoutOrganizacionInput, FarmaciaUncheckedCreateWithoutOrganizacionInput> | FarmaciaCreateWithoutOrganizacionInput[] | FarmaciaUncheckedCreateWithoutOrganizacionInput[]
     connectOrCreate?: FarmaciaCreateOrConnectWithoutOrganizacionInput | FarmaciaCreateOrConnectWithoutOrganizacionInput[]
@@ -42244,6 +42278,20 @@ export namespace Prisma {
     deleteMany?: RacionCatalogoScalarWhereInput | RacionCatalogoScalarWhereInput[]
   }
 
+  export type MedicamentoUncheckedUpdateManyWithoutOrganizacionNestedInput = {
+    create?: XOR<MedicamentoCreateWithoutOrganizacionInput, MedicamentoUncheckedCreateWithoutOrganizacionInput> | MedicamentoCreateWithoutOrganizacionInput[] | MedicamentoUncheckedCreateWithoutOrganizacionInput[]
+    connectOrCreate?: MedicamentoCreateOrConnectWithoutOrganizacionInput | MedicamentoCreateOrConnectWithoutOrganizacionInput[]
+    upsert?: MedicamentoUpsertWithWhereUniqueWithoutOrganizacionInput | MedicamentoUpsertWithWhereUniqueWithoutOrganizacionInput[]
+    createMany?: MedicamentoCreateManyOrganizacionInputEnvelope
+    set?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
+    disconnect?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
+    delete?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
+    connect?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
+    update?: MedicamentoUpdateWithWhereUniqueWithoutOrganizacionInput | MedicamentoUpdateWithWhereUniqueWithoutOrganizacionInput[]
+    updateMany?: MedicamentoUpdateManyWithWhereWithoutOrganizacionInput | MedicamentoUpdateManyWithWhereWithoutOrganizacionInput[]
+    deleteMany?: MedicamentoScalarWhereInput | MedicamentoScalarWhereInput[]
+  }
+
   export type OrganizacionCreateNestedOneWithoutFarmaciasInput = {
     create?: XOR<OrganizacionCreateWithoutFarmaciasInput, OrganizacionUncheckedCreateWithoutFarmaciasInput>
     connectOrCreate?: OrganizacionCreateOrConnectWithoutFarmaciasInput
@@ -42255,13 +42303,6 @@ export namespace Prisma {
     connectOrCreate?: GrupoCorralesCreateOrConnectWithoutFarmaciaInput | GrupoCorralesCreateOrConnectWithoutFarmaciaInput[]
     createMany?: GrupoCorralesCreateManyFarmaciaInputEnvelope
     connect?: GrupoCorralesWhereUniqueInput | GrupoCorralesWhereUniqueInput[]
-  }
-
-  export type MedicamentoCreateNestedManyWithoutFarmaciaInput = {
-    create?: XOR<MedicamentoCreateWithoutFarmaciaInput, MedicamentoUncheckedCreateWithoutFarmaciaInput> | MedicamentoCreateWithoutFarmaciaInput[] | MedicamentoUncheckedCreateWithoutFarmaciaInput[]
-    connectOrCreate?: MedicamentoCreateOrConnectWithoutFarmaciaInput | MedicamentoCreateOrConnectWithoutFarmaciaInput[]
-    createMany?: MedicamentoCreateManyFarmaciaInputEnvelope
-    connect?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
   }
 
   export type UnidadMedicamentoCreateNestedManyWithoutFarmaciaInput = {
@@ -42283,13 +42324,6 @@ export namespace Prisma {
     connectOrCreate?: GrupoCorralesCreateOrConnectWithoutFarmaciaInput | GrupoCorralesCreateOrConnectWithoutFarmaciaInput[]
     createMany?: GrupoCorralesCreateManyFarmaciaInputEnvelope
     connect?: GrupoCorralesWhereUniqueInput | GrupoCorralesWhereUniqueInput[]
-  }
-
-  export type MedicamentoUncheckedCreateNestedManyWithoutFarmaciaInput = {
-    create?: XOR<MedicamentoCreateWithoutFarmaciaInput, MedicamentoUncheckedCreateWithoutFarmaciaInput> | MedicamentoCreateWithoutFarmaciaInput[] | MedicamentoUncheckedCreateWithoutFarmaciaInput[]
-    connectOrCreate?: MedicamentoCreateOrConnectWithoutFarmaciaInput | MedicamentoCreateOrConnectWithoutFarmaciaInput[]
-    createMany?: MedicamentoCreateManyFarmaciaInputEnvelope
-    connect?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
   }
 
   export type UnidadMedicamentoUncheckedCreateNestedManyWithoutFarmaciaInput = {
@@ -42336,20 +42370,6 @@ export namespace Prisma {
     deleteMany?: GrupoCorralesScalarWhereInput | GrupoCorralesScalarWhereInput[]
   }
 
-  export type MedicamentoUpdateManyWithoutFarmaciaNestedInput = {
-    create?: XOR<MedicamentoCreateWithoutFarmaciaInput, MedicamentoUncheckedCreateWithoutFarmaciaInput> | MedicamentoCreateWithoutFarmaciaInput[] | MedicamentoUncheckedCreateWithoutFarmaciaInput[]
-    connectOrCreate?: MedicamentoCreateOrConnectWithoutFarmaciaInput | MedicamentoCreateOrConnectWithoutFarmaciaInput[]
-    upsert?: MedicamentoUpsertWithWhereUniqueWithoutFarmaciaInput | MedicamentoUpsertWithWhereUniqueWithoutFarmaciaInput[]
-    createMany?: MedicamentoCreateManyFarmaciaInputEnvelope
-    set?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
-    disconnect?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
-    delete?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
-    connect?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
-    update?: MedicamentoUpdateWithWhereUniqueWithoutFarmaciaInput | MedicamentoUpdateWithWhereUniqueWithoutFarmaciaInput[]
-    updateMany?: MedicamentoUpdateManyWithWhereWithoutFarmaciaInput | MedicamentoUpdateManyWithWhereWithoutFarmaciaInput[]
-    deleteMany?: MedicamentoScalarWhereInput | MedicamentoScalarWhereInput[]
-  }
-
   export type UnidadMedicamentoUpdateManyWithoutFarmaciaNestedInput = {
     create?: XOR<UnidadMedicamentoCreateWithoutFarmaciaInput, UnidadMedicamentoUncheckedCreateWithoutFarmaciaInput> | UnidadMedicamentoCreateWithoutFarmaciaInput[] | UnidadMedicamentoUncheckedCreateWithoutFarmaciaInput[]
     connectOrCreate?: UnidadMedicamentoCreateOrConnectWithoutFarmaciaInput | UnidadMedicamentoCreateOrConnectWithoutFarmaciaInput[]
@@ -42390,20 +42410,6 @@ export namespace Prisma {
     update?: GrupoCorralesUpdateWithWhereUniqueWithoutFarmaciaInput | GrupoCorralesUpdateWithWhereUniqueWithoutFarmaciaInput[]
     updateMany?: GrupoCorralesUpdateManyWithWhereWithoutFarmaciaInput | GrupoCorralesUpdateManyWithWhereWithoutFarmaciaInput[]
     deleteMany?: GrupoCorralesScalarWhereInput | GrupoCorralesScalarWhereInput[]
-  }
-
-  export type MedicamentoUncheckedUpdateManyWithoutFarmaciaNestedInput = {
-    create?: XOR<MedicamentoCreateWithoutFarmaciaInput, MedicamentoUncheckedCreateWithoutFarmaciaInput> | MedicamentoCreateWithoutFarmaciaInput[] | MedicamentoUncheckedCreateWithoutFarmaciaInput[]
-    connectOrCreate?: MedicamentoCreateOrConnectWithoutFarmaciaInput | MedicamentoCreateOrConnectWithoutFarmaciaInput[]
-    upsert?: MedicamentoUpsertWithWhereUniqueWithoutFarmaciaInput | MedicamentoUpsertWithWhereUniqueWithoutFarmaciaInput[]
-    createMany?: MedicamentoCreateManyFarmaciaInputEnvelope
-    set?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
-    disconnect?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
-    delete?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
-    connect?: MedicamentoWhereUniqueInput | MedicamentoWhereUniqueInput[]
-    update?: MedicamentoUpdateWithWhereUniqueWithoutFarmaciaInput | MedicamentoUpdateWithWhereUniqueWithoutFarmaciaInput[]
-    updateMany?: MedicamentoUpdateManyWithWhereWithoutFarmaciaInput | MedicamentoUpdateManyWithWhereWithoutFarmaciaInput[]
-    deleteMany?: MedicamentoScalarWhereInput | MedicamentoScalarWhereInput[]
   }
 
   export type UnidadMedicamentoUncheckedUpdateManyWithoutFarmaciaNestedInput = {
@@ -43140,10 +43146,10 @@ export namespace Prisma {
     update?: XOR<XOR<UsuarioUpdateToOneWithWhereWithoutAsignacionesLiberadasInput, UsuarioUpdateWithoutAsignacionesLiberadasInput>, UsuarioUncheckedUpdateWithoutAsignacionesLiberadasInput>
   }
 
-  export type FarmaciaCreateNestedOneWithoutMedicamentosInput = {
-    create?: XOR<FarmaciaCreateWithoutMedicamentosInput, FarmaciaUncheckedCreateWithoutMedicamentosInput>
-    connectOrCreate?: FarmaciaCreateOrConnectWithoutMedicamentosInput
-    connect?: FarmaciaWhereUniqueInput
+  export type OrganizacionCreateNestedOneWithoutMedicamentosInput = {
+    create?: XOR<OrganizacionCreateWithoutMedicamentosInput, OrganizacionUncheckedCreateWithoutMedicamentosInput>
+    connectOrCreate?: OrganizacionCreateOrConnectWithoutMedicamentosInput
+    connect?: OrganizacionWhereUniqueInput
   }
 
   export type UnidadMedicamentoCreateNestedManyWithoutMedicamentoInput = {
@@ -43218,12 +43224,12 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type FarmaciaUpdateOneRequiredWithoutMedicamentosNestedInput = {
-    create?: XOR<FarmaciaCreateWithoutMedicamentosInput, FarmaciaUncheckedCreateWithoutMedicamentosInput>
-    connectOrCreate?: FarmaciaCreateOrConnectWithoutMedicamentosInput
-    upsert?: FarmaciaUpsertWithoutMedicamentosInput
-    connect?: FarmaciaWhereUniqueInput
-    update?: XOR<XOR<FarmaciaUpdateToOneWithWhereWithoutMedicamentosInput, FarmaciaUpdateWithoutMedicamentosInput>, FarmaciaUncheckedUpdateWithoutMedicamentosInput>
+  export type OrganizacionUpdateOneRequiredWithoutMedicamentosNestedInput = {
+    create?: XOR<OrganizacionCreateWithoutMedicamentosInput, OrganizacionUncheckedCreateWithoutMedicamentosInput>
+    connectOrCreate?: OrganizacionCreateOrConnectWithoutMedicamentosInput
+    upsert?: OrganizacionUpsertWithoutMedicamentosInput
+    connect?: OrganizacionWhereUniqueInput
+    update?: XOR<XOR<OrganizacionUpdateToOneWithWhereWithoutMedicamentosInput, OrganizacionUpdateWithoutMedicamentosInput>, OrganizacionUncheckedUpdateWithoutMedicamentosInput>
   }
 
   export type UnidadMedicamentoUpdateManyWithoutMedicamentoNestedInput = {
@@ -45681,7 +45687,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     gruposCorrales?: GrupoCorralesCreateNestedManyWithoutFarmaciaInput
-    medicamentos?: MedicamentoCreateNestedManyWithoutFarmaciaInput
     unidades?: UnidadMedicamentoCreateNestedManyWithoutFarmaciaInput
     ajustes?: AjusteInventarioCreateNestedManyWithoutFarmaciaInput
   }
@@ -45694,7 +45699,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     gruposCorrales?: GrupoCorralesUncheckedCreateNestedManyWithoutFarmaciaInput
-    medicamentos?: MedicamentoUncheckedCreateNestedManyWithoutFarmaciaInput
     unidades?: UnidadMedicamentoUncheckedCreateNestedManyWithoutFarmaciaInput
     ajustes?: AjusteInventarioUncheckedCreateNestedManyWithoutFarmaciaInput
   }
@@ -46023,6 +46027,50 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type MedicamentoCreateWithoutOrganizacionInput = {
+    id?: string
+    nombre: string
+    nombreGenerico?: string | null
+    presentacion: $Enums.PresentacionMedicamento
+    volumenPresentacion: Decimal | DecimalJsLike | number | string
+    unidadMedida: $Enums.UnidadMedida
+    stockMinimo?: number
+    activo?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    unidades?: UnidadMedicamentoCreateNestedManyWithoutMedicamentoInput
+    templateItems?: TratamientoTemplateItemCreateNestedManyWithoutMedicamentoInput
+    aplicacionItems?: AplicacionTratamientoItemCreateNestedManyWithoutMedicamentoInput
+    ajustes?: AjusteInventarioCreateNestedManyWithoutMedicamentoInput
+  }
+
+  export type MedicamentoUncheckedCreateWithoutOrganizacionInput = {
+    id?: string
+    nombre: string
+    nombreGenerico?: string | null
+    presentacion: $Enums.PresentacionMedicamento
+    volumenPresentacion: Decimal | DecimalJsLike | number | string
+    unidadMedida: $Enums.UnidadMedida
+    stockMinimo?: number
+    activo?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    unidades?: UnidadMedicamentoUncheckedCreateNestedManyWithoutMedicamentoInput
+    templateItems?: TratamientoTemplateItemUncheckedCreateNestedManyWithoutMedicamentoInput
+    aplicacionItems?: AplicacionTratamientoItemUncheckedCreateNestedManyWithoutMedicamentoInput
+    ajustes?: AjusteInventarioUncheckedCreateNestedManyWithoutMedicamentoInput
+  }
+
+  export type MedicamentoCreateOrConnectWithoutOrganizacionInput = {
+    where: MedicamentoWhereUniqueInput
+    create: XOR<MedicamentoCreateWithoutOrganizacionInput, MedicamentoUncheckedCreateWithoutOrganizacionInput>
+  }
+
+  export type MedicamentoCreateManyOrganizacionInputEnvelope = {
+    data: MedicamentoCreateManyOrganizacionInput | MedicamentoCreateManyOrganizacionInput[]
+    skipDuplicates?: boolean
+  }
+
   export type FarmaciaUpsertWithWhereUniqueWithoutOrganizacionInput = {
     where: FarmaciaWhereUniqueInput
     update: XOR<FarmaciaUpdateWithoutOrganizacionInput, FarmaciaUncheckedUpdateWithoutOrganizacionInput>
@@ -46299,6 +46347,39 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"RacionCatalogo"> | Date | string
   }
 
+  export type MedicamentoUpsertWithWhereUniqueWithoutOrganizacionInput = {
+    where: MedicamentoWhereUniqueInput
+    update: XOR<MedicamentoUpdateWithoutOrganizacionInput, MedicamentoUncheckedUpdateWithoutOrganizacionInput>
+    create: XOR<MedicamentoCreateWithoutOrganizacionInput, MedicamentoUncheckedCreateWithoutOrganizacionInput>
+  }
+
+  export type MedicamentoUpdateWithWhereUniqueWithoutOrganizacionInput = {
+    where: MedicamentoWhereUniqueInput
+    data: XOR<MedicamentoUpdateWithoutOrganizacionInput, MedicamentoUncheckedUpdateWithoutOrganizacionInput>
+  }
+
+  export type MedicamentoUpdateManyWithWhereWithoutOrganizacionInput = {
+    where: MedicamentoScalarWhereInput
+    data: XOR<MedicamentoUpdateManyMutationInput, MedicamentoUncheckedUpdateManyWithoutOrganizacionInput>
+  }
+
+  export type MedicamentoScalarWhereInput = {
+    AND?: MedicamentoScalarWhereInput | MedicamentoScalarWhereInput[]
+    OR?: MedicamentoScalarWhereInput[]
+    NOT?: MedicamentoScalarWhereInput | MedicamentoScalarWhereInput[]
+    id?: StringFilter<"Medicamento"> | string
+    organizacionId?: StringFilter<"Medicamento"> | string
+    nombre?: StringFilter<"Medicamento"> | string
+    nombreGenerico?: StringNullableFilter<"Medicamento"> | string | null
+    presentacion?: EnumPresentacionMedicamentoFilter<"Medicamento"> | $Enums.PresentacionMedicamento
+    volumenPresentacion?: DecimalFilter<"Medicamento"> | Decimal | DecimalJsLike | number | string
+    unidadMedida?: EnumUnidadMedidaFilter<"Medicamento"> | $Enums.UnidadMedida
+    stockMinimo?: IntFilter<"Medicamento"> | number
+    activo?: BoolFilter<"Medicamento"> | boolean
+    createdAt?: DateTimeFilter<"Medicamento"> | Date | string
+    updatedAt?: DateTimeFilter<"Medicamento"> | Date | string
+  }
+
   export type OrganizacionCreateWithoutFarmaciasInput = {
     id?: string
     nombre: string
@@ -46312,6 +46393,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigCreateNestedManyWithoutOrganizacionInput
     notificaciones?: NotificacionCreateNestedManyWithoutOrganizacionInput
     racionesCatalogo?: RacionCatalogoCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionUncheckedCreateWithoutFarmaciasInput = {
@@ -46327,6 +46409,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUncheckedCreateNestedManyWithoutOrganizacionInput
     notificaciones?: NotificacionUncheckedCreateNestedManyWithoutOrganizacionInput
     racionesCatalogo?: RacionCatalogoUncheckedCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoUncheckedCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionCreateOrConnectWithoutFarmaciasInput = {
@@ -46365,50 +46448,6 @@ export namespace Prisma {
 
   export type GrupoCorralesCreateManyFarmaciaInputEnvelope = {
     data: GrupoCorralesCreateManyFarmaciaInput | GrupoCorralesCreateManyFarmaciaInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type MedicamentoCreateWithoutFarmaciaInput = {
-    id?: string
-    nombre: string
-    nombreGenerico?: string | null
-    presentacion: $Enums.PresentacionMedicamento
-    volumenPresentacion: Decimal | DecimalJsLike | number | string
-    unidadMedida: $Enums.UnidadMedida
-    stockMinimo?: number
-    activo?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    unidades?: UnidadMedicamentoCreateNestedManyWithoutMedicamentoInput
-    templateItems?: TratamientoTemplateItemCreateNestedManyWithoutMedicamentoInput
-    aplicacionItems?: AplicacionTratamientoItemCreateNestedManyWithoutMedicamentoInput
-    ajustes?: AjusteInventarioCreateNestedManyWithoutMedicamentoInput
-  }
-
-  export type MedicamentoUncheckedCreateWithoutFarmaciaInput = {
-    id?: string
-    nombre: string
-    nombreGenerico?: string | null
-    presentacion: $Enums.PresentacionMedicamento
-    volumenPresentacion: Decimal | DecimalJsLike | number | string
-    unidadMedida: $Enums.UnidadMedida
-    stockMinimo?: number
-    activo?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    unidades?: UnidadMedicamentoUncheckedCreateNestedManyWithoutMedicamentoInput
-    templateItems?: TratamientoTemplateItemUncheckedCreateNestedManyWithoutMedicamentoInput
-    aplicacionItems?: AplicacionTratamientoItemUncheckedCreateNestedManyWithoutMedicamentoInput
-    ajustes?: AjusteInventarioUncheckedCreateNestedManyWithoutMedicamentoInput
-  }
-
-  export type MedicamentoCreateOrConnectWithoutFarmaciaInput = {
-    where: MedicamentoWhereUniqueInput
-    create: XOR<MedicamentoCreateWithoutFarmaciaInput, MedicamentoUncheckedCreateWithoutFarmaciaInput>
-  }
-
-  export type MedicamentoCreateManyFarmaciaInputEnvelope = {
-    data: MedicamentoCreateManyFarmaciaInput | MedicamentoCreateManyFarmaciaInput[]
     skipDuplicates?: boolean
   }
 
@@ -46512,6 +46551,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUpdateManyWithoutOrganizacionNestedInput
     notificaciones?: NotificacionUpdateManyWithoutOrganizacionNestedInput
     racionesCatalogo?: RacionCatalogoUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type OrganizacionUncheckedUpdateWithoutFarmaciasInput = {
@@ -46527,6 +46567,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUncheckedUpdateManyWithoutOrganizacionNestedInput
     notificaciones?: NotificacionUncheckedUpdateManyWithoutOrganizacionNestedInput
     racionesCatalogo?: RacionCatalogoUncheckedUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUncheckedUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type GrupoCorralesUpsertWithWhereUniqueWithoutFarmaciaInput = {
@@ -46543,39 +46584,6 @@ export namespace Prisma {
   export type GrupoCorralesUpdateManyWithWhereWithoutFarmaciaInput = {
     where: GrupoCorralesScalarWhereInput
     data: XOR<GrupoCorralesUpdateManyMutationInput, GrupoCorralesUncheckedUpdateManyWithoutFarmaciaInput>
-  }
-
-  export type MedicamentoUpsertWithWhereUniqueWithoutFarmaciaInput = {
-    where: MedicamentoWhereUniqueInput
-    update: XOR<MedicamentoUpdateWithoutFarmaciaInput, MedicamentoUncheckedUpdateWithoutFarmaciaInput>
-    create: XOR<MedicamentoCreateWithoutFarmaciaInput, MedicamentoUncheckedCreateWithoutFarmaciaInput>
-  }
-
-  export type MedicamentoUpdateWithWhereUniqueWithoutFarmaciaInput = {
-    where: MedicamentoWhereUniqueInput
-    data: XOR<MedicamentoUpdateWithoutFarmaciaInput, MedicamentoUncheckedUpdateWithoutFarmaciaInput>
-  }
-
-  export type MedicamentoUpdateManyWithWhereWithoutFarmaciaInput = {
-    where: MedicamentoScalarWhereInput
-    data: XOR<MedicamentoUpdateManyMutationInput, MedicamentoUncheckedUpdateManyWithoutFarmaciaInput>
-  }
-
-  export type MedicamentoScalarWhereInput = {
-    AND?: MedicamentoScalarWhereInput | MedicamentoScalarWhereInput[]
-    OR?: MedicamentoScalarWhereInput[]
-    NOT?: MedicamentoScalarWhereInput | MedicamentoScalarWhereInput[]
-    id?: StringFilter<"Medicamento"> | string
-    farmaciaId?: StringFilter<"Medicamento"> | string
-    nombre?: StringFilter<"Medicamento"> | string
-    nombreGenerico?: StringNullableFilter<"Medicamento"> | string | null
-    presentacion?: EnumPresentacionMedicamentoFilter<"Medicamento"> | $Enums.PresentacionMedicamento
-    volumenPresentacion?: DecimalFilter<"Medicamento"> | Decimal | DecimalJsLike | number | string
-    unidadMedida?: EnumUnidadMedidaFilter<"Medicamento"> | $Enums.UnidadMedida
-    stockMinimo?: IntFilter<"Medicamento"> | number
-    activo?: BoolFilter<"Medicamento"> | boolean
-    createdAt?: DateTimeFilter<"Medicamento"> | Date | string
-    updatedAt?: DateTimeFilter<"Medicamento"> | Date | string
   }
 
   export type UnidadMedicamentoUpsertWithWhereUniqueWithoutFarmaciaInput = {
@@ -46657,6 +46665,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigCreateNestedManyWithoutOrganizacionInput
     notificaciones?: NotificacionCreateNestedManyWithoutOrganizacionInput
     racionesCatalogo?: RacionCatalogoCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionUncheckedCreateWithoutGruposCorralesInput = {
@@ -46672,6 +46681,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUncheckedCreateNestedManyWithoutOrganizacionInput
     notificaciones?: NotificacionUncheckedCreateNestedManyWithoutOrganizacionInput
     racionesCatalogo?: RacionCatalogoUncheckedCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoUncheckedCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionCreateOrConnectWithoutGruposCorralesInput = {
@@ -46687,7 +46697,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     organizacion: OrganizacionCreateNestedOneWithoutFarmaciasInput
-    medicamentos?: MedicamentoCreateNestedManyWithoutFarmaciaInput
     unidades?: UnidadMedicamentoCreateNestedManyWithoutFarmaciaInput
     ajustes?: AjusteInventarioCreateNestedManyWithoutFarmaciaInput
   }
@@ -46700,7 +46709,6 @@ export namespace Prisma {
     activa?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    medicamentos?: MedicamentoUncheckedCreateNestedManyWithoutFarmaciaInput
     unidades?: UnidadMedicamentoUncheckedCreateNestedManyWithoutFarmaciaInput
     ajustes?: AjusteInventarioUncheckedCreateNestedManyWithoutFarmaciaInput
   }
@@ -46794,6 +46802,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUpdateManyWithoutOrganizacionNestedInput
     notificaciones?: NotificacionUpdateManyWithoutOrganizacionNestedInput
     racionesCatalogo?: RacionCatalogoUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type OrganizacionUncheckedUpdateWithoutGruposCorralesInput = {
@@ -46809,6 +46818,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUncheckedUpdateManyWithoutOrganizacionNestedInput
     notificaciones?: NotificacionUncheckedUpdateManyWithoutOrganizacionNestedInput
     racionesCatalogo?: RacionCatalogoUncheckedUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUncheckedUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type FarmaciaUpsertWithoutGruposCorralesInput = {
@@ -46830,7 +46840,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organizacion?: OrganizacionUpdateOneRequiredWithoutFarmaciasNestedInput
-    medicamentos?: MedicamentoUpdateManyWithoutFarmaciaNestedInput
     unidades?: UnidadMedicamentoUpdateManyWithoutFarmaciaNestedInput
     ajustes?: AjusteInventarioUpdateManyWithoutFarmaciaNestedInput
   }
@@ -46843,7 +46852,6 @@ export namespace Prisma {
     activa?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    medicamentos?: MedicamentoUncheckedUpdateManyWithoutFarmaciaNestedInput
     unidades?: UnidadMedicamentoUncheckedUpdateManyWithoutFarmaciaNestedInput
     ajustes?: AjusteInventarioUncheckedUpdateManyWithoutFarmaciaNestedInput
   }
@@ -47597,6 +47605,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigCreateNestedManyWithoutOrganizacionInput
     notificaciones?: NotificacionCreateNestedManyWithoutOrganizacionInput
     racionesCatalogo?: RacionCatalogoCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionUncheckedCreateWithoutAnimalesInput = {
@@ -47612,6 +47621,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUncheckedCreateNestedManyWithoutOrganizacionInput
     notificaciones?: NotificacionUncheckedCreateNestedManyWithoutOrganizacionInput
     racionesCatalogo?: RacionCatalogoUncheckedCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoUncheckedCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionCreateOrConnectWithoutAnimalesInput = {
@@ -47836,6 +47846,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUpdateManyWithoutOrganizacionNestedInput
     notificaciones?: NotificacionUpdateManyWithoutOrganizacionNestedInput
     racionesCatalogo?: RacionCatalogoUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type OrganizacionUncheckedUpdateWithoutAnimalesInput = {
@@ -47851,6 +47862,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUncheckedUpdateManyWithoutOrganizacionNestedInput
     notificaciones?: NotificacionUncheckedUpdateManyWithoutOrganizacionNestedInput
     racionesCatalogo?: RacionCatalogoUncheckedUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUncheckedUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type CorralUpsertWithoutAnimalesInput = {
@@ -48075,6 +48087,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigCreateNestedManyWithoutOrganizacionInput
     notificaciones?: NotificacionCreateNestedManyWithoutOrganizacionInput
     racionesCatalogo?: RacionCatalogoCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionUncheckedCreateWithoutAretessBlancosInput = {
@@ -48090,6 +48103,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUncheckedCreateNestedManyWithoutOrganizacionInput
     notificaciones?: NotificacionUncheckedCreateNestedManyWithoutOrganizacionInput
     racionesCatalogo?: RacionCatalogoUncheckedCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoUncheckedCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionCreateOrConnectWithoutAretessBlancosInput = {
@@ -48149,6 +48163,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUpdateManyWithoutOrganizacionNestedInput
     notificaciones?: NotificacionUpdateManyWithoutOrganizacionNestedInput
     racionesCatalogo?: RacionCatalogoUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type OrganizacionUncheckedUpdateWithoutAretessBlancosInput = {
@@ -48164,6 +48179,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUncheckedUpdateManyWithoutOrganizacionNestedInput
     notificaciones?: NotificacionUncheckedUpdateManyWithoutOrganizacionNestedInput
     racionesCatalogo?: RacionCatalogoUncheckedUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUncheckedUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type AsignacionAreteBlancoUpsertWithWhereUniqueWithoutAreteBlancoInput = {
@@ -48614,35 +48630,41 @@ export namespace Prisma {
     ajustesInventario?: AjusteInventarioUncheckedUpdateManyWithoutRealizadoPorNestedInput
   }
 
-  export type FarmaciaCreateWithoutMedicamentosInput = {
+  export type OrganizacionCreateWithoutMedicamentosInput = {
     id?: string
     nombre: string
-    descripcion?: string | null
-    activa?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    organizacion: OrganizacionCreateNestedOneWithoutFarmaciasInput
-    gruposCorrales?: GrupoCorralesCreateNestedManyWithoutFarmaciaInput
-    unidades?: UnidadMedicamentoCreateNestedManyWithoutFarmaciaInput
-    ajustes?: AjusteInventarioCreateNestedManyWithoutFarmaciaInput
+    farmacias?: FarmaciaCreateNestedManyWithoutOrganizacionInput
+    gruposCorrales?: GrupoCorralesCreateNestedManyWithoutOrganizacionInput
+    animales?: AnimalCreateNestedManyWithoutOrganizacionInput
+    aretessBlancos?: AreteBlancoCreateNestedManyWithoutOrganizacionInput
+    usuarios?: UsuarioCreateNestedManyWithoutOrganizacionInput
+    templates?: TratamientoTemplateCreateNestedManyWithoutOrganizacionInput
+    estadosComedero?: EstadoComederoConfigCreateNestedManyWithoutOrganizacionInput
+    notificaciones?: NotificacionCreateNestedManyWithoutOrganizacionInput
+    racionesCatalogo?: RacionCatalogoCreateNestedManyWithoutOrganizacionInput
   }
 
-  export type FarmaciaUncheckedCreateWithoutMedicamentosInput = {
+  export type OrganizacionUncheckedCreateWithoutMedicamentosInput = {
     id?: string
-    organizacionId: string
     nombre: string
-    descripcion?: string | null
-    activa?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    gruposCorrales?: GrupoCorralesUncheckedCreateNestedManyWithoutFarmaciaInput
-    unidades?: UnidadMedicamentoUncheckedCreateNestedManyWithoutFarmaciaInput
-    ajustes?: AjusteInventarioUncheckedCreateNestedManyWithoutFarmaciaInput
+    farmacias?: FarmaciaUncheckedCreateNestedManyWithoutOrganizacionInput
+    gruposCorrales?: GrupoCorralesUncheckedCreateNestedManyWithoutOrganizacionInput
+    animales?: AnimalUncheckedCreateNestedManyWithoutOrganizacionInput
+    aretessBlancos?: AreteBlancoUncheckedCreateNestedManyWithoutOrganizacionInput
+    usuarios?: UsuarioUncheckedCreateNestedManyWithoutOrganizacionInput
+    templates?: TratamientoTemplateUncheckedCreateNestedManyWithoutOrganizacionInput
+    estadosComedero?: EstadoComederoConfigUncheckedCreateNestedManyWithoutOrganizacionInput
+    notificaciones?: NotificacionUncheckedCreateNestedManyWithoutOrganizacionInput
+    racionesCatalogo?: RacionCatalogoUncheckedCreateNestedManyWithoutOrganizacionInput
   }
 
-  export type FarmaciaCreateOrConnectWithoutMedicamentosInput = {
-    where: FarmaciaWhereUniqueInput
-    create: XOR<FarmaciaCreateWithoutMedicamentosInput, FarmaciaUncheckedCreateWithoutMedicamentosInput>
+  export type OrganizacionCreateOrConnectWithoutMedicamentosInput = {
+    where: OrganizacionWhereUniqueInput
+    create: XOR<OrganizacionCreateWithoutMedicamentosInput, OrganizacionUncheckedCreateWithoutMedicamentosInput>
   }
 
   export type UnidadMedicamentoCreateWithoutMedicamentoInput = {
@@ -48775,41 +48797,47 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type FarmaciaUpsertWithoutMedicamentosInput = {
-    update: XOR<FarmaciaUpdateWithoutMedicamentosInput, FarmaciaUncheckedUpdateWithoutMedicamentosInput>
-    create: XOR<FarmaciaCreateWithoutMedicamentosInput, FarmaciaUncheckedCreateWithoutMedicamentosInput>
-    where?: FarmaciaWhereInput
+  export type OrganizacionUpsertWithoutMedicamentosInput = {
+    update: XOR<OrganizacionUpdateWithoutMedicamentosInput, OrganizacionUncheckedUpdateWithoutMedicamentosInput>
+    create: XOR<OrganizacionCreateWithoutMedicamentosInput, OrganizacionUncheckedCreateWithoutMedicamentosInput>
+    where?: OrganizacionWhereInput
   }
 
-  export type FarmaciaUpdateToOneWithWhereWithoutMedicamentosInput = {
-    where?: FarmaciaWhereInput
-    data: XOR<FarmaciaUpdateWithoutMedicamentosInput, FarmaciaUncheckedUpdateWithoutMedicamentosInput>
+  export type OrganizacionUpdateToOneWithWhereWithoutMedicamentosInput = {
+    where?: OrganizacionWhereInput
+    data: XOR<OrganizacionUpdateWithoutMedicamentosInput, OrganizacionUncheckedUpdateWithoutMedicamentosInput>
   }
 
-  export type FarmaciaUpdateWithoutMedicamentosInput = {
+  export type OrganizacionUpdateWithoutMedicamentosInput = {
     id?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
-    descripcion?: NullableStringFieldUpdateOperationsInput | string | null
-    activa?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    organizacion?: OrganizacionUpdateOneRequiredWithoutFarmaciasNestedInput
-    gruposCorrales?: GrupoCorralesUpdateManyWithoutFarmaciaNestedInput
-    unidades?: UnidadMedicamentoUpdateManyWithoutFarmaciaNestedInput
-    ajustes?: AjusteInventarioUpdateManyWithoutFarmaciaNestedInput
+    farmacias?: FarmaciaUpdateManyWithoutOrganizacionNestedInput
+    gruposCorrales?: GrupoCorralesUpdateManyWithoutOrganizacionNestedInput
+    animales?: AnimalUpdateManyWithoutOrganizacionNestedInput
+    aretessBlancos?: AreteBlancoUpdateManyWithoutOrganizacionNestedInput
+    usuarios?: UsuarioUpdateManyWithoutOrganizacionNestedInput
+    templates?: TratamientoTemplateUpdateManyWithoutOrganizacionNestedInput
+    estadosComedero?: EstadoComederoConfigUpdateManyWithoutOrganizacionNestedInput
+    notificaciones?: NotificacionUpdateManyWithoutOrganizacionNestedInput
+    racionesCatalogo?: RacionCatalogoUpdateManyWithoutOrganizacionNestedInput
   }
 
-  export type FarmaciaUncheckedUpdateWithoutMedicamentosInput = {
+  export type OrganizacionUncheckedUpdateWithoutMedicamentosInput = {
     id?: StringFieldUpdateOperationsInput | string
-    organizacionId?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
-    descripcion?: NullableStringFieldUpdateOperationsInput | string | null
-    activa?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    gruposCorrales?: GrupoCorralesUncheckedUpdateManyWithoutFarmaciaNestedInput
-    unidades?: UnidadMedicamentoUncheckedUpdateManyWithoutFarmaciaNestedInput
-    ajustes?: AjusteInventarioUncheckedUpdateManyWithoutFarmaciaNestedInput
+    farmacias?: FarmaciaUncheckedUpdateManyWithoutOrganizacionNestedInput
+    gruposCorrales?: GrupoCorralesUncheckedUpdateManyWithoutOrganizacionNestedInput
+    animales?: AnimalUncheckedUpdateManyWithoutOrganizacionNestedInput
+    aretessBlancos?: AreteBlancoUncheckedUpdateManyWithoutOrganizacionNestedInput
+    usuarios?: UsuarioUncheckedUpdateManyWithoutOrganizacionNestedInput
+    templates?: TratamientoTemplateUncheckedUpdateManyWithoutOrganizacionNestedInput
+    estadosComedero?: EstadoComederoConfigUncheckedUpdateManyWithoutOrganizacionNestedInput
+    notificaciones?: NotificacionUncheckedUpdateManyWithoutOrganizacionNestedInput
+    racionesCatalogo?: RacionCatalogoUncheckedUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type UnidadMedicamentoUpsertWithWhereUniqueWithoutMedicamentoInput = {
@@ -48912,7 +48940,7 @@ export namespace Prisma {
     activo?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    farmacia: FarmaciaCreateNestedOneWithoutMedicamentosInput
+    organizacion: OrganizacionCreateNestedOneWithoutMedicamentosInput
     templateItems?: TratamientoTemplateItemCreateNestedManyWithoutMedicamentoInput
     aplicacionItems?: AplicacionTratamientoItemCreateNestedManyWithoutMedicamentoInput
     ajustes?: AjusteInventarioCreateNestedManyWithoutMedicamentoInput
@@ -48920,7 +48948,7 @@ export namespace Prisma {
 
   export type MedicamentoUncheckedCreateWithoutUnidadesInput = {
     id?: string
-    farmaciaId: string
+    organizacionId: string
     nombre: string
     nombreGenerico?: string | null
     presentacion: $Enums.PresentacionMedicamento
@@ -48949,7 +48977,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     organizacion: OrganizacionCreateNestedOneWithoutFarmaciasInput
     gruposCorrales?: GrupoCorralesCreateNestedManyWithoutFarmaciaInput
-    medicamentos?: MedicamentoCreateNestedManyWithoutFarmaciaInput
     ajustes?: AjusteInventarioCreateNestedManyWithoutFarmaciaInput
   }
 
@@ -48962,7 +48989,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     gruposCorrales?: GrupoCorralesUncheckedCreateNestedManyWithoutFarmaciaInput
-    medicamentos?: MedicamentoUncheckedCreateNestedManyWithoutFarmaciaInput
     ajustes?: AjusteInventarioUncheckedCreateNestedManyWithoutFarmaciaInput
   }
 
@@ -49117,7 +49143,7 @@ export namespace Prisma {
     activo?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    farmacia?: FarmaciaUpdateOneRequiredWithoutMedicamentosNestedInput
+    organizacion?: OrganizacionUpdateOneRequiredWithoutMedicamentosNestedInput
     templateItems?: TratamientoTemplateItemUpdateManyWithoutMedicamentoNestedInput
     aplicacionItems?: AplicacionTratamientoItemUpdateManyWithoutMedicamentoNestedInput
     ajustes?: AjusteInventarioUpdateManyWithoutMedicamentoNestedInput
@@ -49125,7 +49151,7 @@ export namespace Prisma {
 
   export type MedicamentoUncheckedUpdateWithoutUnidadesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    farmaciaId?: StringFieldUpdateOperationsInput | string
+    organizacionId?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
     nombreGenerico?: NullableStringFieldUpdateOperationsInput | string | null
     presentacion?: EnumPresentacionMedicamentoFieldUpdateOperationsInput | $Enums.PresentacionMedicamento
@@ -49160,7 +49186,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organizacion?: OrganizacionUpdateOneRequiredWithoutFarmaciasNestedInput
     gruposCorrales?: GrupoCorralesUpdateManyWithoutFarmaciaNestedInput
-    medicamentos?: MedicamentoUpdateManyWithoutFarmaciaNestedInput
     ajustes?: AjusteInventarioUpdateManyWithoutFarmaciaNestedInput
   }
 
@@ -49173,7 +49198,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     gruposCorrales?: GrupoCorralesUncheckedUpdateManyWithoutFarmaciaNestedInput
-    medicamentos?: MedicamentoUncheckedUpdateManyWithoutFarmaciaNestedInput
     ajustes?: AjusteInventarioUncheckedUpdateManyWithoutFarmaciaNestedInput
   }
 
@@ -49907,7 +49931,7 @@ export namespace Prisma {
     activo?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    farmacia: FarmaciaCreateNestedOneWithoutMedicamentosInput
+    organizacion: OrganizacionCreateNestedOneWithoutMedicamentosInput
     unidades?: UnidadMedicamentoCreateNestedManyWithoutMedicamentoInput
     templateItems?: TratamientoTemplateItemCreateNestedManyWithoutMedicamentoInput
     aplicacionItems?: AplicacionTratamientoItemCreateNestedManyWithoutMedicamentoInput
@@ -49915,7 +49939,7 @@ export namespace Prisma {
 
   export type MedicamentoUncheckedCreateWithoutAjustesInput = {
     id?: string
-    farmaciaId: string
+    organizacionId: string
     nombre: string
     nombreGenerico?: string | null
     presentacion: $Enums.PresentacionMedicamento
@@ -49944,7 +49968,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     organizacion: OrganizacionCreateNestedOneWithoutFarmaciasInput
     gruposCorrales?: GrupoCorralesCreateNestedManyWithoutFarmaciaInput
-    medicamentos?: MedicamentoCreateNestedManyWithoutFarmaciaInput
     unidades?: UnidadMedicamentoCreateNestedManyWithoutFarmaciaInput
   }
 
@@ -49957,7 +49980,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     gruposCorrales?: GrupoCorralesUncheckedCreateNestedManyWithoutFarmaciaInput
-    medicamentos?: MedicamentoUncheckedCreateNestedManyWithoutFarmaciaInput
     unidades?: UnidadMedicamentoUncheckedCreateNestedManyWithoutFarmaciaInput
   }
 
@@ -50057,7 +50079,7 @@ export namespace Prisma {
     activo?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    farmacia?: FarmaciaUpdateOneRequiredWithoutMedicamentosNestedInput
+    organizacion?: OrganizacionUpdateOneRequiredWithoutMedicamentosNestedInput
     unidades?: UnidadMedicamentoUpdateManyWithoutMedicamentoNestedInput
     templateItems?: TratamientoTemplateItemUpdateManyWithoutMedicamentoNestedInput
     aplicacionItems?: AplicacionTratamientoItemUpdateManyWithoutMedicamentoNestedInput
@@ -50065,7 +50087,7 @@ export namespace Prisma {
 
   export type MedicamentoUncheckedUpdateWithoutAjustesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    farmaciaId?: StringFieldUpdateOperationsInput | string
+    organizacionId?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
     nombreGenerico?: NullableStringFieldUpdateOperationsInput | string | null
     presentacion?: EnumPresentacionMedicamentoFieldUpdateOperationsInput | $Enums.PresentacionMedicamento
@@ -50100,7 +50122,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organizacion?: OrganizacionUpdateOneRequiredWithoutFarmaciasNestedInput
     gruposCorrales?: GrupoCorralesUpdateManyWithoutFarmaciaNestedInput
-    medicamentos?: MedicamentoUpdateManyWithoutFarmaciaNestedInput
     unidades?: UnidadMedicamentoUpdateManyWithoutFarmaciaNestedInput
   }
 
@@ -50113,7 +50134,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     gruposCorrales?: GrupoCorralesUncheckedUpdateManyWithoutFarmaciaNestedInput
-    medicamentos?: MedicamentoUncheckedUpdateManyWithoutFarmaciaNestedInput
     unidades?: UnidadMedicamentoUncheckedUpdateManyWithoutFarmaciaNestedInput
   }
 
@@ -50205,6 +50225,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigCreateNestedManyWithoutOrganizacionInput
     notificaciones?: NotificacionCreateNestedManyWithoutOrganizacionInput
     racionesCatalogo?: RacionCatalogoCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionUncheckedCreateWithoutTemplatesInput = {
@@ -50220,6 +50241,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUncheckedCreateNestedManyWithoutOrganizacionInput
     notificaciones?: NotificacionUncheckedCreateNestedManyWithoutOrganizacionInput
     racionesCatalogo?: RacionCatalogoUncheckedCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoUncheckedCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionCreateOrConnectWithoutTemplatesInput = {
@@ -50380,6 +50402,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUpdateManyWithoutOrganizacionNestedInput
     notificaciones?: NotificacionUpdateManyWithoutOrganizacionNestedInput
     racionesCatalogo?: RacionCatalogoUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type OrganizacionUncheckedUpdateWithoutTemplatesInput = {
@@ -50395,6 +50418,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUncheckedUpdateManyWithoutOrganizacionNestedInput
     notificaciones?: NotificacionUncheckedUpdateManyWithoutOrganizacionNestedInput
     racionesCatalogo?: RacionCatalogoUncheckedUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUncheckedUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type UsuarioUpsertWithoutTemplatesCreadosInput = {
@@ -50544,7 +50568,7 @@ export namespace Prisma {
     activo?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    farmacia: FarmaciaCreateNestedOneWithoutMedicamentosInput
+    organizacion: OrganizacionCreateNestedOneWithoutMedicamentosInput
     unidades?: UnidadMedicamentoCreateNestedManyWithoutMedicamentoInput
     aplicacionItems?: AplicacionTratamientoItemCreateNestedManyWithoutMedicamentoInput
     ajustes?: AjusteInventarioCreateNestedManyWithoutMedicamentoInput
@@ -50552,7 +50576,7 @@ export namespace Prisma {
 
   export type MedicamentoUncheckedCreateWithoutTemplateItemsInput = {
     id?: string
-    farmaciaId: string
+    organizacionId: string
     nombre: string
     nombreGenerico?: string | null
     presentacion: $Enums.PresentacionMedicamento
@@ -50629,7 +50653,7 @@ export namespace Prisma {
     activo?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    farmacia?: FarmaciaUpdateOneRequiredWithoutMedicamentosNestedInput
+    organizacion?: OrganizacionUpdateOneRequiredWithoutMedicamentosNestedInput
     unidades?: UnidadMedicamentoUpdateManyWithoutMedicamentoNestedInput
     aplicacionItems?: AplicacionTratamientoItemUpdateManyWithoutMedicamentoNestedInput
     ajustes?: AjusteInventarioUpdateManyWithoutMedicamentoNestedInput
@@ -50637,7 +50661,7 @@ export namespace Prisma {
 
   export type MedicamentoUncheckedUpdateWithoutTemplateItemsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    farmaciaId?: StringFieldUpdateOperationsInput | string
+    organizacionId?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
     nombreGenerico?: NullableStringFieldUpdateOperationsInput | string | null
     presentacion?: EnumPresentacionMedicamentoFieldUpdateOperationsInput | $Enums.PresentacionMedicamento
@@ -51040,7 +51064,7 @@ export namespace Prisma {
     activo?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    farmacia: FarmaciaCreateNestedOneWithoutMedicamentosInput
+    organizacion: OrganizacionCreateNestedOneWithoutMedicamentosInput
     unidades?: UnidadMedicamentoCreateNestedManyWithoutMedicamentoInput
     templateItems?: TratamientoTemplateItemCreateNestedManyWithoutMedicamentoInput
     ajustes?: AjusteInventarioCreateNestedManyWithoutMedicamentoInput
@@ -51048,7 +51072,7 @@ export namespace Prisma {
 
   export type MedicamentoUncheckedCreateWithoutAplicacionItemsInput = {
     id?: string
-    farmaciaId: string
+    organizacionId: string
     nombre: string
     nombreGenerico?: string | null
     presentacion: $Enums.PresentacionMedicamento
@@ -51125,7 +51149,7 @@ export namespace Prisma {
     activo?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    farmacia?: FarmaciaUpdateOneRequiredWithoutMedicamentosNestedInput
+    organizacion?: OrganizacionUpdateOneRequiredWithoutMedicamentosNestedInput
     unidades?: UnidadMedicamentoUpdateManyWithoutMedicamentoNestedInput
     templateItems?: TratamientoTemplateItemUpdateManyWithoutMedicamentoNestedInput
     ajustes?: AjusteInventarioUpdateManyWithoutMedicamentoNestedInput
@@ -51133,7 +51157,7 @@ export namespace Prisma {
 
   export type MedicamentoUncheckedUpdateWithoutAplicacionItemsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    farmaciaId?: StringFieldUpdateOperationsInput | string
+    organizacionId?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
     nombreGenerico?: NullableStringFieldUpdateOperationsInput | string | null
     presentacion?: EnumPresentacionMedicamentoFieldUpdateOperationsInput | $Enums.PresentacionMedicamento
@@ -51161,6 +51185,7 @@ export namespace Prisma {
     templates?: TratamientoTemplateCreateNestedManyWithoutOrganizacionInput
     notificaciones?: NotificacionCreateNestedManyWithoutOrganizacionInput
     racionesCatalogo?: RacionCatalogoCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionUncheckedCreateWithoutEstadosComederoInput = {
@@ -51176,6 +51201,7 @@ export namespace Prisma {
     templates?: TratamientoTemplateUncheckedCreateNestedManyWithoutOrganizacionInput
     notificaciones?: NotificacionUncheckedCreateNestedManyWithoutOrganizacionInput
     racionesCatalogo?: RacionCatalogoUncheckedCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoUncheckedCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionCreateOrConnectWithoutEstadosComederoInput = {
@@ -51235,6 +51261,7 @@ export namespace Prisma {
     templates?: TratamientoTemplateUpdateManyWithoutOrganizacionNestedInput
     notificaciones?: NotificacionUpdateManyWithoutOrganizacionNestedInput
     racionesCatalogo?: RacionCatalogoUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type OrganizacionUncheckedUpdateWithoutEstadosComederoInput = {
@@ -51250,6 +51277,7 @@ export namespace Prisma {
     templates?: TratamientoTemplateUncheckedUpdateManyWithoutOrganizacionNestedInput
     notificaciones?: NotificacionUncheckedUpdateManyWithoutOrganizacionNestedInput
     racionesCatalogo?: RacionCatalogoUncheckedUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUncheckedUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type LecturaComedorUpsertWithWhereUniqueWithoutEstadoConfigInput = {
@@ -51561,6 +51589,7 @@ export namespace Prisma {
     templates?: TratamientoTemplateCreateNestedManyWithoutOrganizacionInput
     estadosComedero?: EstadoComederoConfigCreateNestedManyWithoutOrganizacionInput
     notificaciones?: NotificacionCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionUncheckedCreateWithoutRacionesCatalogoInput = {
@@ -51576,6 +51605,7 @@ export namespace Prisma {
     templates?: TratamientoTemplateUncheckedCreateNestedManyWithoutOrganizacionInput
     estadosComedero?: EstadoComederoConfigUncheckedCreateNestedManyWithoutOrganizacionInput
     notificaciones?: NotificacionUncheckedCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoUncheckedCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionCreateOrConnectWithoutRacionesCatalogoInput = {
@@ -51649,6 +51679,7 @@ export namespace Prisma {
     templates?: TratamientoTemplateUpdateManyWithoutOrganizacionNestedInput
     estadosComedero?: EstadoComederoConfigUpdateManyWithoutOrganizacionNestedInput
     notificaciones?: NotificacionUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type OrganizacionUncheckedUpdateWithoutRacionesCatalogoInput = {
@@ -51664,6 +51695,7 @@ export namespace Prisma {
     templates?: TratamientoTemplateUncheckedUpdateManyWithoutOrganizacionNestedInput
     estadosComedero?: EstadoComederoConfigUncheckedUpdateManyWithoutOrganizacionNestedInput
     notificaciones?: NotificacionUncheckedUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUncheckedUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type RacionDefinicionUpsertWithWhereUniqueWithoutCatalogoInput = {
@@ -52323,6 +52355,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigCreateNestedManyWithoutOrganizacionInput
     notificaciones?: NotificacionCreateNestedManyWithoutOrganizacionInput
     racionesCatalogo?: RacionCatalogoCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionUncheckedCreateWithoutUsuariosInput = {
@@ -52338,6 +52371,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUncheckedCreateNestedManyWithoutOrganizacionInput
     notificaciones?: NotificacionUncheckedCreateNestedManyWithoutOrganizacionInput
     racionesCatalogo?: RacionCatalogoUncheckedCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoUncheckedCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionCreateOrConnectWithoutUsuariosInput = {
@@ -52967,6 +53001,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUpdateManyWithoutOrganizacionNestedInput
     notificaciones?: NotificacionUpdateManyWithoutOrganizacionNestedInput
     racionesCatalogo?: RacionCatalogoUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type OrganizacionUncheckedUpdateWithoutUsuariosInput = {
@@ -52982,6 +53017,7 @@ export namespace Prisma {
     estadosComedero?: EstadoComederoConfigUncheckedUpdateManyWithoutOrganizacionNestedInput
     notificaciones?: NotificacionUncheckedUpdateManyWithoutOrganizacionNestedInput
     racionesCatalogo?: RacionCatalogoUncheckedUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUncheckedUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type UsuarioActividadUpsertWithWhereUniqueWithoutUsuarioInput = {
@@ -53695,6 +53731,7 @@ export namespace Prisma {
     templates?: TratamientoTemplateCreateNestedManyWithoutOrganizacionInput
     estadosComedero?: EstadoComederoConfigCreateNestedManyWithoutOrganizacionInput
     racionesCatalogo?: RacionCatalogoCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionUncheckedCreateWithoutNotificacionesInput = {
@@ -53710,6 +53747,7 @@ export namespace Prisma {
     templates?: TratamientoTemplateUncheckedCreateNestedManyWithoutOrganizacionInput
     estadosComedero?: EstadoComederoConfigUncheckedCreateNestedManyWithoutOrganizacionInput
     racionesCatalogo?: RacionCatalogoUncheckedCreateNestedManyWithoutOrganizacionInput
+    medicamentos?: MedicamentoUncheckedCreateNestedManyWithoutOrganizacionInput
   }
 
   export type OrganizacionCreateOrConnectWithoutNotificacionesInput = {
@@ -53854,6 +53892,7 @@ export namespace Prisma {
     templates?: TratamientoTemplateUpdateManyWithoutOrganizacionNestedInput
     estadosComedero?: EstadoComederoConfigUpdateManyWithoutOrganizacionNestedInput
     racionesCatalogo?: RacionCatalogoUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type OrganizacionUncheckedUpdateWithoutNotificacionesInput = {
@@ -53869,6 +53908,7 @@ export namespace Prisma {
     templates?: TratamientoTemplateUncheckedUpdateManyWithoutOrganizacionNestedInput
     estadosComedero?: EstadoComederoConfigUncheckedUpdateManyWithoutOrganizacionNestedInput
     racionesCatalogo?: RacionCatalogoUncheckedUpdateManyWithoutOrganizacionNestedInput
+    medicamentos?: MedicamentoUncheckedUpdateManyWithoutOrganizacionNestedInput
   }
 
   export type UsuarioUpsertWithoutNotificacionesEmitidasInput = {
@@ -54490,6 +54530,19 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type MedicamentoCreateManyOrganizacionInput = {
+    id?: string
+    nombre: string
+    nombreGenerico?: string | null
+    presentacion: $Enums.PresentacionMedicamento
+    volumenPresentacion: Decimal | DecimalJsLike | number | string
+    unidadMedida: $Enums.UnidadMedida
+    stockMinimo?: number
+    activo?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type FarmaciaUpdateWithoutOrganizacionInput = {
     id?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
@@ -54498,7 +54551,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     gruposCorrales?: GrupoCorralesUpdateManyWithoutFarmaciaNestedInput
-    medicamentos?: MedicamentoUpdateManyWithoutFarmaciaNestedInput
     unidades?: UnidadMedicamentoUpdateManyWithoutFarmaciaNestedInput
     ajustes?: AjusteInventarioUpdateManyWithoutFarmaciaNestedInput
   }
@@ -54511,7 +54563,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     gruposCorrales?: GrupoCorralesUncheckedUpdateManyWithoutFarmaciaNestedInput
-    medicamentos?: MedicamentoUncheckedUpdateManyWithoutFarmaciaNestedInput
     unidades?: UnidadMedicamentoUncheckedUpdateManyWithoutFarmaciaNestedInput
     ajustes?: AjusteInventarioUncheckedUpdateManyWithoutFarmaciaNestedInput
   }
@@ -54846,24 +54897,58 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type MedicamentoUpdateWithoutOrganizacionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nombre?: StringFieldUpdateOperationsInput | string
+    nombreGenerico?: NullableStringFieldUpdateOperationsInput | string | null
+    presentacion?: EnumPresentacionMedicamentoFieldUpdateOperationsInput | $Enums.PresentacionMedicamento
+    volumenPresentacion?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    unidadMedida?: EnumUnidadMedidaFieldUpdateOperationsInput | $Enums.UnidadMedida
+    stockMinimo?: IntFieldUpdateOperationsInput | number
+    activo?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    unidades?: UnidadMedicamentoUpdateManyWithoutMedicamentoNestedInput
+    templateItems?: TratamientoTemplateItemUpdateManyWithoutMedicamentoNestedInput
+    aplicacionItems?: AplicacionTratamientoItemUpdateManyWithoutMedicamentoNestedInput
+    ajustes?: AjusteInventarioUpdateManyWithoutMedicamentoNestedInput
+  }
+
+  export type MedicamentoUncheckedUpdateWithoutOrganizacionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nombre?: StringFieldUpdateOperationsInput | string
+    nombreGenerico?: NullableStringFieldUpdateOperationsInput | string | null
+    presentacion?: EnumPresentacionMedicamentoFieldUpdateOperationsInput | $Enums.PresentacionMedicamento
+    volumenPresentacion?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    unidadMedida?: EnumUnidadMedidaFieldUpdateOperationsInput | $Enums.UnidadMedida
+    stockMinimo?: IntFieldUpdateOperationsInput | number
+    activo?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    unidades?: UnidadMedicamentoUncheckedUpdateManyWithoutMedicamentoNestedInput
+    templateItems?: TratamientoTemplateItemUncheckedUpdateManyWithoutMedicamentoNestedInput
+    aplicacionItems?: AplicacionTratamientoItemUncheckedUpdateManyWithoutMedicamentoNestedInput
+    ajustes?: AjusteInventarioUncheckedUpdateManyWithoutMedicamentoNestedInput
+  }
+
+  export type MedicamentoUncheckedUpdateManyWithoutOrganizacionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nombre?: StringFieldUpdateOperationsInput | string
+    nombreGenerico?: NullableStringFieldUpdateOperationsInput | string | null
+    presentacion?: EnumPresentacionMedicamentoFieldUpdateOperationsInput | $Enums.PresentacionMedicamento
+    volumenPresentacion?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    unidadMedida?: EnumUnidadMedidaFieldUpdateOperationsInput | $Enums.UnidadMedida
+    stockMinimo?: IntFieldUpdateOperationsInput | number
+    activo?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type GrupoCorralesCreateManyFarmaciaInput = {
     id?: string
     organizacionId: string
     nombre: string
     descripcion?: string | null
-    activo?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type MedicamentoCreateManyFarmaciaInput = {
-    id?: string
-    nombre: string
-    nombreGenerico?: string | null
-    presentacion: $Enums.PresentacionMedicamento
-    volumenPresentacion: Decimal | DecimalJsLike | number | string
-    unidadMedida: $Enums.UnidadMedida
-    stockMinimo?: number
     activo?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -54924,53 +55009,6 @@ export namespace Prisma {
     organizacionId?: StringFieldUpdateOperationsInput | string
     nombre?: StringFieldUpdateOperationsInput | string
     descripcion?: NullableStringFieldUpdateOperationsInput | string | null
-    activo?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type MedicamentoUpdateWithoutFarmaciaInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    nombre?: StringFieldUpdateOperationsInput | string
-    nombreGenerico?: NullableStringFieldUpdateOperationsInput | string | null
-    presentacion?: EnumPresentacionMedicamentoFieldUpdateOperationsInput | $Enums.PresentacionMedicamento
-    volumenPresentacion?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    unidadMedida?: EnumUnidadMedidaFieldUpdateOperationsInput | $Enums.UnidadMedida
-    stockMinimo?: IntFieldUpdateOperationsInput | number
-    activo?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    unidades?: UnidadMedicamentoUpdateManyWithoutMedicamentoNestedInput
-    templateItems?: TratamientoTemplateItemUpdateManyWithoutMedicamentoNestedInput
-    aplicacionItems?: AplicacionTratamientoItemUpdateManyWithoutMedicamentoNestedInput
-    ajustes?: AjusteInventarioUpdateManyWithoutMedicamentoNestedInput
-  }
-
-  export type MedicamentoUncheckedUpdateWithoutFarmaciaInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    nombre?: StringFieldUpdateOperationsInput | string
-    nombreGenerico?: NullableStringFieldUpdateOperationsInput | string | null
-    presentacion?: EnumPresentacionMedicamentoFieldUpdateOperationsInput | $Enums.PresentacionMedicamento
-    volumenPresentacion?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    unidadMedida?: EnumUnidadMedidaFieldUpdateOperationsInput | $Enums.UnidadMedida
-    stockMinimo?: IntFieldUpdateOperationsInput | number
-    activo?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    unidades?: UnidadMedicamentoUncheckedUpdateManyWithoutMedicamentoNestedInput
-    templateItems?: TratamientoTemplateItemUncheckedUpdateManyWithoutMedicamentoNestedInput
-    aplicacionItems?: AplicacionTratamientoItemUncheckedUpdateManyWithoutMedicamentoNestedInput
-    ajustes?: AjusteInventarioUncheckedUpdateManyWithoutMedicamentoNestedInput
-  }
-
-  export type MedicamentoUncheckedUpdateManyWithoutFarmaciaInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    nombre?: StringFieldUpdateOperationsInput | string
-    nombreGenerico?: NullableStringFieldUpdateOperationsInput | string | null
-    presentacion?: EnumPresentacionMedicamentoFieldUpdateOperationsInput | $Enums.PresentacionMedicamento
-    volumenPresentacion?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    unidadMedida?: EnumUnidadMedidaFieldUpdateOperationsInput | $Enums.UnidadMedida
-    stockMinimo?: IntFieldUpdateOperationsInput | number
     activo?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

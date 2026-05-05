@@ -2,7 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
-  ForbiddenException,
+  ConflictException,
 } from '@nestjs/common'
 import { Prisma } from '@ganaderia/database'
 import { PrismaService } from '../../prisma/prisma.service'
@@ -25,13 +25,25 @@ const REQUIEREN_JUSTIFICACION: TipoBajaMedicamento[] = [
 export class InventarioService {
   constructor(private prisma: PrismaService) {}
 
+  /**
+   * Resuelve un medicamento del catálogo de la organización del usuario.
+   * Usado por todos los endpoints que reciben `medicamentoId` en el body.
+   */
+  private async getMedicamentoOrFail(medicamentoId: string, user: UsuarioSesion) {
+    const med = await this.prisma.medicamento.findFirst({
+      where: { id: medicamentoId, organizacionId: user.organizacionId, activo: true },
+    })
+    if (!med) throw new NotFoundException('Medicamento no encontrado')
+    return med
+  }
+
   // ── Stock summary ──────────────────────────────────────────────────────────
 
   async getStock(farmaciaId: string, user: UsuarioSesion) {
     await assertFarmaciaAccess(this.prisma, user, farmaciaId)
 
     const medicamentos = await this.prisma.medicamento.findMany({
-      where: { farmaciaId, activo: true },
+      where: { organizacionId: user.organizacionId, activo: true },
       orderBy: { nombre: 'asc' },
     })
 
@@ -48,11 +60,8 @@ export class InventarioService {
       const preIngreso = rows.find(r => r.estado === 'PRE_INGRESO')?._count.id ?? 0
       const stockOperativo = disponibles + salidas
       return {
-        medicamento: med,
-        disponibles,
-        salidas,
-        preIngreso,
-        stockOperativo,
+        ...med,
+        stock: { disponibles, salidas, preIngreso, stockOperativo },
         alerta: stockOperativo <= med.stockMinimo,
       }
     })
@@ -101,27 +110,16 @@ export class InventarioService {
     return { data: unidades, total, page, totalPages: Math.ceil(total / limit) }
   }
 
-  // ── Alta de unidad (FIFO / PRE_INGRESO, bulk) ─────────────────────────────
+  // ── Alta de unidad (cohorte por costo, bulk) ──────────────────────────────
 
   async altaUnidad(dto: AltaUnidadDto, user: UsuarioSesion) {
-    const medicamento = await this.prisma.medicamento.findFirst({
-      where: { id: dto.medicamentoId, activo: true },
-      include: { farmacia: true },
-    })
-    if (!medicamento) throw new NotFoundException('Medicamento no encontrado')
-    if (medicamento.farmacia.organizacionId !== user.organizacionId) throw new NotFoundException('Medicamento no encontrado')
-    await assertFarmaciaAccess(this.prisma, user, medicamento.farmaciaId)
+    const medicamento = await this.getMedicamentoOrFail(dto.medicamentoId, user)
+    await assertFarmaciaAccess(this.prisma, user, dto.farmaciaId)
 
-    const farmaciaId = medicamento.farmaciaId
+    const farmaciaId = dto.farmaciaId
     const cantidad = dto.cantidad ?? 1
     const costoUnitario = dto.costoUnitario
     const costoPorMedida = Number(costoUnitario) / Number(medicamento.volumenPresentacion)
-
-    // BR-FA-002 (bulk): si ya hay alguna DISPONIBLE → todas las nuevas entran PRE_INGRESO.
-    // Si no hay DISPONIBLE → la primera entra DISPONIBLE, el resto PRE_INGRESO (FIFO mantenido).
-    const hayDisponibles = await this.prisma.unidadMedicamento.count({
-      where: { medicamentoId: dto.medicamentoId, farmaciaId, estado: 'DISPONIBLE' },
-    })
 
     const dataBase = {
       medicamentoId: dto.medicamentoId,
@@ -133,12 +131,21 @@ export class InventarioService {
     }
 
     return this.prisma.$transaction(async (tx) => {
+      // BR-FA-002: si hay cualquier unidad activa, todas las nuevas van a PRE_INGRESO.
+      const estado = await this.determinarEstadoNuevaUnidad(tx, dto.medicamentoId, farmaciaId)
+
       const creadas: Awaited<ReturnType<typeof tx.unidadMedicamento.create>>[] = []
       for (let i = 0; i < cantidad; i++) {
-        const estado = hayDisponibles === 0 && i === 0 ? 'DISPONIBLE' : 'PRE_INGRESO'
         const u = await tx.unidadMedicamento.create({ data: { ...dataBase, estado } })
         creadas.push(u)
       }
+
+      // Si entraron como PRE_INGRESO y no hay cohorte activa, la cohorte más antigua
+      // (otro batch en PI) debe promoverse para volverse activa.
+      if (estado === 'PRE_INGRESO') {
+        await this.promoverPreIngreso(tx, dto.medicamentoId, farmaciaId)
+      }
+
       return {
         cantidad: creadas.length,
         unidades: creadas,
@@ -187,22 +194,17 @@ export class InventarioService {
   }
 
   async crearSalidaTemporal(dto: SalidaTemporalDto, user: UsuarioSesion) {
-    const medicamento = await this.prisma.medicamento.findFirst({
-      where: { id: dto.medicamentoId, activo: true },
-      include: { farmacia: true },
-    })
-    if (!medicamento) throw new NotFoundException('Medicamento no encontrado')
-    if (medicamento.farmacia.organizacionId !== user.organizacionId) throw new NotFoundException('Medicamento no encontrado')
-    await assertFarmaciaAccess(this.prisma, user, medicamento.farmaciaId)
+    const medicamento = await this.getMedicamentoOrFail(dto.medicamentoId, user)
+    await assertFarmaciaAccess(this.prisma, user, dto.farmaciaId)
 
     const medico = await this.prisma.usuario.findFirst({ where: { id: dto.medicoId, organizacionId: user.organizacionId } })
     if (!medico) throw new NotFoundException('Médico no encontrado')
 
-    // FIFO: tomar las N unidades más antiguas en DISPONIBLE o PRE_INGRESO
+    // FIFO: tomar las N unidades más antiguas en DISPONIBLE o PRE_INGRESO de esta farmacia
     const candidatas = await this.prisma.unidadMedicamento.findMany({
       where: {
         medicamentoId: medicamento.id,
-        farmaciaId: medicamento.farmaciaId,
+        farmaciaId: dto.farmaciaId,
         estado: { in: ['DISPONIBLE', 'PRE_INGRESO'] },
       },
       orderBy: { fechaEntrada: 'asc' },
@@ -243,10 +245,12 @@ export class InventarioService {
   async registrarRegreso(salidaId: string, dto: RegresoUnidadDto, user: UsuarioSesion) {
     const salida = await this.prisma.salidaTemporal.findFirst({
       where: { id: salidaId },
-      include: { unidadMedicamento: { include: { farmacia: true, medicamento: true } } },
+      include: { unidadMedicamento: { include: { medicamento: true } } },
     })
     if (!salida) throw new NotFoundException('Salida no encontrada')
-    if (salida.unidadMedicamento.farmacia.organizacionId !== user.organizacionId) throw new NotFoundException('Salida no encontrada')
+    if (salida.unidadMedicamento.medicamento.organizacionId !== user.organizacionId) {
+      throw new NotFoundException('Salida no encontrada')
+    }
     await assertFarmaciaAccess(this.prisma, user, salida.unidadMedicamento.farmaciaId)
     if (salida.fechaRegreso) throw new BadRequestException('Esta salida ya tiene regreso registrado')
     if (salida.unidadMedicamento.estado !== 'SALIDA_TEMPORAL') {
@@ -293,10 +297,12 @@ export class InventarioService {
 
     const unidad = await this.prisma.unidadMedicamento.findFirst({
       where: { id: dto.unidadMedicamentoId },
-      include: { farmacia: true, medicamento: true },
+      include: { medicamento: true },
     })
     if (!unidad) throw new NotFoundException('Unidad no encontrada')
-    if (unidad.farmacia.organizacionId !== user.organizacionId) throw new NotFoundException('Unidad no encontrada')
+    if (unidad.medicamento.organizacionId !== user.organizacionId) {
+      throw new NotFoundException('Unidad no encontrada')
+    }
     await assertFarmaciaAccess(this.prisma, user, unidad.farmaciaId)
     if (!['DISPONIBLE', 'PRE_INGRESO'].includes(unidad.estado)) {
       throw new BadRequestException(`La unidad no puede darse de baja (estado: ${unidad.estado})`)
@@ -330,18 +336,13 @@ export class InventarioService {
   // ── Ajuste de inventario (SUPERUSUARIO) ────────────────────────────────────
 
   async crearAjuste(dto: CreateAjusteInventarioDto, user: UsuarioSesion) {
-    const medicamento = await this.prisma.medicamento.findFirst({
-      where: { id: dto.medicamentoId, activo: true },
-      include: { farmacia: true },
-    })
-    if (!medicamento) throw new NotFoundException('Medicamento no encontrado')
-    if (medicamento.farmacia.organizacionId !== user.organizacionId) throw new NotFoundException('Medicamento no encontrado')
-    await assertFarmaciaAccess(this.prisma, user, medicamento.farmaciaId)
+    const medicamento = await this.getMedicamentoOrFail(dto.medicamentoId, user)
+    await assertFarmaciaAccess(this.prisma, user, dto.farmaciaId)
 
     const stockOperativo = await this.prisma.unidadMedicamento.count({
       where: {
         medicamentoId: medicamento.id,
-        farmaciaId: medicamento.farmaciaId,
+        farmaciaId: dto.farmaciaId,
         estado: { in: ['DISPONIBLE', 'PRE_INGRESO', 'SALIDA_TEMPORAL'] },
       },
     })
@@ -361,7 +362,7 @@ export class InventarioService {
       const bajables = await this.prisma.unidadMedicamento.count({
         where: {
           medicamentoId: medicamento.id,
-          farmaciaId: medicamento.farmaciaId,
+          farmaciaId: dto.farmaciaId,
           estado: { in: ['DISPONIBLE', 'PRE_INGRESO'] },
         },
       })
@@ -376,7 +377,7 @@ export class InventarioService {
       const ajuste = await tx.ajusteInventario.create({
         data: {
           medicamentoId: medicamento.id,
-          farmaciaId: medicamento.farmaciaId,
+          farmaciaId: dto.farmaciaId,
           cantidadAnterior,
           cantidadNueva,
           delta,
@@ -391,18 +392,15 @@ export class InventarioService {
       })
 
       if (delta > 0) {
-        // Crear N unidades nuevas. Aplicamos BR-FA-002 a la primera (DISPONIBLE si no hay stock activo).
-        const hayDisponibles = await tx.unidadMedicamento.count({
-          where: { medicamentoId: medicamento.id, farmaciaId: medicamento.farmaciaId, estado: 'DISPONIBLE' },
-        })
+        // Crear N unidades nuevas como un solo batch (mismo costo) — BR-FA-002.
         const costoUnitario = dto.costoUnitario!
         const costoPorMedida = Number(costoUnitario) / Number(medicamento.volumenPresentacion)
+        const estado = await this.determinarEstadoNuevaUnidad(tx, medicamento.id, dto.farmaciaId)
         for (let i = 0; i < delta; i++) {
-          const estado = hayDisponibles === 0 && i === 0 ? 'DISPONIBLE' : 'PRE_INGRESO'
           await tx.unidadMedicamento.create({
             data: {
               medicamentoId: medicamento.id,
-              farmaciaId: medicamento.farmaciaId,
+              farmaciaId: dto.farmaciaId,
               costoUnitario,
               costoPorMedida,
               estado,
@@ -411,12 +409,15 @@ export class InventarioService {
             },
           })
         }
+        if (estado === 'PRE_INGRESO') {
+          await this.promoverPreIngreso(tx, medicamento.id, dto.farmaciaId)
+        }
       } else {
         // Bajas newest-first
         const candidatas = await tx.unidadMedicamento.findMany({
           where: {
             medicamentoId: medicamento.id,
-            farmaciaId: medicamento.farmaciaId,
+            farmaciaId: dto.farmaciaId,
             estado: { in: ['DISPONIBLE', 'PRE_INGRESO'] },
           },
           orderBy: { fechaEntrada: 'desc' },
@@ -439,7 +440,7 @@ export class InventarioService {
           if (u.estado === 'DISPONIBLE') huboDisponible = true
         }
         if (huboDisponible) {
-          await this.promoverPreIngreso(tx, medicamento.id, medicamento.farmaciaId)
+          await this.promoverPreIngreso(tx, medicamento.id, dto.farmaciaId)
         }
       }
 
@@ -482,6 +483,68 @@ export class InventarioService {
 
   // ── Privados ───────────────────────────────────────────────────────────────
 
+  /**
+   * BR-FA-002: si existe cualquier unidad activa (DISPONIBLE, SALIDA_TEMPORAL o
+   * PRE_INGRESO), las nuevas entran como PRE_INGRESO para preservar FIFO.
+   * Solo van a DISPONIBLE cuando no hay absolutamente ninguna unidad previa.
+   */
+  private async determinarEstadoNuevaUnidad(
+    tx: Prisma.TransactionClient,
+    medicamentoId: string,
+    farmaciaId: string,
+  ): Promise<'DISPONIBLE' | 'PRE_INGRESO'> {
+    const hayAlguna = await tx.unidadMedicamento.count({
+      where: { medicamentoId, farmaciaId, estado: { in: ['DISPONIBLE', 'SALIDA_TEMPORAL', 'PRE_INGRESO'] } },
+    })
+    return hayAlguna > 0 ? 'PRE_INGRESO' : 'DISPONIBLE'
+  }
+
+  /**
+   * Promueve manualmente todas las unidades PRE_INGRESO de un precio dado
+   * a DISPONIBLE. Requiere que no haya cohorte activa con distinto precio.
+   */
+  async promoverPreIngresoManual(
+    medicamentoId: string,
+    farmaciaId: string,
+    costoPorMedida: number,
+    user: UsuarioSesion,
+  ) {
+    const medicamento = await this.getMedicamentoOrFail(medicamentoId, user)
+    await assertFarmaciaAccess(this.prisma, user, farmaciaId)
+
+    return this.prisma.$transaction(async tx => {
+      const cohortActiva = await tx.unidadMedicamento.findFirst({
+        where: { medicamentoId, farmaciaId, estado: { in: ['DISPONIBLE', 'SALIDA_TEMPORAL'] } },
+        select: { costoPorMedida: true },
+      })
+
+      if (cohortActiva) {
+        const costoActual = Number(cohortActiva.costoPorMedida)
+        if (Math.abs(costoActual - costoPorMedida) > 0.0001) {
+          throw new ConflictException(
+            `Hay una cohorte activa con precio diferente (${costoActual.toFixed(4)}); espera a que se agote antes de promover este batch`,
+          )
+        }
+      }
+
+      const result = await tx.unidadMedicamento.updateMany({
+        where: { medicamentoId, farmaciaId, estado: 'PRE_INGRESO', costoPorMedida },
+        data: { estado: 'DISPONIBLE', fechaEstadoCambio: new Date() },
+      })
+
+      if (result.count === 0) {
+        throw new NotFoundException('No hay unidades PRE_INGRESO con ese precio para promover')
+      }
+
+      return { promovidas: result.count, medicamento: { id: medicamento.id, nombre: medicamento.nombre } }
+    })
+  }
+
+  /**
+   * BR-FA-003: cuando no queda cohorte activa (DISPONIBLE = 0 y SALIDA_TEMPORAL = 0),
+   * promueve TODO el batch PRE_INGRESO más antiguo (todas las unidades que comparten
+   * el costoPorMedida de la unidad PI más antigua) a DISPONIBLE de una sola vez.
+   */
   private async promoverPreIngreso(
     tx: Prisma.TransactionClient,
     medicamentoId: string,
@@ -492,16 +555,21 @@ export class InventarioService {
     })
     if (hayActivos > 0) return
 
-    // Promover la unidad PRE_INGRESO más antigua
     const candidato = await tx.unidadMedicamento.findFirst({
       where: { medicamentoId, farmaciaId, estado: 'PRE_INGRESO' },
       orderBy: { fechaEntrada: 'asc' },
+      select: { costoPorMedida: true },
     })
-    if (candidato) {
-      await tx.unidadMedicamento.update({
-        where: { id: candidato.id },
-        data: { estado: 'DISPONIBLE', fechaEstadoCambio: new Date() },
-      })
-    }
+    if (!candidato) return
+
+    await tx.unidadMedicamento.updateMany({
+      where: {
+        medicamentoId,
+        farmaciaId,
+        estado: 'PRE_INGRESO',
+        costoPorMedida: candidato.costoPorMedida,
+      },
+      data: { estado: 'DISPONIBLE', fechaEstadoCambio: new Date() },
+    })
   }
 }

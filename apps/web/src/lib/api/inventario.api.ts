@@ -48,13 +48,7 @@ export interface SalidaTemporal {
 }
 
 export interface StockResumen {
-  medicamentos: (MedicamentoConStock & {
-    disponibles: number
-    salidas: number
-    preIngreso: number
-    stockOperativo: number
-    alerta: boolean
-  })[]
+  medicamentos: MedicamentoConStock[]
   totalAlertas: number
 }
 
@@ -91,7 +85,13 @@ export const inventarioApi = {
     return api.get<PaginatedUnidades>(`/inventario/unidades?${qs}`)
   },
 
-  altaUnidad: (data: { medicamentoId: string; costoUnitario: number; cantidad?: number; notasProveedor?: string }) =>
+  altaUnidad: (data: {
+    medicamentoId: string
+    farmaciaId: string
+    costoUnitario: number
+    cantidad?: number
+    notasProveedor?: string
+  }) =>
     api.post<{ cantidad: number; unidades: UnidadMedicamento[]; medicamento: { id: string; nombre: string } }>(
       '/inventario/alta',
       data,
@@ -104,7 +104,13 @@ export const inventarioApi = {
     return api.get<PaginatedSalidas>(`/inventario/salidas?${qs}`)
   },
 
-  crearSalida: (data: { medicamentoId: string; cantidad: number; medicoId: string; notas?: string }) =>
+  crearSalida: (data: {
+    medicamentoId: string
+    farmaciaId: string
+    cantidad: number
+    medicoId: string
+    notas?: string
+  }) =>
     api.post<{ cantidad: number; salidas: SalidaTemporal[]; medicamento: { id: string; nombre: string } }>(
       '/inventario/salidas',
       data,
@@ -119,9 +125,20 @@ export const inventarioApi = {
     justificacion?: string
   }) => api.post<UnidadMedicamento>('/inventario/bajas', data),
 
+  promoverPreIngreso: (data: {
+    medicamentoId: string
+    farmaciaId: string
+    costoPorMedida: number
+  }) =>
+    api.post<{ promovidas: number; medicamento: { id: string; nombre: string } }>(
+      '/inventario/promover-preingreso',
+      data,
+    ),
+
   // ── Ajustes (SUPERUSUARIO) ────────────────────────────────────────────────
   crearAjuste: (data: {
     medicamentoId: string
+    farmaciaId: string
     cantidadNueva: number
     costoUnitario?: number
     justificacion: string

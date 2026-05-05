@@ -3,11 +3,13 @@ import {
   BadRequestException, ForbiddenException,
 } from '@nestjs/common'
 import { Prisma } from '@ganaderia/database'
+import { UsuarioSesion } from '@ganaderia/shared'
 import { PrismaService } from '../../prisma/prisma.service'
 import { CreateAnimalDto } from './dto/create-animal.dto'
 import { EgresoAnimalDto } from './dto/egreso-animal.dto'
 import { CreateLoteDto } from './dto/create-lote.dto'
 import { QueryAnimalesDto } from './dto/query-animales.dto'
+import { getGruposCorralesAccesibles, resolverFiltroGrupos } from '../../common/utils/grupos-corrales-access.util'
 
 const ANIMAL_INCLUDE = {
   corral: {
@@ -28,16 +30,19 @@ const ANIMAL_INCLUDE = {
 export class AnimalesService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(organizacionId: string, query: QueryAnimalesDto) {
+  async findAll(user: UsuarioSesion, query: QueryAnimalesDto) {
     const { page = 1, limit = 50, search, corralId, grupoCorralesId, sexo, estado = 'ACTIVO' } = query
     const skip = (page - 1) * limit
 
+    const filtro = await resolverFiltroGrupos(this.prisma, user, grupoCorralesId)
+    if (!filtro) return { data: [], total: 0, page, limit, totalPages: 0 }
+
     const where: Prisma.AnimalWhereInput = {
-      organizacionId,
+      organizacionId: user.organizacionId,
       estado,
       ...(sexo && { sexo }),
       ...(corralId && { corralId }),
-      ...(grupoCorralesId && { corral: { grupoCorralesId } }),
+      corral: { grupoCorralesId: filtro.filter },
       ...(search && {
         OR: [
           { areteSiniiga: { contains: search, mode: 'insensitive' } },
@@ -74,9 +79,16 @@ export class AnimalesService {
     return { data, total, page, limit, totalPages: Math.ceil(total / limit) }
   }
 
-  async findOne(id: string, organizacionId: string) {
+  async findOne(id: string, user: UsuarioSesion) {
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) throw new NotFoundException('Animal no encontrado')
+
     const animal = await this.prisma.animal.findFirst({
-      where: { id, organizacionId },
+      where: {
+        id,
+        organizacionId: user.organizacionId,
+        corral: { grupoCorralesId: { in: accesibles } },
+      },
       include: {
         ...ANIMAL_INCLUDE,
         asignacionesArete: {
@@ -109,17 +121,24 @@ export class AnimalesService {
     }
   }
 
-  async create(dto: CreateAnimalDto, organizacionId: string, createdById: string) {
-    // Validar corral
+  async create(dto: CreateAnimalDto, user: UsuarioSesion) {
+    // Validar corral está en un grupo accesible para el usuario
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) throw new ForbiddenException('Sin acceso a grupos de corrales')
+
     const corral = await this.prisma.corral.findFirst({
-      where: { id: dto.corralId, activo: true, grupoCorrales: { organizacionId } },
+      where: {
+        id: dto.corralId,
+        activo: true,
+        grupoCorrales: { organizacionId: user.organizacionId, id: { in: accesibles } },
+      },
     })
-    if (!corral) throw new BadRequestException('Corral no encontrado o inactivo')
+    if (!corral) throw new BadRequestException('Corral no encontrado o sin acceso')
 
     // Validar unicidad SINIIGA
     if (dto.areteSiniiga) {
       const existe = await this.prisma.animal.findFirst({
-        where: { organizacionId, areteSiniiga: dto.areteSiniiga },
+        where: { organizacionId: user.organizacionId, areteSiniiga: dto.areteSiniiga },
       })
       if (existe) throw new ConflictException(`El arete SINIIGA "${dto.areteSiniiga}" ya está registrado`)
     }
@@ -127,7 +146,7 @@ export class AnimalesService {
     // Validar arete blanco disponible
     if (dto.areteBlancoId) {
       const arete = await this.prisma.areteBlanco.findFirst({
-        where: { id: dto.areteBlancoId, organizacionId, estado: 'DISPONIBLE' },
+        where: { id: dto.areteBlancoId, organizacionId: user.organizacionId, estado: 'DISPONIBLE' },
       })
       if (!arete) throw new BadRequestException('Arete blanco no disponible o no encontrado')
     }
@@ -135,7 +154,7 @@ export class AnimalesService {
     const animal = await this.prisma.$transaction(async (tx) => {
       const nuevo = await tx.animal.create({
         data: {
-          organizacionId,
+          organizacionId: user.organizacionId,
           corralId: dto.corralId,
           loteId: dto.loteId,
           areteSiniiga: dto.areteSiniiga,
@@ -143,7 +162,7 @@ export class AnimalesService {
           pesoEntrada: dto.pesoEntrada,
           fechaEntrada: new Date(dto.fechaEntrada),
           notas: dto.notas,
-          createdById,
+          createdById: user.id,
         },
         include: ANIMAL_INCLUDE,
       })
@@ -153,7 +172,7 @@ export class AnimalesService {
           data: {
             animalId: nuevo.id,
             areteBlancoId: dto.areteBlancoId,
-            asignadoPorId: createdById,
+            asignadoPorId: user.id,
           },
         })
         await tx.areteBlanco.update({
@@ -165,11 +184,11 @@ export class AnimalesService {
       return nuevo
     })
 
-    return this.findOne(animal.id, organizacionId)
+    return this.findOne(animal.id, user)
   }
 
-  async egreso(id: string, dto: EgresoAnimalDto, organizacionId: string) {
-    const animal = await this.findOne(id, organizacionId)
+  async egreso(id: string, dto: EgresoAnimalDto, user: UsuarioSesion) {
+    const animal = await this.findOne(id, user)
     if (animal.estado !== 'ACTIVO') throw new BadRequestException('El animal no está activo')
 
     return this.prisma.animal.update({
@@ -185,8 +204,17 @@ export class AnimalesService {
     })
   }
 
-  async liberarAreteBlanco(animalId: string, organizacionId: string, liberadoPorId: string) {
-    const animal = await this.prisma.animal.findFirst({ where: { id: animalId, organizacionId } })
+  async liberarAreteBlanco(animalId: string, user: UsuarioSesion) {
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) throw new NotFoundException('Animal no encontrado')
+
+    const animal = await this.prisma.animal.findFirst({
+      where: {
+        id: animalId,
+        organizacionId: user.organizacionId,
+        corral: { grupoCorralesId: { in: accesibles } },
+      },
+    })
     if (!animal) throw new NotFoundException('Animal no encontrado')
 
     const asignacion = await this.prisma.asignacionAreteBlanco.findFirst({
@@ -197,7 +225,7 @@ export class AnimalesService {
     await this.prisma.$transaction([
       this.prisma.asignacionAreteBlanco.update({
         where: { id: asignacion.id },
-        data: { fechaLiberacion: new Date(), liberadoPorId },
+        data: { fechaLiberacion: new Date(), liberadoPorId: user.id },
       }),
       this.prisma.areteBlanco.update({
         where: { id: asignacion.areteBlancoId },
@@ -210,9 +238,17 @@ export class AnimalesService {
 
   // ── Lotes ────────────────────────────────────────────────────────────────
 
-  async findAllLotes(organizacionId: string) {
+  async findAllLotes(user: UsuarioSesion) {
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) return []
+
     return this.prisma.lote.findMany({
-      where: { corral: { grupoCorrales: { organizacionId } } },
+      where: {
+        corral: {
+          grupoCorrales: { organizacionId: user.organizacionId },
+          grupoCorralesId: { in: accesibles },
+        },
+      },
       orderBy: { fechaEntrada: 'desc' },
       include: {
         corral: { select: { id: true, nombre: true, grupoCorrales: { select: { id: true, nombre: true } } } },
@@ -221,11 +257,18 @@ export class AnimalesService {
     })
   }
 
-  async createLote(dto: CreateLoteDto, organizacionId: string, createdById: string) {
+  async createLote(dto: CreateLoteDto, user: UsuarioSesion) {
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) throw new ForbiddenException('Sin acceso a grupos de corrales')
+
     const corral = await this.prisma.corral.findFirst({
-      where: { id: dto.corralId, activo: true, grupoCorrales: { organizacionId } },
+      where: {
+        id: dto.corralId,
+        activo: true,
+        grupoCorrales: { organizacionId: user.organizacionId, id: { in: accesibles } },
+      },
     })
-    if (!corral) throw new BadRequestException('Corral no encontrado o inactivo')
+    if (!corral) throw new BadRequestException('Corral no encontrado o sin acceso')
 
     return this.prisma.lote.create({
       data: {
@@ -234,7 +277,7 @@ export class AnimalesService {
         procedencia: dto.procedencia,
         fechaEntrada: dto.fechaEntrada ? new Date(dto.fechaEntrada) : new Date(),
         numAnimalesEsperados: dto.numAnimalesEsperados,
-        createdById,
+        createdById: user.id,
       },
       include: {
         corral: { select: { id: true, nombre: true, grupoCorrales: { select: { id: true, nombre: true } } } },

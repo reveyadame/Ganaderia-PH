@@ -5,9 +5,9 @@ Documento de planificación por etapas. Cada etapa tiene entregables concretos, 
 ---
 
 ## Estado actual
-**Fase:** Etapas 1–8 completadas. Etapa 9 en curso: módulos transversales (Notificaciones, Catálogo de Raciones), separación de espacios `(app)/` desktop y `operador/` mobile, consolidación del rol DIRECTOR.
+**Fase:** Etapas 1–9 completadas.
 **Próximo:** Etapa 10 (Testing y Calidad).
-**Última actualización:** 2026-05-02
+**Última actualización:** 2026-05-04
 
 ---
 
@@ -205,7 +205,7 @@ Documento de planificación por etapas. Cada etapa tiene entregables concretos, 
 
 ---
 
-## Etapa 9 — Módulos transversales y separación de espacios 🚧 EN CURSO
+## Etapa 9 — Módulos transversales y separación de espacios ✅ COMPLETADO
 
 **Dependencia:** Etapas 2–8
 
@@ -213,24 +213,37 @@ Documento de planificación por etapas. Cada etapa tiene entregables concretos, 
 
 #### Backend
 - [x] Consolidación rol `ADMIN → DIRECTOR` (mig. `consolidate_director_role`). `ActividadGuard` actualizado: `ROLES_SIN_RESTRICCION = [SUPERUSUARIO, DIRECTOR]` (DEC-018).
-- [x] Módulo `notificaciones` — CRUD + lectura + confirmación + DTO de prioridad (DEC-020).
+- [x] Módulo `notificaciones` — CRUD + lectura + confirmación + DTO de prioridad (DEC-020). Bug `marcarLeida` corregido (upsert no persistía `leidaEn`).
 - [x] Modelos `RacionCatalogo` + campo `nombre` en `RacionDefinicion` + FK opcional `catalogoId` (DEC-019).
 - [x] Módulo `raciones-catalogo` — CRUD del catálogo por organización.
+- [x] Catálogo de medicamentos a nivel organización; stock y costo siguen por farmacia (DEC-023).
+- [x] Alta de `UnidadMedicamento` simplificada: cualquier unidad activa existente → `PRE_INGRESO`; sin stock → `DISPONIBLE` (DEC-024).
+- [x] `POST /inventario/promover-preingreso` — promoción manual de batch PRE_INGRESO a DISPONIBLE; bloqueado con `409` si hay cohorte activa con precio distinto (DEC-024).
+- [x] Dashboard (`GET /dashboard/*`) abierto a DIRECTOR con escopo a sus GrupoCorrales asignados.
 
 #### Frontend
 - [x] Espacio `operador/` mobile-first separado de `(app)/` desktop (DEC-021): layout, header móvil, home del operador.
 - [x] Páginas movidas: `operador/animales/nuevo`, `operador/tratamientos`, `operador/comederos`, `operador/raciones`.
 - [x] Alta de animal sin selección de corral — solo grupo, asignación automática (DEC-022).
 - [x] `/admin/raciones-catalogo` — CRUD del catálogo de raciones.
+- [x] `/admin/medicamentos` — catálogo de medicamentos a nivel organización (DEC-023).
 - [x] `/admin/notificaciones` — emisión y listado de notificaciones.
 - [x] Banner móvil para director cuando entra desde dispositivo pequeño.
 - [x] `(app)/raciones/historial` — historial de definiciones por corral.
+- [x] Sidebar/layout abierto a DIRECTOR con redirección correcta por rol y actividad.
+- [x] Dashboard para DIRECTOR: KPIs, stock crítico y sección de grupos con filtrado por actividades del usuario.
+- [x] UI de promoción PRE_INGRESO en `/farmacia/inventario`: agrupación por batch, botón bloqueado cuando la cohorte activa tiene precio distinto.
+- [x] `NotificationBell` usa `createPortal` en `document.body` para evitar clipping en iOS Safari dentro de contenedor `overflow:hidden` del `MobileShell`.
+- [x] `CattleIcon` — componente SVG propio (silueta de cabeza de vaca) compatible con Lucide; reemplaza `PawPrint` en todo el proyecto.
 
 ### Criterios cumplidos
 - Director y operador ven dos UIs distintas según su rol.
 - Operador no elige corral al registrar; el director puede reasignar después.
 - Las raciones se nombran desde el catálogo y mantienen trazabilidad histórica vía `catalogoId`.
 - DIRECTOR puede emitir notificaciones críticas con confirmación al OPERADOR.
+- Las notificaciones se marcan como leídas correctamente al abrir el drawer.
+- El drawer de notificaciones se muestra sobre cualquier elemento del layout en iOS Safari.
+- Stock PRE_INGRESO no se puede promover si hay cohorte activa con precio diferente.
 
 ---
 

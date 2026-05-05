@@ -1,17 +1,22 @@
 import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common'
+import { UsuarioSesion } from '@ganaderia/shared'
 import { PrismaService } from '../../prisma/prisma.service'
 import { CreateGrupoCorralesDto } from './dto/create-grupo-corrales.dto'
 import { UpdateGrupoCorralesDto } from './dto/update-grupo-corrales.dto'
+import { getGruposCorralesAccesibles } from '../../common/utils/grupos-corrales-access.util'
 
 @Injectable()
 export class GruposCorralesService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(organizacionId: string, gruposPermitidosIds?: string[]) {
+  async findAll(user: UsuarioSesion) {
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) return []
+
     return this.prisma.grupoCorrales.findMany({
       where: {
-        organizacionId,
-        ...(gruposPermitidosIds ? { id: { in: gruposPermitidosIds } } : {}),
+        organizacionId: user.organizacionId,
+        id: { in: accesibles },
       },
       orderBy: { nombre: 'asc' },
       include: {
@@ -21,9 +26,12 @@ export class GruposCorralesService {
     })
   }
 
-  async findOne(id: string, organizacionId: string) {
+  async findOne(id: string, user: UsuarioSesion) {
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (!accesibles.includes(id)) throw new NotFoundException('Grupo de corrales no encontrado')
+
     const grupo = await this.prisma.grupoCorrales.findFirst({
-      where: { id, organizacionId },
+      where: { id, organizacionId: user.organizacionId },
       include: {
         farmacia: { select: { id: true, nombre: true } },
         corrales: { where: { activo: true }, orderBy: { nombre: 'asc' } },
@@ -51,7 +59,8 @@ export class GruposCorralesService {
   }
 
   async update(id: string, dto: UpdateGrupoCorralesDto, organizacionId: string) {
-    await this.findOne(id, organizacionId)
+    const grupo = await this.prisma.grupoCorrales.findFirst({ where: { id, organizacionId } })
+    if (!grupo) throw new NotFoundException('Grupo de corrales no encontrado')
 
     if (dto.farmaciaId) {
       const farmaciaExiste = await this.prisma.farmacia.findFirst({
@@ -75,7 +84,8 @@ export class GruposCorralesService {
   }
 
   async remove(id: string, organizacionId: string) {
-    await this.findOne(id, organizacionId)
+    const grupo = await this.prisma.grupoCorrales.findFirst({ where: { id, organizacionId } })
+    if (!grupo) throw new NotFoundException('Grupo de corrales no encontrado')
 
     const tieneAnimales = await this.prisma.animal.count({
       where: { corral: { grupoCorralesId: id }, estado: 'ACTIVO' },

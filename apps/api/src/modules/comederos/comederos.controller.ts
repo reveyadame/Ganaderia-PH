@@ -55,7 +55,7 @@ export class ComederoController {
   @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR, TipoUsuario.OPERADOR)
   @RequiereActividad(ActividadUsuario.COMEDEROS)
   registrarLectura(@Body() dto: CreateLecturaDto, @CurrentUser() user: UsuarioSesion) {
-    return this.service.registrarLectura(dto, user.id, user.organizacionId)
+    return this.service.registrarLectura(dto, user)
   }
 
   @Get('lecturas')
@@ -69,7 +69,7 @@ export class ComederoController {
     @Query('limite') limite: string,
     @CurrentUser() user: UsuarioSesion,
   ) {
-    return this.service.getLecturasCorral(corralId, user.organizacionId, limite ? parseInt(limite) : 20)
+    return this.service.getLecturasCorral(corralId, user, limite ? parseInt(limite) : 20)
   }
 
   // ── Dashboard ─────────────────────────────────────────────────────────────
@@ -79,8 +79,7 @@ export class ComederoController {
   @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   @RequiereActividad(ActividadUsuario.COMEDEROS, ActividadUsuario.REPORTES)
   getResumenGlobal(@CurrentUser() user: UsuarioSesion) {
-    const filtro = user.tipo === TipoUsuario.SUPERUSUARIO ? undefined : user.gruposCorralesIds
-    return this.service.getResumenGlobal(user.organizacionId, filtro)
+    return this.service.getResumenGlobal(user)
   }
 
   @Get('historial')
@@ -89,9 +88,8 @@ export class ComederoController {
   @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
   @RequiereActividad(ActividadUsuario.COMEDEROS, ActividadUsuario.REPORTES)
   listarHistorial(@Query('limit') limit: string | undefined, @CurrentUser() user: UsuarioSesion) {
-    const filtro = user.tipo === TipoUsuario.SUPERUSUARIO ? undefined : user.gruposCorralesIds
     const parsed = limit ? Math.min(Math.max(parseInt(limit), 1), 500) : 100
-    return this.service.listarHistorialLecturas(user.organizacionId, filtro, parsed)
+    return this.service.listarHistorialLecturas(user, parsed)
   }
 
   @Get('estado-actual')
@@ -103,6 +101,6 @@ export class ComederoController {
     @Query('grupoCorralesId') grupoCorralesId: string,
     @CurrentUser() user: UsuarioSesion,
   ) {
-    return this.service.getEstadoActual(grupoCorralesId, user.organizacionId)
+    return this.service.getEstadoActual(grupoCorralesId, user)
   }
 }

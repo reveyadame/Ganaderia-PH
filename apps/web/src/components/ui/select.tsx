@@ -15,13 +15,14 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 export function Select({ label, error, hint, options, placeholder, className, id, ...props }: SelectProps) {
-  const selectId = id ?? label?.toLowerCase().replace(/\s+/g, '-')
+  const cleanedLabel = label?.replace(/\s*\*+\s*$/, '')
+  const selectId = id ?? cleanedLabel?.toLowerCase().replace(/\s+/g, '-')
 
   return (
     <div className="space-y-1.5">
-      {label && (
+      {cleanedLabel && (
         <label htmlFor={selectId} className="block text-[13px] font-medium text-foreground">
-          {label}
+          {cleanedLabel}
           {props.required && <span className="text-danger ml-0.5">*</span>}
         </label>
       )}

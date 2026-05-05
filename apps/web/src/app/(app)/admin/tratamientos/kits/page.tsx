@@ -9,8 +9,7 @@ import {
   CreateTemplateInput,
   CreateTemplateItemInput,
 } from '@/lib/api/tratamientos.api'
-import { medicamentosApi, MedicamentoConStock } from '@/lib/api/medicamentos.api'
-import { farmaciasApi } from '@/lib/api/farmacias.api'
+import { medicamentosApi, Medicamento } from '@/lib/api/medicamentos.api'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -43,7 +42,6 @@ export default function KitsPage() {
   const [deleteTarget, setDeleteTarget] = useState<TratamientoTemplate | null>(null)
   const [form, setForm] = useState({ ...emptyForm })
   const [items, setItems] = useState<FormItem[]>([])
-  const [farmaciaId, setFarmaciaId] = useState('')
   const [newItem, setNewItem] = useState<Partial<FormItem>>({
     dosis: 1,
     unidadDosis: UnidadMedida.ML,
@@ -54,19 +52,12 @@ export default function KitsPage() {
     queryFn: tratamientoTemplatesApi.findAll,
   })
 
-  const { data: farmacias } = useQuery({
-    queryKey: ['farmacias'],
-    queryFn: farmaciasApi.findAll,
-  })
-
   const { data: medicamentos } = useQuery({
-    queryKey: ['medicamentos', farmaciaId],
-    queryFn: () => medicamentosApi.findAll(farmaciaId),
-    enabled: !!farmaciaId,
+    queryKey: ['medicamentos'],
+    queryFn: medicamentosApi.findAll,
   })
 
-  const farmaciaOptions = (farmacias ?? []).map(f => ({ value: f.id, label: f.nombre }))
-  const medicamentoOptions = (medicamentos ?? []).map((m: MedicamentoConStock) => ({
+  const medicamentoOptions = (medicamentos ?? []).map((m: Medicamento) => ({
     value: m.id,
     label: `${m.nombre} (${m.unidadMedida})`,
   }))
@@ -106,7 +97,6 @@ export default function KitsPage() {
     setEditTarget(null)
     setForm({ ...emptyForm })
     setItems([])
-    setFarmaciaId(farmacias?.[0]?.id ?? '')
     setNewItem({ dosis: 1, unidadDosis: UnidadMedida.ML })
     setModalOpen(true)
   }
@@ -124,7 +114,6 @@ export default function KitsPage() {
         medicamentoNombre: item.medicamento.nombre,
       }))
     )
-    setFarmaciaId(farmacias?.[0]?.id ?? '')
     setNewItem({ dosis: 1, unidadDosis: UnidadMedida.ML })
     setModalOpen(true)
   }
@@ -136,7 +125,7 @@ export default function KitsPage() {
 
   function addItem() {
     if (!newItem.medicamentoId || !newItem.dosis || !newItem.unidadDosis) return
-    const med = medicamentos?.find((m: MedicamentoConStock) => m.id === newItem.medicamentoId)
+    const med = medicamentos?.find((m: Medicamento) => m.id === newItem.medicamentoId)
     itemKey++
     setItems(prev => [
       ...prev,
@@ -306,17 +295,10 @@ export default function KitsPage() {
               Agregar medicamento
             </p>
             <Select
-              label="Farmacia"
-              value={farmaciaId}
-              onChange={e => setFarmaciaId(e.target.value)}
-              options={[{ value: '', label: 'Selecciona farmacia...' }, ...farmaciaOptions]}
-            />
-            <Select
               label="Medicamento"
               value={newItem.medicamentoId ?? ''}
               onChange={e => setNewItem(n => ({ ...n, medicamentoId: e.target.value }))}
               options={[{ value: '', label: 'Selecciona medicamento...' }, ...medicamentoOptions]}
-              disabled={!farmaciaId}
             />
             <div className="flex gap-2">
               <Input

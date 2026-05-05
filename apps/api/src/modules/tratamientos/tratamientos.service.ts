@@ -5,8 +5,10 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common'
 import { Prisma } from '@ganaderia/database'
+import { UsuarioSesion } from '@ganaderia/shared'
 import { PrismaService } from '../../prisma/prisma.service'
 import { CreateTratamientoDto } from './dto/create-tratamiento.dto'
+import { getGruposCorralesAccesibles } from '../../common/utils/grupos-corrales-access.util'
 
 interface ItemParaAplicar {
   medicamentoId: string
@@ -18,9 +20,16 @@ interface ItemParaAplicar {
 export class TratamientosService {
   constructor(private prisma: PrismaService) {}
 
-  async findByAnimal(animalId: string, organizacionId: string) {
+  async findByAnimal(animalId: string, user: UsuarioSesion) {
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) throw new NotFoundException('Animal no encontrado')
+
     const animal = await this.prisma.animal.findFirst({
-      where: { id: animalId, organizacionId },
+      where: {
+        id: animalId,
+        organizacionId: user.organizacionId,
+        corral: { grupoCorralesId: { in: accesibles } },
+      },
     })
     if (!animal) throw new NotFoundException('Animal no encontrado')
 
@@ -39,15 +48,16 @@ export class TratamientosService {
     })
   }
 
-  async listarRecientes(organizacionId: string, gruposCorralesIds: string[], limit = 50) {
-    const gruposFilter = gruposCorralesIds.length > 0
-      ? { animal: { corral: { grupoCorralesId: { in: gruposCorralesIds } } } }
-      : {}
+  async listarRecientes(user: UsuarioSesion, limit = 50) {
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) return []
 
     return this.prisma.aplicacionTratamiento.findMany({
       where: {
-        animal: { organizacionId },
-        ...gruposFilter,
+        animal: {
+          organizacionId: user.organizacionId,
+          corral: { grupoCorralesId: { in: accesibles } },
+        },
       },
       orderBy: { fechaAplicacion: 'desc' },
       take: limit,
@@ -83,7 +93,10 @@ export class TratamientosService {
     })
   }
 
-  async create(dto: CreateTratamientoDto, aplicadoPorId: string, organizacionId: string) {
+  async create(dto: CreateTratamientoDto, user: UsuarioSesion) {
+    const aplicadoPorId = user.id
+    const organizacionId = user.organizacionId
+
     // Validar que sea kit o items individuales, no ambos
     if (dto.templateId && dto.items && dto.items.length > 0) {
       throw new BadRequestException('Usa templateId o items, no ambos')
@@ -92,9 +105,16 @@ export class TratamientosService {
       throw new BadRequestException('Debes proporcionar un templateId o al menos un item')
     }
 
-    // BR-TR-001: solo animales ACTIVOS
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) throw new NotFoundException('Animal no encontrado')
+
+    // BR-TR-001: solo animales ACTIVOS, y solo de grupos accesibles para el usuario
     const animal = await this.prisma.animal.findFirst({
-      where: { id: dto.animalId, organizacionId },
+      where: {
+        id: dto.animalId,
+        organizacionId,
+        corral: { grupoCorralesId: { in: accesibles } },
+      },
       include: {
         corral: {
           include: {
@@ -162,8 +182,8 @@ export class TratamientosService {
       }))
     }
 
-    // BR-TR-002: calcular costo FIFO por cada medicamento
-    const itemsConCosto = await this.calcularCostoFIFO(itemsParaAplicar, farmaciaId)
+    // BR-TR-002: calcular costo con el valor actual del medicamento por cada item
+    const itemsConCosto = await this.calcularCostoActual(itemsParaAplicar, farmaciaId)
 
     const costoTotal = itemsConCosto.reduce((sum, i) => sum + i.costoItemCalculado, 0)
 
@@ -200,9 +220,17 @@ export class TratamientosService {
     return aplicacion
   }
 
-  async previewCosto(dto: CreateTratamientoDto, organizacionId: string) {
+  async previewCosto(dto: CreateTratamientoDto, user: UsuarioSesion) {
+    const organizacionId = user.organizacionId
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) throw new NotFoundException('Animal no encontrado')
+
     const animal = await this.prisma.animal.findFirst({
-      where: { id: dto.animalId, organizacionId },
+      where: {
+        id: dto.animalId,
+        organizacionId,
+        corral: { grupoCorralesId: { in: accesibles } },
+      },
       include: {
         corral: {
           include: { grupoCorrales: { select: { farmaciaId: true } } },
@@ -236,34 +264,35 @@ export class TratamientosService {
 
     if (itemsParaPreview.length === 0) return { items: [], costoTotal: 0 }
 
-    const itemsConCosto = await this.calcularCostoFIFO(itemsParaPreview, farmaciaId)
+    const itemsConCosto = await this.calcularCostoActual(itemsParaPreview, farmaciaId)
     const costoTotal = itemsConCosto.reduce((sum, i) => sum + i.costoItemCalculado, 0)
 
     return { items: itemsConCosto, costoTotal }
   }
 
-  private async calcularCostoFIFO(items: ItemParaAplicar[], farmaciaId: string) {
+  private async calcularCostoActual(items: ItemParaAplicar[], farmaciaId: string) {
     return Promise.all(
       items.map(async item => {
-        // BR-TR-002: unidad DISPONIBLE o SALIDA_TEMPORAL más antigua (FIFO)
-        const unidadFIFO = await this.prisma.unidadMedicamento.findFirst({
+        // BR-TR-002: el valor actual del medicamento es el costoPorMedida de la cohorte
+        // DISPONIBLE en la farmacia. Por BR-FA-002 todas las unidades DISPONIBLE comparten
+        // el mismo costo, así que cualquier unidad DISPONIBLE sirve.
+        const unidadDisponible = await this.prisma.unidadMedicamento.findFirst({
           where: {
             medicamentoId: item.medicamentoId,
             farmaciaId,
-            estado: { in: ['DISPONIBLE', 'SALIDA_TEMPORAL'] },
+            estado: 'DISPONIBLE',
           },
-          orderBy: { fechaEntrada: 'asc' },
           select: { costoPorMedida: true },
         })
 
-        const costoPorMedida = unidadFIFO ? Number(unidadFIFO.costoPorMedida) : 0
+        const costoPorMedida = unidadDisponible ? Number(unidadDisponible.costoPorMedida) : 0
         const costoItemCalculado = item.dosis * costoPorMedida
 
         return {
           ...item,
           costoPorMedida,
           costoItemCalculado,
-          sinStock: !unidadFIFO,
+          sinStock: !unidadDisponible,
         }
       }),
     )

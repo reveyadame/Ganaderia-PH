@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, ChevronRight, Search, PawPrint } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
+import { CattleIcon } from '@/components/icons/cattle-icon'
 import { reportesApi, CostoAnimalItem } from '@/lib/api/reportes.api'
 import { gruposCorralesApi } from '@/lib/api/grupos-corrales.api'
 import { corralesApi } from '@/lib/api/corrales.api'
@@ -137,7 +138,7 @@ export default function ReporteAnimalesPage() {
       {isLoading ? (
         <TableSkeleton rows={8} cols={5} />
       ) : !data || data.items.length === 0 ? (
-        <EmptyState icon={PawPrint} title="Sin resultados" description="No hay animales con los filtros seleccionados" />
+        <EmptyState icon={CattleIcon} title="Sin resultados" description="No hay animales con los filtros seleccionados" />
       ) : (
         <>
           <div className="rounded-lg border border-border overflow-hidden">

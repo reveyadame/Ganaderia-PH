@@ -13,7 +13,6 @@ import { scanApi } from '@/lib/api/scan.api'
 import { animalesApi } from '@/lib/api/animales.api'
 import { tratamientoTemplatesApi, tratamientosApi, TratamientoTemplate, PreviewCostoResult } from '@/lib/api/tratamientos.api'
 import { medicamentosApi } from '@/lib/api/medicamentos.api'
-import { farmaciasApi } from '@/lib/api/farmacias.api'
 import { BarcodeInput } from '@/components/scanner/barcode-input'
 import { ScanResultAnimalCard } from '@/components/scanner/scan-result-animal'
 import { MobilePageHeader } from '@/components/operador/mobile-page-header'
@@ -49,7 +48,6 @@ export default function TratamientosPage() {
   const [itemsIndividuales, setItemsIndividuales] = useState<ItemIndividual[]>([])
   const [notas, setNotas] = useState('')
   const [preview, setPreview] = useState<PreviewCostoResult | null>(null)
-  const [farmaciaId, setFarmaciaId] = useState('')
   const [nuevoItem, setNuevoItem] = useState<{
     medicamentoId: string
     dosis: number
@@ -61,16 +59,10 @@ export default function TratamientosPage() {
     queryFn: tratamientoTemplatesApi.findAll,
   })
 
-  const { data: farmacias } = useQuery({
-    queryKey: ['farmacias'],
-    queryFn: farmaciasApi.findAll,
-    enabled: modo === 'individual',
-  })
-
   const { data: medicamentos } = useQuery({
-    queryKey: ['medicamentos', farmaciaId],
-    queryFn: () => medicamentosApi.findAll(farmaciaId),
-    enabled: modo === 'individual' && !!farmaciaId,
+    queryKey: ['medicamentos'],
+    queryFn: medicamentosApi.findAll,
+    enabled: modo === 'individual',
   })
 
   const scanMutation = useMutation({
@@ -214,7 +206,6 @@ export default function TratamientosPage() {
     setItemsIndividuales(prev => prev.filter((_, i) => i !== idx))
   }
 
-  const farmaciaOptions = (farmacias ?? []).map(f => ({ value: f.id, label: f.nombre }))
   const medicamentoOptions = (medicamentos ?? []).map(m => ({
     value: m.id,
     label: `${m.nombre} (${m.unidadMedida})`,
@@ -377,17 +368,10 @@ export default function TratamientosPage() {
                   Agregar medicamento
                 </p>
                 <Select
-                  label="Farmacia"
-                  value={farmaciaId}
-                  onChange={e => setFarmaciaId(e.target.value)}
-                  options={[{ value: '', label: 'Selecciona...' }, ...farmaciaOptions]}
-                />
-                <Select
                   label="Medicamento"
                   value={nuevoItem.medicamentoId}
                   onChange={e => setNuevoItem(n => ({ ...n, medicamentoId: e.target.value }))}
                   options={[{ value: '', label: 'Selecciona...' }, ...medicamentoOptions]}
-                  disabled={!farmaciaId}
                 />
                 <div className="flex gap-2">
                   <Input

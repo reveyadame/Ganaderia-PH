@@ -4,9 +4,11 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common'
+import { UsuarioSesion } from '@ganaderia/shared'
 import { PrismaService } from '../../prisma/prisma.service'
 import { CreateEstadoConfigDto } from './dto/create-estado-config.dto'
 import { CreateLecturaDto } from './dto/create-lectura.dto'
+import { getGruposCorralesAccesibles, assertGrupoCorralesAccess } from '../../common/utils/grupos-corrales-access.util'
 
 @Injectable()
 export class ComederoService {
@@ -77,16 +79,23 @@ export class ComederoService {
 
   // ── LecturaComedor ────────────────────────────────────────────────────────
 
-  async registrarLectura(dto: CreateLecturaDto, registradoPorId: string, organizacionId: string) {
-    // Validar corral pertenece a la organización
+  async registrarLectura(dto: CreateLecturaDto, user: UsuarioSesion) {
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) throw new NotFoundException('Corral no encontrado')
+
+    // Validar corral pertenece a la organización y a un grupo accesible
     const corral = await this.prisma.corral.findFirst({
-      where: { id: dto.corralId, grupoCorrales: { organizacionId } },
+      where: {
+        id: dto.corralId,
+        grupoCorrales: { organizacionId: user.organizacionId },
+        grupoCorralesId: { in: accesibles },
+      },
     })
     if (!corral) throw new NotFoundException('Corral no encontrado')
 
     // Validar que el estado config esté activo y pertenezca a la organización
     const estadoConfig = await this.prisma.estadoComederoConfig.findFirst({
-      where: { id: dto.estadoConfigId, organizacionId, activo: true },
+      where: { id: dto.estadoConfigId, organizacionId: user.organizacionId, activo: true },
     })
     if (!estadoConfig) throw new BadRequestException('Estado de comedero no válido o inactivo')
 
@@ -94,7 +103,7 @@ export class ComederoService {
       data: {
         corralId: dto.corralId,
         estadoConfigId: dto.estadoConfigId,
-        registradoPorId,
+        registradoPorId: user.id,
         notas: dto.notas,
       },
       include: {
@@ -105,9 +114,16 @@ export class ComederoService {
     })
   }
 
-  async getLecturasCorral(corralId: string, organizacionId: string, limite = 20) {
+  async getLecturasCorral(corralId: string, user: UsuarioSesion, limite = 20) {
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) throw new NotFoundException('Corral no encontrado')
+
     const corral = await this.prisma.corral.findFirst({
-      where: { id: corralId, grupoCorrales: { organizacionId } },
+      where: {
+        id: corralId,
+        grupoCorrales: { organizacionId: user.organizacionId },
+        grupoCorralesId: { in: accesibles },
+      },
     })
     if (!corral) throw new NotFoundException('Corral no encontrado')
 
@@ -122,14 +138,15 @@ export class ComederoService {
     })
   }
 
-  async getResumenGlobal(organizacionId: string, gruposPermitidosIds?: string[]) {
+  async getResumenGlobal(user: UsuarioSesion) {
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) return []
+
     const corrales = await this.prisma.corral.findMany({
       where: {
         activo: true,
-        grupoCorrales: {
-          organizacionId,
-          ...(gruposPermitidosIds ? { id: { in: gruposPermitidosIds } } : {}),
-        },
+        grupoCorrales: { organizacionId: user.organizacionId },
+        grupoCorralesId: { in: accesibles },
       },
       orderBy: [{ grupoCorrales: { nombre: 'asc' } }, { nombre: 'asc' }],
       include: {
@@ -172,14 +189,15 @@ export class ComederoService {
     }))
   }
 
-  async listarHistorialLecturas(organizacionId: string, gruposPermitidosIds?: string[], limit = 100) {
+  async listarHistorialLecturas(user: UsuarioSesion, limit = 100) {
+    const accesibles = await getGruposCorralesAccesibles(this.prisma, user)
+    if (accesibles.length === 0) return []
+
     return this.prisma.lecturaComedor.findMany({
       where: {
         corral: {
-          grupoCorrales: {
-            organizacionId,
-            ...(gruposPermitidosIds ? { id: { in: gruposPermitidosIds } } : {}),
-          },
+          grupoCorrales: { organizacionId: user.organizacionId },
+          grupoCorralesId: { in: accesibles },
         },
       },
       orderBy: { fechaLectura: 'desc' },
@@ -199,9 +217,11 @@ export class ComederoService {
 
   // ── Dashboard ─────────────────────────────────────────────────────────────
 
-  async getEstadoActual(grupoCorralesId: string, organizacionId: string) {
+  async getEstadoActual(grupoCorralesId: string, user: UsuarioSesion) {
+    await assertGrupoCorralesAccess(this.prisma, user, grupoCorralesId)
+
     const grupo = await this.prisma.grupoCorrales.findFirst({
-      where: { id: grupoCorralesId, organizacionId },
+      where: { id: grupoCorralesId, organizacionId: user.organizacionId },
       include: {
         corrales: {
           where: { activo: true },

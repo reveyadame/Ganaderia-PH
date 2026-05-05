@@ -3,10 +3,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { PresentacionMedicamento, UnidadMedida } from '@ganaderia/shared'
 
 export class CreateMedicamentoDto {
-  @ApiProperty()
-  @IsString()
-  farmaciaId!: string
-
   @ApiProperty({ example: 'Penicilina G Procaínica' })
   @IsString()
   @MinLength(2)

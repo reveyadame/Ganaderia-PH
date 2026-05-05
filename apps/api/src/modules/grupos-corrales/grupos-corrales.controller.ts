@@ -14,34 +14,33 @@ export class GruposCorralesController {
   constructor(private readonly service: GruposCorralesService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Listar grupos de corrales (operador filtrado a sus asignados)' })
+  @ApiOperation({ summary: 'Listar grupos de corrales del usuario (SU = todos)' })
   findAll(@CurrentUser() user: UsuarioSesion) {
-    const filtro = user.tipo === TipoUsuario.OPERADOR ? user.gruposCorralesIds : undefined
-    return this.service.findAll(user.organizacionId, filtro)
+    return this.service.findAll(user)
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener grupo con sus corrales' })
   findOne(@Param('id') id: string, @CurrentUser() user: UsuarioSesion) {
-    return this.service.findOne(id, user.organizacionId)
+    return this.service.findOne(id, user)
   }
 
   @Post()
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO)
   @ApiOperation({ summary: 'Crear grupo de corrales' })
   create(@Body() dto: CreateGrupoCorralesDto, @CurrentUser() user: UsuarioSesion) {
     return this.service.create(dto, user.organizacionId)
   }
 
   @Put(':id')
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO)
   @ApiOperation({ summary: 'Actualizar grupo de corrales' })
   update(@Param('id') id: string, @Body() dto: UpdateGrupoCorralesDto, @CurrentUser() user: UsuarioSesion) {
     return this.service.update(id, dto, user.organizacionId)
   }
 
   @Delete(':id')
-  @RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
+  @RequiereRoles(TipoUsuario.SUPERUSUARIO)
   @ApiOperation({ summary: 'Desactivar grupo de corrales' })
   remove(@Param('id') id: string, @CurrentUser() user: UsuarioSesion) {
     return this.service.remove(id, user.organizacionId)

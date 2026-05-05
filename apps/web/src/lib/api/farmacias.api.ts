@@ -6,7 +6,7 @@ export interface Farmacia {
   descripcion: string | null
   activa: boolean
   createdAt: string
-  _count: { gruposCorrales: number; medicamentos: number }
+  _count: { gruposCorrales: number }
 }
 
 export interface FarmaciaDetalle extends Farmacia {

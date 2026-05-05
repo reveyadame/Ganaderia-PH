@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
-import { Plus, PawPrint, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { CattleIcon } from '@/components/icons/cattle-icon'
 import { animalesApi, QueryAnimales } from '@/lib/api/animales.api'
 import { gruposCorralesApi } from '@/lib/api/grupos-corrales.api'
 import { corralesApi } from '@/lib/api/corrales.api'
@@ -143,7 +144,7 @@ export default function AnimalesPage() {
       ) : !data?.data.length ? (
         <div className="rounded-lg border border-border bg-surface">
           <EmptyState
-            icon={PawPrint}
+            icon={CattleIcon}
             title="Sin animales"
             description="Registra la primera llegada de ganado"
             action={<Button onClick={() => router.push('/animales/nuevo')}><Plus className="h-4 w-4" />Registrar llegada</Button>}

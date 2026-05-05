@@ -2,10 +2,12 @@ import { Controller, Get, Query } from '@nestjs/common'
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger'
 import { DashboardService } from './dashboard.service'
 import { CurrentUser } from '../../common/decorators/current-user.decorator'
-import { UsuarioSesion } from '@ganaderia/shared'
+import { RequiereRoles } from '../../common/decorators/requiere-roles.decorator'
+import { TipoUsuario, UsuarioSesion } from '@ganaderia/shared'
 
 @ApiTags('Dashboard')
 @ApiBearerAuth()
+@RequiereRoles(TipoUsuario.SUPERUSUARIO, TipoUsuario.DIRECTOR)
 @Controller('dashboard')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
@@ -15,7 +17,7 @@ export class DashboardController {
     @CurrentUser() user: UsuarioSesion,
     @Query('grupoCorralesId') grupoCorralesId?: string,
   ) {
-    return this.dashboardService.getKpis(user.organizacionId, grupoCorralesId)
+    return this.dashboardService.getKpis(user, grupoCorralesId)
   }
 
   @Get('tratamientos-por-dia')
@@ -25,11 +27,11 @@ export class DashboardController {
     @Query('grupoCorralesId') grupoCorralesId?: string,
   ) {
     const dias = diasStr ? parseInt(diasStr, 10) : 30
-    return this.dashboardService.getTratamientosPorDia(user.organizacionId, dias, grupoCorralesId)
+    return this.dashboardService.getTratamientosPorDia(user, dias, grupoCorralesId)
   }
 
   @Get('grupos')
   getResumenGrupos(@CurrentUser() user: UsuarioSesion) {
-    return this.dashboardService.getResumenGrupos(user.organizacionId)
+    return this.dashboardService.getResumenGrupos(user)
   }
 }
